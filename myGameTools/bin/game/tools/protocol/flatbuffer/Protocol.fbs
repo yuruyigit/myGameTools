@@ -1,0 +1,46 @@
+namespace game.tools.protocol.flatbuffer.entity;  
+
+enum ProtocolNo:int
+{
+	Login = 0,
+	Create = 1,
+}
+
+enum ProtocolType:int 
+{
+	Login = 0,
+	Exit = 1,
+	Create = 2,
+}
+
+table Login
+{
+	uid:string;
+	pass:string;
+	age:int;
+}
+
+table Create
+{
+	uid:long;
+	pass:int;
+	token:string;
+	score:double;
+	attValue:float;
+	atk:int;
+}
+
+
+table Protocol
+{
+	protocolNo:ProtocolNo;
+	protocolArray:[SingleProtocol];
+}
+
+table SingleProtocol {
+	type:ProtocolType;
+	content:[byte];
+}
+
+root_type Protocol;
+
