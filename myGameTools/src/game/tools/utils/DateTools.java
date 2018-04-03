@@ -1,30 +1,35 @@
 package game.tools.utils;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
-import game.tools.log.LogUtil;
-
 public class DateTools 
 {
-	private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"), DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd"), SDFMS = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss.SSS") ;
-
-	public static String getCurrentTimeMSString() {		return SDFMS.format(new Date());	}
-	public static String getCurrentTimeString() {		return SDF.format(new Date());	}
-	public static String getCurrentTimeString(long time) {		return SDF.format(new Date(time));	}
-	public static String getCurrentDateString() {		return DATE_FORMAT.format(new Date());	}
-	public static String getCurrentDateString(long time) {		return DATE_FORMAT.format(new Date(time));	}
+	private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("yyyy-MM-dd"), 
+										   DTF_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") , 
+										   DTF_TIMES = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+	
+	public static String getCurrentDateString() {		return DTF.format(LocalDateTime.now());	}
+	public static String getCurrentTimeString() {		return DTF_TIME.format(LocalDateTime.now());	}
+	public static String getCurrentTimeMSString() {		return DTF_TIMES.format(LocalDateTime.now());	}
+	
+	public static String getCurrentDateString(long time) {		return LocalDateTime.ofInstant(Instant.ofEpochMilli(time) , ZoneId.systemDefault()).format(DTF);	}
+	public static String getCurrentTimeString(long time) {		return LocalDateTime.ofInstant(Instant.ofEpochMilli(time) , ZoneId.systemDefault()).format(DTF_TIME);	}
+	
+	public static long getCurrentDateLong(String date)	{		return LocalDate.parse(date,DTF).atTime(0, 0, 0).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();	}
+	public static long getCurrentTimeLong(String dateTime)	{		return LocalDateTime.parse(dateTime,DTF_TIME).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();	}
+	
 	public static long getCurrentTimeLong() {		return System.currentTimeMillis();	}
 	
-	/**
-	 * @return 返回月份中的日期号
-	 */
+	
+	
+	/** @return 返回月份中的日期号*/
 	public static int getMonthDay() 
 	{
 		Calendar CALENDAR = Calendar.getInstance();
-		CALENDAR.setTimeInMillis(getCurrentTimeLong());
 		return CALENDAR.get(Calendar.DAY_OF_MONTH);
 	}
 	
@@ -56,22 +61,14 @@ public class DateTools
 	}
 	
 	
-	/**
-	 * @return 返回当前星期几
-	 */
+	/**@return 返回当前星期几 */
 	public static int getWeekDay()
 	{
 		Calendar CALENDAR = Calendar.getInstance();
-		CALENDAR.setTimeInMillis(getCurrentTimeLong());
 		return getWeekDay(CALENDAR);
 	}
 	
-	
-	/**
-	 * @param cale
-	 * @return 返回指定时间戳是星期几
-	 */
-	
+	/** @return 返回指定时间戳是星期几*/
 	public static int getWeekDay(long time)
 	{
 		Calendar CALENDAR = Calendar.getInstance();
@@ -107,20 +104,10 @@ public class DateTools
 	 */
 	public static boolean isSameWeek(String date1, String date2) 
 	{
-		Date d1 = null;
-		Date d2 = null;
-		try 
-		{
-			d1 = DATE_FORMAT.parse(date1);
-			d2 = DATE_FORMAT.parse(date2);
-		}
-		catch (Exception e) 
-		{
-			e.printStackTrace();
-			LogUtil.error(e);
-		}
-		
-		return isSameWeek(d1.getTime(), d2.getTime());
+		long long1 = DateTools.getCurrentDateLong(date1);
+		long long2 = DateTools.getCurrentDateLong(date2);
+				
+		return isSameWeek(long1, long2);
 	}
 	
 	/**
@@ -281,37 +268,19 @@ public class DateTools
 	 */
 	public static Date getStringToDate(String date)
 	{
-		Date dateValue=null;;
-		try
-		{
-			dateValue = SDF.parse(date);
-		} 
-		catch (ParseException e)
-		{
-			e.printStackTrace();
-		}
-		return dateValue;
+		return Date.from(LocalDateTime.parse(date , DTF_TIME).atZone(ZoneId.systemDefault()).toInstant());
 	}
 	
 	/**
 	 * @param date
 	 * @return 返回字符串日期的时间对象 格式 ： yyyy-MM-dd 
 	 */
-	public static Date DateFormatStringToDate(String date)
+	public static Date getDateForDateString(String date)
 	{
-		Date dateValue=null;
-		try
-		{
-			dateValue = DATE_FORMAT.parse(date);
-		} 
-		catch (ParseException e)
-		{
-			e.printStackTrace();
-		}
-		return dateValue;
+		return Date.from(LocalDateTime.parse(date , DTF).atZone(ZoneId.systemDefault()).toInstant());
 	}
 	
-	private static Calendar date2calendar(java.util.Date date)
+	private static Calendar getCalendarByDate(java.util.Date date)
 	{
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
@@ -320,52 +289,15 @@ public class DateTools
 	
 	private static Date calendar2date(Calendar cal)
 	{
-		return java.sql.Date.valueOf(String.format("%tF", cal.getTime()));
+		return new Date(cal.getTimeInMillis());
 	}
 	
 	public static String getBeforeDay(java.util.Date date, int num)
 	{
-		Calendar beforeday = date2calendar(date);
+		Calendar beforeday = getCalendarByDate(date);
 		beforeday.add(Calendar.DATE, num);
-		Date bfdate = calendar2date(beforeday);
-		return DATE_FORMAT.format(bfdate);
-	}
-	
-	public static String getBeforeDay(String date)
-	{
-		try {
-			return DATE_FORMAT.format(DATE_FORMAT.parse(date));
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-	
-	
-	public static long getCurrentTimeLong(String time) 
-	{
-		return getCurrentDateMillis(time);
-	}
-	
-	
-	public static long getCurrentDateMillis(String date)
-	{
-		return getStringToLong(date);
-	}
-	
-	public static long getStringToLong(String date)
-	{
-		if(StringTools.empty(date))
-			return 0;
-		try
-		{
-			return SDF.parse(date).getTime();
-		} 
-		catch (ParseException e)
-		{
-			e.printStackTrace();
-		}
-		return 0;
+		
+		return getCurrentTimeString(beforeday.getTimeInMillis());
 	}
 	
 	public static  int[] getTimeArray()
@@ -398,27 +330,61 @@ public class DateTools
 	
 	public static void main(String[] args) 
 	{
-		System.out.println(Arrays.toString(getTimeArray()));
+		long s = DateTools.getCurrentTimeLong("2018-04-03 10:15:35");
+		String time = DateTools.getCurrentTimeString(s);
+		System.out.println("s = " + s + " time = " + time);
 		
-		Runnable r = ()->{
-			while(true)
-			{
-				System.out.println(Thread.currentThread().getId() + " " + DateTools.getCurrentTimeString());
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		};
+		s = DateTools.getCurrentDateLong("2018-04-03");
+		System.out.println("s1 = " + s);
 		
-		Thread t1 = new Thread(r);
-		Thread t2 = new Thread(r);
-		Thread t3 = new Thread(r);
+		String m = DateTools.getCurrentTimeString(1522684800000L);
+		System.out.println("m = " + m);
 		
-		t1.start();
-		t2.start();
-		t3.start();
+		System.out.println("mone " + getMonthDay());
+		
+		System.out.println(DateTools.getCurrentDateString());
+		System.out.println(DateTools.getCurrentTimeString());
+		System.out.println(DateTools.getCurrentTimeMSString());
+		
+//		LocalDateTime.ofInstant(Instant.ofEpochMilli(getCurrentTimeLong()) , ZoneId.systemDefault());
+		
+//		DTF.format(LocalDateTime.now(new systemclock)
+				
+//		for (int j = 0; j < 20; j++) {
+//			long startTime = System.currentTimeMillis();
+//			
+//			for (int i = 0; i < 1000; i++) {
+//				String time = DTF.format(LocalDateTime.now());
+////				String time = DateTools.getCurrentTimeString();
+//			}
+//			long endTime = System.currentTimeMillis();
+//			
+//			System.out.println("time = " + (endTime - startTime));
+//		}
+		
+		
+		
+//		System.out.println(Arrays.toString(getTimeArray()));
+//		
+//		Runnable r = ()->{
+//			while(true)
+//			{
+//				System.out.println(Thread.currentThread().getId() + " " + DateTools.getCurrentTimeString());
+//				try {
+//					Thread.sleep(500);
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		};
+//		
+//		Thread t1 = new Thread(r);
+//		Thread t2 = new Thread(r);
+//		Thread t3 = new Thread(r);
+//		
+//		t1.start();
+//		t2.start();
+//		t3.start();
 //		System.out.println(getBeforeDay("2016-06-23 00:00:01"));
 //		System.out.println(getBeforeDay(new Date(),-1));
 		
@@ -445,6 +411,12 @@ public class DateTools
 		Calendar calendar2 = Calendar.getInstance();  
         calendar2.set(calendar2.get(Calendar.YEAR), calendar2.get(Calendar.MONTH), calendar2.get(Calendar.DAY_OF_MONTH),23, 59, 59);
         return calendar2.getTimeInMillis();
+	}
+	
+	public static LocalDateTime date2LocalDateTime(Date date)
+	{
+		LocalDateTime time = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+		return time;
 	}
 	
 }
