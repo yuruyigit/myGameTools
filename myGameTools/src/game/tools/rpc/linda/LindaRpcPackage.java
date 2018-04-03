@@ -8,7 +8,7 @@ public class LindaRpcPackage
 	
 	private transient String stringValue;
 	
-	private int index;
+	private int index = 0;
 	
 	public LindaRpcPackage(Object [] paramArray) 
 	{
@@ -17,17 +17,20 @@ public class LindaRpcPackage
 	
 	public <T> T get()
 	{
+		Object object = (T)paramArray[index];
+		
 		if(index < paramArray.length - 1)
 			index++;
-		return (T)paramArray[index];
+		
+		return (T)object;
 	}
 	
 	public <T> T get(int index)
 	{
-		if(index > paramArray.length - 1)
+		if(index > paramArray.length - 1 || index  < 0)
 		{
 			try {
-				throw new Exception("Array Index Out ! ");
+				throw new Exception("Array Index Out ! at : " +index);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -40,7 +43,12 @@ public class LindaRpcPackage
 	public String toString() 
 	{
 		if(stringValue == null)
-			stringValue = Arrays.toString(paramArray);
+		{
+			synchronized (this) {
+				if(stringValue == null)
+					stringValue = Arrays.toString(paramArray);
+			}
+		}
 		return stringValue;
 	}
 }

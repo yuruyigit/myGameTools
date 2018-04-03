@@ -1,5 +1,6 @@
 package game.tools.http;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -12,6 +13,10 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.alibaba.fastjson.JSON;
 import game.tools.db.cache.expire.ExpireCacheDataMap;
 import game.tools.log.LogUtil;
@@ -23,7 +28,7 @@ public class HttpClient
 	
 	private static final int timeout = 30 * 1000;
 	
-	private static ExpireCacheDataMap<String,URL> EXPIRE_URL_MAP = new ExpireCacheDataMap<String,URL>();
+	private static final ExpireCacheDataMap<String,URL> EXPIRE_URL_MAP = new ExpireCacheDataMap<String,URL>();
 	
 	
 	/**
@@ -49,27 +54,37 @@ public class HttpClient
 	 * @return 返回拼接好的参数字符串
 	 * @throws Exception
 	 */
-	private String getUrlParamString(HttpHashMap<String, String> params) throws Exception
+	private String getUrlParamString(Object ... params) throws Exception
 	{
-		StringBuffer webAddr = new StringBuffer();
 		if (params != null) 
 		{
-			int index = 0;
-			for (String key : params.keySet()) 
+			if(params.length % 2 != 0)
 			{
-				if (index == 0)
+				System.err.println("ParamArray Key-Val Not Align");
+				return null;
+			}
+			
+			StringBuffer webAddr = new StringBuffer();
+			
+			for (int i = 0; i < params.length; i++) 
+			{
+				if(i == 0)
 					webAddr.append("?");
 				else
 					webAddr.append("&");
+				
+				String key = params[i].toString();
+				String val = params[++i].toString();
+				
 				webAddr.append(key);
 				webAddr.append("=");
 				
-					webAddr.append(URLEncoder.encode(params.get(key), "UTF-8"));
-				index++;
+				webAddr.append(URLEncoder.encode(val, "UTF-8"));
 			}
+			
+			return webAddr.toString();
 		}
-		
-		return webAddr.toString();
+		return null;
 	}
 	
 	
@@ -177,49 +192,25 @@ public class HttpClient
 		return false;
 	}
 	
-	private HttpHashMap<String, Object> getHttpHashMap(Object ...paramArray)
+	public static void writeHttpObject(HttpServletResponse resp , Object result) throws Exception
 	{
-		if(paramArray != null)
-		{
-			if(paramArray.length % 2 != 0)
-			{
-				System.err.println("ParamArray Key-Val Not Align");
-				return null;
-			}
-			
-			int size = paramArray.length /2;
-			
-			HttpHashMap<String, Object> params = new HttpHashMap<>(size);
-			for (int i = 0; i < paramArray.length;) 
-			{
-				params.put(paramArray[i++].toString(), paramArray[i++]);
-			}
-			
-			return params;
-		}
-		else
-		{
-			System.err.println("ParamArray Is Null");
-			return null;
-		}
+		ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(resp.getOutputStream()));  
+		out.writeObject(result);
+		out.flush();
+		out.close();
 	}
 	
-	public <T> T sendPost(String httpUrl, HashMap<String, Object> map) 
+	
+	public static Object readHttpObject(HttpServletRequest req) throws Exception 
 	{
-		HttpHashMap<String, Object> params = new HttpHashMap<>(map);
-		return (T)sendPost(httpUrl, params);
+		ObjectInputStream in = new ObjectInputStream( new BufferedInputStream(req.getInputStream()));  
+		Object o = in.readObject();
+		in.close();
+		
+		return o;
 	}
 	
-	/**
-	 * @param httpUrl http地址
-	 * @param paramArray key,val,key,val,key,val 对应的键-值数组
-	 * @return 
-	 */
-	public <T> T sendPost(String httpUrl, Object ...paramArray) 
-	{
-		HttpHashMap<String, Object> params = getHttpHashMap(paramArray);
-		return (T)sendPost(httpUrl, params);
-	}
+	
 	
 	/**
 	 * @param httpUrl http地址
@@ -228,21 +219,9 @@ public class HttpClient
 	 */
 	public String sendGet(String httpUrl, Object ...paramArray) 
 	{
-		HttpHashMap<String, Object> params = getHttpHashMap(paramArray);
-		return sendGet(httpUrl, (HttpHashMap)params);
-	}
-	
-	/**
-	 * 发送get请求，参数在地址栏中
-	 * @param urlString
-	 * @param params
-	 * @return 
-	 */
-	public String sendGet(String httpUrl, HttpHashMap<String, String> params) 
-	{
 		try 
 		{
-			String paramUrl = getUrlParamString(params);
+			String paramUrl = getUrlParamString(paramArray);
 			
 			httpUrl = httpUrl + paramUrl;
 
@@ -252,7 +231,7 @@ public class HttpClient
 		}
 		catch (Exception e) 
 		{
-			String msg = JSON.toJSONString(params);
+			String msg = JSON.toJSONString(paramArray);
 			LogUtil.error(msg , e);
 			
 			e.printStackTrace();
@@ -267,8 +246,12 @@ public class HttpClient
 	 * @return 返请求后的结果 
 	 * @throws Exception
 	 */
-	public Object sendPost(String httpUrl, HttpHashMap<String , Object> params) 
+	public Object sendPost(String httpUrl, Object ...paramArray) 
 	{
+		HttpPackage httpPackage = new HttpPackage(paramArray);
+		
+		Object params = httpPackage;
+		
 		try
 		{
 			if(StringTools.empty(httpUrl))

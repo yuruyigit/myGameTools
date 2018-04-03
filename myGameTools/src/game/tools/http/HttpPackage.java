@@ -1,34 +1,54 @@
 package game.tools.http;
 
+import java.util.Arrays;
+
 public class HttpPackage 
 {
+	private transient String stringValue;
+	
 	private Object [] paramArray;
 	
 	private int index = 0;
-	
 	
 	public HttpPackage( Object ...paramArray) 
 	{
 		this.paramArray = paramArray;
 	}
 	
-	public void setProtocolNo(Object value)
+	public <T> T get()
 	{
-		this.paramArray[0] = value;
+		Object object = (T)paramArray[index];
+		
+		if(index < paramArray.length - 1)
+			index++;
+		
+		return (T)object;
 	}
 	
-	public void set(int index , Object value)
+	public <T> T get(int index)
 	{
-		this.paramArray[index] = value;
-	}
-	
-	public <T> T getValue(int index)
-	{
+		if(index > paramArray.length - 1 || index  < 0)
+		{
+			try {
+				throw new Exception("Array Index Out ! at : " +index);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
 		return (T)paramArray[index];
 	}
 	
-	public <T> T getValue()
+	@Override
+	public String toString() 
 	{
-		return getValue(index);
+		if(stringValue == null)
+		{
+			synchronized (this) {
+				if(stringValue == null)
+					stringValue = Arrays.toString(paramArray);
+			}
+		}
+		return stringValue;
 	}
 }

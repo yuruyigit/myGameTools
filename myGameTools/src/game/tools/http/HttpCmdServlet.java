@@ -55,44 +55,26 @@ public abstract class HttpCmdServlet extends HttpServlet {
 			return ;
 		}
 		
-		Object result = null;
-		HttpHashMap<String, Object> params = null;
+		HttpPackage httpPkg = null;
 		try 
 		{
-			params = (HttpHashMap<String, Object>)readHttpObject(req);
-			if(params == null)
+			httpPkg = (HttpPackage)HttpClient.readHttpObject(req);
+			if(httpPkg == null)
 			{
 				resp.getOutputStream().write("Params Empty".getBytes());
 			}
 			else
 			{
-				Object protocolObject = params.getValue(Keys.PROTOCOL_NO);
-				if (protocolObject == null)
-				{
-					resp.getOutputStream().write("Not Cmd".getBytes());
-					return ;
-				}
-				
-				int protocolNo = (int)protocolObject;
-				
-				httpCmd.doCmd(req , resp , params ,protocolNo );
+				httpCmd.doCmd(req , resp , httpPkg);
 			}
 		}
 		catch (Exception e) 
 		{
 			e.printStackTrace();
-			LogUtil.error(JSONObject.toJSONString(params),e);
+			LogUtil.error(JSONObject.toJSONString(httpPkg),e);
 			resp.getOutputStream().write(("EXCEPTION" + e.getMessage()).getBytes());
 		}
 	}
 	
-	private Object readHttpObject(HttpServletRequest req) throws Exception 
-	{
-		ObjectInputStream in = new ObjectInputStream( new BufferedInputStream(req.getInputStream()));  
-		Object o = in.readObject();
-		in.close();
-		
-		return o;
-	}
 
 }
