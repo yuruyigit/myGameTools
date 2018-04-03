@@ -80,7 +80,7 @@ public class Netty4ProtocolHandler extends Netty4Handler
 			if("src".equalsIgnoreCase(scanClassPackage) || null == scanClassPackage)
 				throw new Exception("scanClassPackage Not src and null");
 			
-			this.threadPool =  new ThreadPoolExecutor(handlerThreadCount , handlerThreadCount * 2, 60, TimeUnit.SECONDS, new SynchronousQueue<Runnable>() ,new ThreadGroupFactory("Netty4ProtocolHandler"));
+			this.threadPool =  new ThreadPoolExecutor(handlerThreadCount , handlerThreadCount * 3, 60, TimeUnit.SECONDS, new SynchronousQueue<Runnable>() ,new ThreadGroupFactory("Netty4ProtocolHandler"));
 			
 			this.netty4Protocol = netty4Protocol;
 			
