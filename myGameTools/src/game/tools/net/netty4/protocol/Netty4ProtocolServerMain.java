@@ -47,7 +47,7 @@ public class Netty4ProtocolServerMain
 			{
 				return ((JSONObject)msg).getIntValue("protocolNo");
 			}
-		}));
+		},30));
 		
 		ns.start(1111);
 	}

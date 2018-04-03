@@ -27,11 +27,17 @@ public class Netty4Server
 	private static boolean isPrintHeartbeat;
 	private Netty4Initializer initial ;
 	
+	/**
+	 * 默认线程数量
+	 */
+	private static final int DEFAULT_THREAD_COUNT = Runtime.getRuntime().availableProcessors() * 2;
+	
+	
 	private int bossThreadCount , workThreadCount;
 	
 	public Netty4Server(Netty4Initializer initial)
 	{
-		this(initial , 10 , 50);
+		this(initial , DEFAULT_THREAD_COUNT , DEFAULT_THREAD_COUNT);
 	}
 	
 	public Netty4Server(Netty4Initializer initial , int bossThreadCount , int workThreadCount) 
@@ -44,7 +50,7 @@ public class Netty4Server
 	
 	public Netty4Server(Netty4Decode decode , Netty4Encode encode , Netty4Handler handler) 
 	{
-		this(decode , encode , handler , 10 , 50);
+		this(decode , encode , handler , DEFAULT_THREAD_COUNT , DEFAULT_THREAD_COUNT);
 	}
 	
 	public Netty4Server(Netty4Decode decode , Netty4Encode encode , Netty4Handler handler , int bossThreadCount , int workThreadCount) 
@@ -88,8 +94,7 @@ public class Netty4Server
 	        {
 	            sslCtx = null;
 	        }
-			
-	    
+	        
 			EventLoopGroup bossGroup = new NioEventLoopGroup(this.bossThreadCount , new ThreadGroupFactory("Netty4Server-BossGroup"));
 			EventLoopGroup workerGroup = new NioEventLoopGroup(this.workThreadCount , new ThreadGroupFactory("Netty4Server-WorkGroup"));
 			

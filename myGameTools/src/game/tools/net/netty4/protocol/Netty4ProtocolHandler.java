@@ -4,9 +4,12 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import game.tools.log.LogUtil;
 import game.tools.net.netty4.Netty4Handler;
+import game.tools.threadpool.ThreadGroupFactory;
 import game.tools.utils.ClassUtils;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -77,7 +80,8 @@ public class Netty4ProtocolHandler extends Netty4Handler
 			if("src".equalsIgnoreCase(scanClassPackage) || null == scanClassPackage)
 				throw new Exception("scanClassPackage Not src and null");
 			
-			this.threadPool = Executors.newFixedThreadPool(handlerThreadCount);
+			this.threadPool =  new ThreadPoolExecutor(handlerThreadCount , handlerThreadCount * 2, 60, TimeUnit.SECONDS, new SynchronousQueue<Runnable>() ,new ThreadGroupFactory("Netty4ProtocolHandler"));
+			
 			this.netty4Protocol = netty4Protocol;
 			
 			init(scanClassPackage);

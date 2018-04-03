@@ -3,6 +3,9 @@ package game.tools.threadpool;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author zzb
@@ -18,8 +21,8 @@ public class Threads
 		int threadCount = (int)(Runtime.getRuntime().availableProcessors() * 3);
 		threadCount = threadCount < MIN_THREAD_COUNT ? MIN_THREAD_COUNT : threadCount;
 		THREAD_POOL = Executors.newFixedThreadPool(threadCount);
+//		ThreadPoolExecutor executor = new ThreadPoolExecutor(6, 10, 5, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
 	}
-	
 	
 	/**
 	 * zzb  线程池内执行函数
@@ -39,6 +42,7 @@ public class Threads
 	{
 		return new ThreadQueueBatch(checkCount, work);
 	}
+	
 	
 
 	/**

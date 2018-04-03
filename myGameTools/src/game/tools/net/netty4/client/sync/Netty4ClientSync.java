@@ -1,5 +1,9 @@
 package game.tools.net.netty4.client.sync;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import com.alibaba.fastjson.JSONObject;
 import game.tools.net.netty4.Netty4Decode;
 import game.tools.net.netty4.Netty4Encode;
@@ -209,30 +213,61 @@ public class Netty4ClientSync extends Netty4Client
 		return retResult;
 	}
 	
-	public static void main(String[] args) 
+	public static void main(String[] args) throws Exception
 	{
 		JSONObject o = JSONObject.parseObject("{\"protocolNo\":110001,\"platfromId\":\"1\",\"userId\":\"2017062613s37ssdddds42\",\"channelId\":\"3000001\"}");
-		
-		Netty4ClientSync client = new Netty4ClientSync("127.0.0.1", 1111, new LogicDecode() , new LogicEncode() , new INettyChannelRead() {
+		Runnable r = new Runnable() {
 			
 			@Override
-			public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception 
+			public void run() 
 			{
-				System.out.println("revc push " + msg);
+				JSONObject o = JSONObject.parseObject("{\"protocolNo\":110001,\"platfromId\":\"1\",\"userId\":\"2017062613s37ssdddds42\",\"channelId\":\"3000001\"}");
+				
+				Netty4ClientSync client = new Netty4ClientSync("127.0.0.1", 1111, new LogicDecode() , new LogicEncode() , new INettyChannelRead() {
+					
+					@Override
+					public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception 
+					{
+						System.out.println("revc push " + msg);
+					}
+				});
+				
+				for (int j = 0; j < 50; j++) 
+				{
+					
+					try 
+					{
+						Object result = client.send(o);
+						o = JSONObject.parseObject("{\"protocolNo\":120001}");
+						client.send(o);
+						
+						Thread.sleep(100);
+						
+						o = JSONObject.parseObject("{\"protocolNo\":120002}");
+						client.send(o);
+					}
+					catch (InterruptedException e) 
+					{
+						e.printStackTrace();
+					}
+				}
 			}
-		});
+		};
+		ExecutorService exe = Executors.newCachedThreadPool();
 		
-//		for (int i = 0; i < 1; i++) {
-//			client.send(o);
-//		}
+		for (int i = 0; i < 50; i++) 
+		{
+			exe.execute(r);
+		}
 		
-		Object result = client.send(o);
 		
-		o = JSONObject.parseObject("{\"protocolNo\":120001}");
-		client.send(o);
-		
-		o = JSONObject.parseObject("{\"protocolNo\":120002}");
-		client.send(o);
+//		Object result = client.send(o);
+//		
+//		o = JSONObject.parseObject("{\"protocolNo\":120001}");
+//		client.send(o);
+//		
+//		o = JSONObject.parseObject("{\"protocolNo\":120002}");
+//		client.send(o);
 		
 		System.out.println("send ok ");
 //		

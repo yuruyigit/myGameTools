@@ -1,6 +1,8 @@
 package game.tools.db.cache.expire;
 import java.util.concurrent.ConcurrentHashMap;
 
+import game.tools.utils.DateTools;
+
 class KeyValue<K,V>
 {
 	private long updateTime;
@@ -19,6 +21,12 @@ class KeyValue<K,V>
 	public long getUpdateTime() {		return updateTime;	}
 	public K getKey() {		return key;	}
 	public V getValue() {		return value;	}
+	
+	@Override
+	public String toString() 
+	{
+		return "[" + key + "->" + value + "->" + DateTools.getCurrentTimeString(updateTime) + "]";
+	}
 }
 
 public class ExpireCacheDataMap<K,V>
@@ -114,11 +122,16 @@ public class ExpireCacheDataMap<K,V>
 		return value.getValue();
 	}
 	
+	@Override
+	public String toString() {
+		return this.keyIndexMap.values().toString();
+	}
 	
 	public static void main(String[] args)  throws Exception
 	{
 		ExpireCacheDataMap<String , Object> d = new ExpireCacheDataMap<String , Object>(1,1);
 		d.put("1", "dddd");
+		d.put("2", "ddddsdfa");
 		
 		Object val  = d.getValue("1");
 		System.out.println(val);
