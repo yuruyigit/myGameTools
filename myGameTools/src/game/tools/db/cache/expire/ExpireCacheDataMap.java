@@ -4,18 +4,22 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 
-public class ExpireCacheDataMap
+public class ExpireCacheDataMap<K,V>
 {
 	/** 2016年9月21日下午4:19:12 key过期时间，单位毫秒间隔 , 这里是1个小时*/
 	private int keyExpireTime = 1 * 60 * 60 * 1000;
 	/** 2016年9月21日下午4:21:19 key缓存大小，大于这个数的话，去检查过期 */
-	private int keyCheckSize = 10000 ;
+	private int keyCheckSize = 0 ;
+	/** 2016年9月20日下午9:50:37 key连接的映射 */
+	private final ConcurrentHashMap<K, KeyValue<K,V>> keyIndexMap = new ConcurrentHashMap<K, KeyValue<K,V>>();
+	
 	
 	/**
 	 *  过期时间，单位小时 （默认一个小时）
-	 *  检查数量（默认10000）
+	 *  检查数量（默认0）。
 	 */
-	public ExpireCacheDataMap() {	}
+	public ExpireCacheDataMap() {}
+	
 	/**
 	 * @param keyExpireTime 过期时间，单位分钟 （默认一个小时）
 	 * @param keyCheckSize	大于这个数的话，去检查过期（默认10000）。
@@ -26,9 +30,6 @@ public class ExpireCacheDataMap
 		this.keyCheckSize = keyCheckSize;
 	}
 	
-	/** 2016年9月20日下午9:50:37 key连接的映射 */
-	private final ConcurrentHashMap<Object, KeyValue> keyIndexMap = new ConcurrentHashMap<Object, KeyValue>();
-	
 	/**
 	 * 检查过期key
 	 */
@@ -37,7 +38,7 @@ public class ExpireCacheDataMap
 		if(keyIndexMap.size() < keyCheckSize)			//如果还没达检查的长度的话就直接返回
 			return ;
 		
-		for (KeyValue idKey : keyIndexMap.values()) 
+		for (KeyValue<K , V> idKey : keyIndexMap.values()) 
 		{
 			long gapTime = System.currentTimeMillis() - idKey.getUpdateTime();
 			
@@ -46,9 +47,9 @@ public class ExpireCacheDataMap
 		}
 	}
 	
-	public void put(Object key , Object value)
+	public void put(K key , V value)
 	{
-		KeyValue keyValue = new KeyValue(key, value);
+		KeyValue<K,V> keyValue = new KeyValue<K,V>(key, value);
 		keyIndexMap.put(keyValue.getKey() , keyValue);
 	}
 	
@@ -57,11 +58,11 @@ public class ExpireCacheDataMap
 	 * @param key
 	 * @return 获取一个还未过期的key
 	 */
-	public KeyValue getKeyObject(Object key)
+	private KeyValue<K,V> getKeyObject(K key)
 	{
 		checkExpireKey();
 		
-		KeyValue keyVal = keyIndexMap.get(key);			
+		KeyValue<K,V> keyVal = keyIndexMap.get(key);			
 		if( keyVal != null)
 		{
 			keyVal.updateTime();			//更新时间
@@ -75,26 +76,36 @@ public class ExpireCacheDataMap
 	 * @param key
 	 * @return 获取一个还未过期的key
 	 */
-	public <E> E getValue(Object key)
+	private V getValue(K key)
 	{
-		checkExpireKey();
-		
-		KeyValue keyVal = getKeyObject(key);
+		KeyValue<K,V> keyVal = getKeyObject(key);
 		
 		if(keyVal != null)
-			return (E)keyVal.getValue();
+			return keyVal.getValue();
 		return null;
 	}
 	
 	
 	public static void main(String[] args)  throws Exception
 	{
-		ExpireCacheDataMap d = new ExpireCacheDataMap(1,1);
-		d.put(100, "dddd");
-		Object val  = d.getValue(100);
+		ExpireCacheDataMap<String , Object> d = new ExpireCacheDataMap<String , Object>(1,1);
+		d.put("1", "dddd");
+		
+		Object val  = d.getValue("1");
+		System.out.println(val);
+		
+		Thread.sleep(10* 1000);
+		
+		val  = d.getValue("1");
+		System.out.println(val);
+		
+		Thread.sleep(60* 1000);
+		
+		val  = d.getValue("1");
+		System.out.println(val);
 	}
 	
-	public<E> E get(String key) 
+	public V get(K key) 
 	{
 		return getValue(key);
 	}

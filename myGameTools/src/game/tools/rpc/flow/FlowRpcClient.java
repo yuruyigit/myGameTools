@@ -22,7 +22,7 @@ public class FlowRpcClient
 	
 	private HttpURLConnection urlConnection;
 	
-	private static ExpireCacheDataMap EXPIRE_URL_MAP = new ExpireCacheDataMap();
+	private static ExpireCacheDataMap<String,URL> EXPIRE_URL_MAP = new ExpireCacheDataMap<String,URL>();
 	
 	public FlowRpcClient(String address) 
 	{

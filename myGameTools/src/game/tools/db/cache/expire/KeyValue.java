@@ -1,12 +1,12 @@
 package game.tools.db.cache.expire;
 
-public class KeyValue
+public class KeyValue<K,V>
 {
 	private long updateTime;
-	private Object key ;
-	private Object value;
+	private K key ;
+	private V value;
 	
-	public KeyValue(Object key, Object value) 
+	public KeyValue(K key, V value) 
 	{
 		this.key = key;
 		this.value = value;
@@ -16,6 +16,6 @@ public class KeyValue
 	
 	void updateTime()	{		this.updateTime = System.currentTimeMillis();	}
 	public long getUpdateTime() {		return updateTime;	}
-	public Object getKey() {		return key;	}
-	public Object getValue() {		return value;	}
+	public K getKey() {		return key;	}
+	public V getValue() {		return value;	}
 }

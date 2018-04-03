@@ -23,7 +23,7 @@ public class HttpClient
 	
 	private static final int timeout = 30 * 1000;
 	
-	private static ExpireCacheDataMap EXPIRE_URL_MAP = new ExpireCacheDataMap();
+	private static ExpireCacheDataMap<String,URL> EXPIRE_URL_MAP = new ExpireCacheDataMap<String,URL>();
 	
 	
 	/**
