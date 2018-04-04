@@ -49,7 +49,7 @@ public class ClassUtils {
                 }  
                   
                 if(jarFile != null){  
-                    getClassNameFromJar(jarFile.entries(), packageName, isRecursion);  
+                	classNames = getClassNameFromJar(jarFile.entries(), packageName, isRecursion);  
                 }  
             }  
         } else {  
