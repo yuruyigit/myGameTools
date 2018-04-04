@@ -1,16 +1,22 @@
 package game.tools.http;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
-public class HttpPackage 
+public class HttpPackage implements Serializable
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private transient String stringValue;
 	
 	private Object [] paramArray;
 	
 	private int index = 0;
 	
-	public HttpPackage( Object ...paramArray) 
+	HttpPackage( Object ...paramArray) 
 	{
 		this.paramArray = paramArray;
 	}

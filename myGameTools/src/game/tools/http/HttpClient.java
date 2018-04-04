@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -203,11 +204,18 @@ public class HttpClient
 	
 	public static Object readHttpObject(HttpServletRequest req) throws Exception 
 	{
-		ObjectInputStream in = new ObjectInputStream( new BufferedInputStream(req.getInputStream()));  
-		Object o = in.readObject();
-		in.close();
+		ServletInputStream servletInputStream = req.getInputStream();
 		
-		return o;
+		if(servletInputStream.available() > 0)			//有数据可读
+		{
+			ObjectInputStream in = new ObjectInputStream( new BufferedInputStream(servletInputStream));  
+			Object o = in.readObject();
+			in.close();
+			
+			return o;
+		}
+		else
+			return null;
 	}
 	
 	
