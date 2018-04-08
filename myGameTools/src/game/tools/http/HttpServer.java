@@ -14,6 +14,7 @@ import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.eclipse.jetty.util.thread.ThreadPool;
 
 import game.tools.threadpool.ThreadGroupFactory;
+import game.tools.utils.StringTools;
 
 public class HttpServer {
 
@@ -104,7 +105,8 @@ public class HttpServer {
         return threadPool;
     }
 	
-	private NetworkConnector createConnector() {
+	private NetworkConnector createConnector() 
+	{
         ServerConnector connector = new ServerConnector(server);
         connector.setPort(port);
         return connector;
@@ -113,50 +115,41 @@ public class HttpServer {
 	
 	/**
 	 * 在此注册添加servlet业务 http://xxxx.xxx.xxx:9001/servlet/test?adsdsd
+	 *  @param classs 已经实现的servelet逻辑类
 	 */
-	public void initServlets(Class...classs)
+	public void registerServlet(Class...classs)
 	{
 		try
 		{
 			for (int i = 0; i < classs.length; i++) 
-			{
-				registerServlet(classs[i]);
-			}
+				registerServlet(classs[i] , null);
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
 	}
-
 	
-	public void registerServlets(Class...classs)
+	
+	/**
+	 * @param clazz 已经实现的servelet逻辑类
+	 * @param pathString 指定这个servlet的HTTP的访问路径
+	 * @throws Exception
+	 */
+	public void registerServlet(Class clazz, String pathString) throws Exception 
 	{
-		 initServlets(classs);
-	}
-	
-	
-	public void registerServlet(Class clazz, String... path) throws Exception 
-	{
-		String pathString = "";
-		if (path == null || path.length < 1) 
+		if(StringTools.empty(pathString))
 		{
 			pathString = "/"+clazz.getSimpleName();
 		}
-		else if (path != null && path.length > 1) 
-		{
-			throw new Exception("httpServlet path can not have more than one!");
-		}
 		else 
 		{
-			pathString = path[0];
 			if (!pathString.startsWith("/")) 
-			{
 				pathString = "/" + pathString;
-			}
 		}
 		
 		context.addServlet(new ServletHolder((HttpServlet)clazz.newInstance()), pathString);
+		
 		System.out.println("Register Servlet By : " + rootPath +pathString);
 	}
 

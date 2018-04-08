@@ -256,9 +256,7 @@ public class HttpClient
 	 */
 	public Object sendPost(String httpUrl, Object ...paramArray) 
 	{
-		HttpPackage httpPackage = new HttpPackage(paramArray);
-		
-		Object params = httpPackage;
+		Object params = paramArray;
 		
 		try
 		{

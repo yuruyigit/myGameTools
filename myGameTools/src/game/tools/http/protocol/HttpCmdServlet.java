@@ -2,20 +2,14 @@ package game.tools.http.protocol;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Set;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import com.alibaba.fastjson.JSONObject;
 import game.tools.http.HttpClient;
-import game.tools.http.HttpPackage;
-import game.tools.http.HttpServer;
 import game.tools.log.LogUtil;
-import game.tools.net.netty4.protocol.Netty4Protocol;
 import game.tools.utils.ClassUtils;
 
 /**
@@ -35,22 +29,42 @@ import game.tools.utils.ClassUtils;
  */
 public class HttpCmdServlet extends HttpServlet {
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	/** 协议处理函数集合 */
-	private static final HashMap<Integer , Method> protocolHandlerMap = new HashMap<Integer , Method>();
+	private static final HashMap<Integer , Method> HTTP_CMD_METHOD_MAP = new HashMap<Integer , Method>();
+	/** 扫描函数包的路径 */
+	private static String SCAN_CLASS_PACKAGE;
 	
-	public HttpCmdServlet() 
+	/**
+	 * 设置扫描函数包的路径，<b>注意：只有初次才有效，如二次设置，则直接丢弃。</b>
+	 * @param scanClassPackage 要扫描的执行的函数包路径
+	 */
+	public static void setHttpCmdServletScanClassPackage(String scanClassPackage)
 	{
-		initMethod();
+		if(HttpCmdServlet.SCAN_CLASS_PACKAGE == null)
+		{
+			synchronized (HTTP_CMD_METHOD_MAP) 
+			{
+				if(HttpCmdServlet.SCAN_CLASS_PACKAGE == null)
+				{
+					HttpCmdServlet.SCAN_CLASS_PACKAGE = scanClassPackage;
+					
+					initInvokeMethod();
+				}
+			}
+		}
 	}
 	
-	private void initMethod()
+	/**
+	 * 初始化调用的方法
+	 */
+	private static void initInvokeMethod()
 	{
 		try 
 		{
+			if(!HTTP_CMD_METHOD_MAP.isEmpty())		//如果不是空
+				HTTP_CMD_METHOD_MAP.clear();
+				
 			Set<String> setString = ClassUtils.getClassName("game.tools.http", true);
 			
 			for (String string : setString) 
@@ -66,12 +80,12 @@ public class HttpCmdServlet extends HttpServlet {
 					{
 						HttpCmd cmd = ((HttpCmd)annot);
 						
-						if(protocolHandlerMap.containsKey(cmd.cmdNo()))
+						if(HTTP_CMD_METHOD_MAP.containsKey(cmd.cmdNo()))
 						{
 							throw new Exception("HttpCmdServlet : duplicate httpCmd key !! at " + cmd.cmdNo());
 						}
 						
-						protocolHandlerMap.put(cmd.cmdNo(), method);
+						HTTP_CMD_METHOD_MAP.put(cmd.cmdNo(), method);
 					}
 				}
 			}
@@ -99,16 +113,21 @@ public class HttpCmdServlet extends HttpServlet {
 	{
 		try 
 		{
-			HttpPackage httpPkg = (HttpPackage)HttpClient.readHttpObject(req);
+			if(HTTP_CMD_METHOD_MAP.isEmpty())
+				throw new Exception("HTTP_CMD_METHOD_MAP isEmpty !");
 			
-			if(httpPkg == null)
+			Object []  paramArray = (Object [])HttpClient.readHttpObject(req);
+			
+			if(paramArray == null)
 			{
-				throw new Exception("post httpPkg null , maybe not post request ! !  !");
+				throw new Exception("post paramArray null , maybe not post request ! !  !");
 			}
+			
+			HttpPackage httpPkg = new HttpPackage(req , resp , paramArray);
 			
 			int httpCmd = httpPkg.get();
 			
-			Method httpCmdMethod = protocolHandlerMap.get(httpCmd);
+			Method httpCmdMethod = HTTP_CMD_METHOD_MAP.get(httpCmd);
 			
 			if(httpCmdMethod == null)
 				throw new Exception("httpCmd :" + httpCmd + " not Method.");

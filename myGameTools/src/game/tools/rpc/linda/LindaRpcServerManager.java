@@ -40,7 +40,7 @@ public class LindaRpcServerManager
 	private void initHttpServer() 
 	{
 		this.httpServer = new HttpServer(name, port);
-		this.httpServer.registerServlets(LindaRpcServerManagerServlet.class);
+		this.httpServer.registerServlet(LindaRpcServerManagerServlet.class);
 	}
 	
 	
