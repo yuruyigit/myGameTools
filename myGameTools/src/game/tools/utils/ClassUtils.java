@@ -171,4 +171,11 @@ public class ClassUtils {
 		}
 		return classArray;
 	}
+	
+	
+	public static String getLocalPath() 
+	{
+	    String path = System.getProperty("user.dir");
+	    return path.replace("\\\\", "\\");
+	}
 }  
