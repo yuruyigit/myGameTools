@@ -185,14 +185,17 @@ public class Events
 	
 	private static void checkExecuteWorkThread()
 	{
-		synchronized(EVENT_LIST)
+		if(THREAD_POOL == null)
 		{
-			if(THREAD_POOL == null)
+			synchronized(EVENT_LIST)
 			{
-				int cpuCount = Runtime.getRuntime().availableProcessors();
-				THREAD_POOL = new ThreadPoolExecutor(cpuCount / 2, cpuCount, 65L, TimeUnit.SECONDS,new SynchronousQueue<Runnable>() , THREAD_FACTORY);
-			}
+				if(THREAD_POOL == null)
+				{
+					int cpuCount = Runtime.getRuntime().availableProcessors();
+					THREAD_POOL = new ThreadPoolExecutor(cpuCount / 2, cpuCount, 65L, TimeUnit.SECONDS,new SynchronousQueue<Runnable>() , THREAD_FACTORY);
+				}
 				
+			}
 		}
 	}
 	
