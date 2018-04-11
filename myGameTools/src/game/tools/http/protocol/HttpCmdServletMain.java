@@ -1,4 +1,7 @@
 package game.tools.http.protocol;
+import javax.servlet.http.HttpServletRequest;
+
+import game.tools.http.HttpClient;
 import game.tools.http.HttpServer;
 import game.tools.http.HttpTools;
 
@@ -12,18 +15,23 @@ public class HttpCmdServletMain
 		return "httpCmd1ffd";
 	}
 	
+	
+
 	public static void main(String[] args) 
 	{
+//		Object getResult = HttpTools.sendGet("http://www.baidu.com/s","wd","f");
+//		System.out.println("getResult = " + getResult);
+		
 		HttpServer httpServer = new HttpServer("game", 1234);
 		try {
 			HttpCmdServlet.setHttpCmdServletScanClassPackage("game.tools.http");
-			httpServer.registerServlet(HttpCmdServlet.class);
+			httpServer.registerServlet(HttpCmdServlet.class , "ss");
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
-		String result = HttpTools.sendPost("http://localhost:1234/game/HttpCmdServlet", 123, "工工要在地" , "asdfasdf");
+		String result = HttpTools.sendPost("http://localhost:1234/game/ss", 123, "工工要在地" , "asdfasdf" , new HttpPackage(null, null, null));
 //		String result = HttpTools.sendGet("http://localhost:1234/game/HttpCmdServlet", 123, "工工要在地");
 		
 		System.out.println("result = " + result);
