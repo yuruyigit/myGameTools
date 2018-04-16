@@ -17,6 +17,7 @@ import game.tools.utils.ClassUtils;
  * http的post请求servlet<br/>
  * 该servlet使用@HttpCmd(cmdNo = 123)注解来绑定对应的httpcmd处理函数，<br/>
  * cmdNo则为对应的处理编号，函数传入的参数为httpPkage对象。<br/>
+ * <b>默认使用第一个参数为处理编号</b>
  * 如：
  * <pre>
  * HttpCmd(cmdNo = 123)

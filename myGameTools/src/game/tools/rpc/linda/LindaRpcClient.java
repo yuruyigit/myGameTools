@@ -33,9 +33,7 @@ public class LindaRpcClient
 	
 	private HashMap<String, LindaChannelHit> channelHitMap;
 	
-	/**
-	 * 对应线程的结果列表
-	 */
+	/** 2018年3月20日 上午9:56:04 对应线程的结果列表*/
 	private HashMap<Long, Object> threadResultMap = new HashMap<>(16);
 	
 	/** 2017年8月24日 下午4:37:56 	最后一次加载rpc服务器列表时间戳*/
