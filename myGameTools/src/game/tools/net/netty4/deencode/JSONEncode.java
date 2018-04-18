@@ -1,4 +1,4 @@
-package game.tools.net.netty4.client.sync;
+package game.tools.net.netty4.deencode;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -11,7 +11,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
 
-public class LogicEncode extends Netty4Encode
+public class JSONEncode extends Netty4Encode
 {
 	private static final String MSG_ENCODE = "utf-8";
 	
@@ -81,6 +81,6 @@ public class LogicEncode extends Netty4Encode
 	@Override
 	public Netty4Encode clone() 
 	{
-		return new LogicEncode();
+		return new JSONEncode();
 	}
 }

@@ -1,9 +1,10 @@
 package game.tools.net.netty4.protocol;
 import com.alibaba.fastjson.JSONObject;
 
-import game.tools.net.netty4.client.sync.LogicDecode;
-import game.tools.net.netty4.client.sync.LogicEncode;
+import game.tools.net.netty4.deencode.JSONDecode;
+import game.tools.net.netty4.deencode.JSONEncode;
 import game.tools.net.netty4.server.Netty4Server;
+import game.tools.protocol.protobuffer.Protocol.Login;
 import io.netty.channel.Channel;
 
 class PlayControl
@@ -38,8 +39,8 @@ public class Netty4ProtocolServerMain
 	public static void main(String[] args) throws Exception
 	{
 		Netty4Server ns = new Netty4Server(
-				new LogicDecode(), 
-				new LogicEncode(),
+				new JSONDecode(), 
+				new JSONEncode(),
 		new Netty4ProtocolHandler("game.tools.net" , new INetty4Protocol() 
 		{
 			@Override
@@ -52,8 +53,13 @@ public class Netty4ProtocolServerMain
 		ns.start(1111);
 	}
 	
-	@Netty4Protocol(protocolNo = 110001 , isStatic = true)		//如果是登录
-	public static void doLogin(Channel channel , Object msg)
+	/**
+	 * @param channel
+	 * @param msg
+	 * @param attach
+	 */
+	@Netty4Protocol(protocolNo = 110001)		//如果是登录
+	public void doLogin(Channel channel,  Object msg )
 	{
 		JSONObject o = (JSONObject)msg;
 		
@@ -65,6 +71,16 @@ public class Netty4ProtocolServerMain
 		
 		channel.writeAndFlush(msg);
 	}
+	
+//	@Netty4Protocol(protocolNo = 110001)		//如果是登录
+//	public void doLogin(Channel channel,  Login msg )
+//	{
+//		PlayControl playControl = new PlayControl(channel , msg.getUserId());
+//		Netty4ProtocolHandler.setAttributeKey(channel, playControl);
+//		System.out.println(channel.hashCode()  + " doLogin 110001 msg : " + msg);
+//		channel.writeAndFlush(msg);
+//	}
+	
 	
 }
 

@@ -15,7 +15,4 @@ import com.sun.xml.internal.ws.api.streaming.XMLStreamReaderFactory.Default;
 public @interface Netty4Protocol 
 {
 	public int protocolNo() default 0;
-	
-	public boolean isStatic() default false;
-	
 }

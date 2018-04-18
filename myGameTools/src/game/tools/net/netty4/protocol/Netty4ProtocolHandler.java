@@ -1,6 +1,8 @@
 package game.tools.net.netty4.protocol;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -14,6 +16,41 @@ import game.tools.utils.ClassUtils;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
+
+class MethodObject
+{
+
+	/** 2018年4月19日 上午2:21:07 protocol解析数据函数名*/
+	private static final String protobuffer_parse_form = "parseFrom";
+	
+	private Object object;
+	
+	private int protocolNo;
+	
+	private Method method;
+	
+	private Method protobufferParseFromMethod;
+
+	public MethodObject(int protocolNo, Object object, Method method) 
+	{
+		this.object = object;
+		this.protocolNo = protocolNo;
+		this.method = method;
+		Class clzssParams [] = this.method.getParameterTypes();
+		Class paramClass = clzssParams[clzssParams.length - 1];
+		try 
+		{
+			if(paramClass.getSuperclass().getName().indexOf("com.google.protobuf") >= 0)
+				this.protobufferParseFromMethod = paramClass.getMethod(MethodObject.protobuffer_parse_form, byte[].class);
+		}
+		catch (Exception e)		{		}
+	}
+
+	public Object getObject() {		return object;	}
+	public int getProtocolNo() {		return protocolNo;	}
+	public Method getMethod() {		return method;	}
+	public Method getProtobufferParseFromMethod() {		return protobufferParseFromMethod;	}
+}
 
 /**
  * @author zhouzhibin
@@ -32,8 +69,11 @@ import io.netty.util.AttributeKey;
 	}));
 	
 	//该注解函数来绑协议。
-	Netty4Protocol(protocolNo = 110001)
-	public static void protocol110001(Channel channel , Object msg)
+	param channel 	该参数为通信通道对象
+	param msg		为该协议请求的消息对象
+	param attach  	该通使用Netty4ProtocolHandler处理器，所绑定的对象
+	Netty4Protocol(protocolNo = 110001 , isStatic = true)		//如果是登录
+	public void doLogin(Channel channel,  Object attach ,  Object msg)
 	{
 		System.out.println("protocol 110001 msg : " + msg);
 		channel.writeAndFlush(msg);
@@ -50,7 +90,7 @@ public class Netty4ProtocolHandler extends Netty4Handler
 	private static final AttributeKey<Object> ATTRIBUTE_KEY = AttributeKey.valueOf("Netty4ProtocolHandler-AttributeKey");
 	
 	/** 协议处理函数集合 */
-	private HashMap<Integer , Method> protocolHandlerMap = new HashMap<Integer , Method>();
+	private HashMap<Integer , MethodObject> protocolHandlerMap = new HashMap<Integer , MethodObject>();
 	
 	private ExecutorService threadPool;
 	
@@ -97,28 +137,60 @@ public class Netty4ProtocolHandler extends Netty4Handler
 	{
 		Set<String> setString = ClassUtils.getClassName(scanClassPackage, true);
 		
+		boolean isCreate = false;
+		
 		for (String string : setString) 
 		{
 			Class clzss = ClassLoader.getSystemClassLoader().loadClass(string);
+			
+			isCreate = isCreate(clzss);
+			
+			Object clzssObject = null;
+			
+			if(isCreate)			
+				clzssObject = clzss.newInstance();
+			
 			Method[] methodArray = clzss.getDeclaredMethods();
 			
 			for (Method method : methodArray) 
 			{
+				method.setAccessible(true);
+				
 				Annotation annot = method.getAnnotation(Netty4Protocol.class);
 
 				if(annot != null)
 				{
 					Netty4Protocol protocol = ((Netty4Protocol)annot);
 					
-					if(protocolHandlerMap.containsKey(protocol.protocolNo()))
-					{
-						throw new Exception("Netty4ProtocolHandler : duplicate protocolNo key !! at " + protocol.protocolNo());
-					}
+					int protocolNo = protocol.protocolNo();
 					
-					protocolHandlerMap.put(protocol.protocolNo(), method);
+					if(protocolHandlerMap.containsKey(protocolNo))
+						throw new Exception("Netty4ProtocolHandler : duplicate protocolNo key !! at " + protocolNo);
+					
+					MethodObject methodObject = new MethodObject(protocolNo, clzssObject, method);
+					
+					protocolHandlerMap.put(protocolNo, methodObject);
 				}
 			}
 		}
+	}
+	
+	/**
+	 * @return 是否有空的构建函数，用于创建对象使用
+	 */
+	private boolean isCreate(Class clzss)
+	{
+		boolean isAbs = Modifier.isAbstract(clzss.getModifiers()) ;
+		if(isAbs)			//如果是抽象类
+			return false;
+		
+		Constructor [] constrArray = clzss.getConstructors();
+		for (Constructor constructor : constrArray) 
+		{
+			if(constructor.getParameterTypes().length == 0)
+				return true;
+		}
+		return false;
 	}
 	
 	
@@ -144,7 +216,6 @@ public class Netty4ProtocolHandler extends Netty4Handler
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception 
 	{
-
 		Channel channel = ctx.channel();
 		
 		threadPool.execute(new Runnable() 
@@ -158,27 +229,31 @@ public class Netty4ProtocolHandler extends Netty4Handler
 					
 					int protocolNo = netty4Protocol.getProtocolNo(msg);
 					
-					Method protocolHandlerMethod = protocolHandlerMap.get(protocolNo);
+					MethodObject methodObject = protocolHandlerMap.get(protocolNo);
 					
-					if(protocolHandlerMethod == null)
+					if(methodObject == null)
+						throw new Exception("not methodObject by : " + protocolNo);
+					
+					Method method = methodObject.getMethod();
+					
+					if(method == null)
 						throw new Exception("protocolNo:" + protocolNo + " not Handler.");
 					
-					Annotation annot = protocolHandlerMethod.getAnnotation(Netty4Protocol.class);
-					
-					Netty4Protocol protocol = ((Netty4Protocol)annot);
+					Method parseFromMethod = methodObject.getProtobufferParseFromMethod();
+					if(parseFromMethod != null)
+						parseFromMethod.invoke(null, msg);
 					
 					synchronized (channel)
 					{
-						if(protocol.isStatic())			//如果是静态
-							protocolHandlerMethod.invoke(null, channel , msg);
+						Object attach = getAttributeKey(channel);
+						
+						if(attach == null)
+							method.invoke(methodObject.getObject(), channel, msg);
 						else
-						{
-							Object o = getAttributeKey(channel);
-							protocolHandlerMethod.invoke(o , msg);
-						}
+							method.invoke(attach , msg);
 					}
 				}
-				catch (Exception e) 
+				catch (Exception e)
 				{
 					e.printStackTrace();
 					game.tools.log.LogUtil.error(e);

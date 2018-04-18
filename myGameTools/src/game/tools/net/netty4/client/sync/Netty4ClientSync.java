@@ -10,6 +10,8 @@ import game.tools.net.netty4.Netty4Encode;
 import game.tools.net.netty4.Netty4Handler;
 import game.tools.net.netty4.Netty4Initializer;
 import game.tools.net.netty4.client.Netty4Client;
+import game.tools.net.netty4.deencode.JSONDecode;
+import game.tools.net.netty4.deencode.JSONEncode;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
@@ -223,7 +225,7 @@ public class Netty4ClientSync extends Netty4Client
 			{
 				JSONObject o = JSONObject.parseObject("{\"protocolNo\":110001,\"platfromId\":\"1\",\"userId\":\"2017062613s37ssdddds42\",\"channelId\":\"3000001\"}");
 				
-				Netty4ClientSync client = new Netty4ClientSync("127.0.0.1", 1111, new LogicDecode() , new LogicEncode() , new INettyChannelRead() {
+				Netty4ClientSync client = new Netty4ClientSync("127.0.0.1", 1111, new JSONDecode() , new JSONEncode() , new INettyChannelRead() {
 					
 					@Override
 					public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception 
@@ -232,7 +234,7 @@ public class Netty4ClientSync extends Netty4Client
 					}
 				});
 				
-				for (int j = 0; j < 50; j++) 
+				for (int j = 0; j < 1; j++) 
 				{
 					
 					try 
@@ -241,7 +243,7 @@ public class Netty4ClientSync extends Netty4Client
 						o = JSONObject.parseObject("{\"protocolNo\":120001}");
 						client.send(o);
 						
-						Thread.sleep(100);
+						Thread.sleep(300);
 						
 						o = JSONObject.parseObject("{\"protocolNo\":120002}");
 						client.send(o);
@@ -255,7 +257,7 @@ public class Netty4ClientSync extends Netty4Client
 		};
 		ExecutorService exe = Executors.newCachedThreadPool();
 		
-		for (int i = 0; i < 50; i++) 
+		for (int i = 0; i < 1; i++) 
 		{
 			exe.execute(r);
 		}

@@ -1,17 +1,13 @@
-package game.tools.net.netty4.client.sync;
+package game.tools.net.netty4.deencode;
 
-import java.util.Arrays;
 import java.util.List;
 
-import com.alibaba.fastjson.JSONObject;
-
-import game.tools.gzip.ZLibUtils;
 import game.tools.log.LogUtil;
 import game.tools.net.netty4.Netty4Decode;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
-public class LogicDecode extends Netty4Decode
+public class ProtoBufDecode extends Netty4Decode
 {
 	
 	@Override
@@ -19,11 +15,6 @@ public class LogicDecode extends Netty4Decode
 	{
 		ByteBuf buffer = in;
 		String content = null;
-		
-//		if(buffer.hasArray())
-//			System.out.println(Arrays.toString(buffer.array()));
-//		else
-//			System.out.println("Not Array");
 		
 		try 
 		{
@@ -35,36 +26,19 @@ public class LogicDecode extends Netty4Decode
 			/*
 			 * 4byte[length]+2byte[short:commandId]+byte[protocalType]+4byte[stringlength]+json[string]
 			 */
-			int totalLength = readInt(buffer);			//协议总长
+			int bodyLength = readInt(buffer);			//协议总长
 			
-			if(buffer.readableBytes() < totalLength)		//数据体长度不对
+			if(buffer.readableBytes() < bodyLength)		//数据体长度不对
 			{
 				buffer.resetReaderIndex();
 				return ;
 			}
 			
-			buffer.readBytes(new byte[2]);
-			buffer.readByte();
 			
-			
-			int bodyLength = readInt(buffer);
 			byte[] data = new byte[bodyLength];
 			buffer.readBytes(data, 0, data.length);
 			
-//			System.out.println("bodyLength1 = " + bodyLength + " " +Arrays.toString(data));
-//			
-//			data = XXTEA.decrypt((byte[])data , Protocol.PROTOCOL_SECRET_KEY);
-//			
-//			System.out.println("bodyLength2 = " + bodyLength + " " +Arrays.toString(data));
-			
-//			if(data.length >= 1000)			//解密的数据，长度大于1000，先解密在解压
-//				data = ZLibUtils.compress(data);
-			
-			content = new String(data, "utf-8").trim();
-			
-			JSONObject o = JSONObject.parseObject(content);
-			
-			out.add(o);
+			out.add(data);
 		}
 		catch (Exception e) 
 		{
@@ -138,6 +112,6 @@ public class LogicDecode extends Netty4Decode
 	@Override
 	public Netty4Decode clone() 
 	{
-		return new LogicDecode();
+		return new ProtoBufDecode();
 	}
 }
