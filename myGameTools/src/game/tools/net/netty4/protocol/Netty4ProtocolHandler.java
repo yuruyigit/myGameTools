@@ -214,7 +214,7 @@ public class Netty4ProtocolHandler extends Netty4Handler
 	}
 	
 	@Override
-	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception 
+	public void channelRead(ChannelHandlerContext ctx, Object revMsg) throws Exception 
 	{
 		Channel channel = ctx.channel();
 		
@@ -225,6 +225,8 @@ public class Netty4ProtocolHandler extends Netty4Handler
 			{
 				try 
 				{
+					Object msg = revMsg;
+					
 					netty4Protocol.channelRead(channel, msg);
 					
 					int protocolNo = netty4Protocol.getProtocolNo(msg);
@@ -241,7 +243,7 @@ public class Netty4ProtocolHandler extends Netty4Handler
 					
 					Method parseFromMethod = methodObject.getProtobufferParseFromMethod();
 					if(parseFromMethod != null)
-						parseFromMethod.invoke(null, msg);
+						msg = parseFromMethod.invoke(null, msg);
 					
 					synchronized (channel)
 					{
