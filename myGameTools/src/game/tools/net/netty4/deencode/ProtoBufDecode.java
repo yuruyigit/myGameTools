@@ -34,7 +34,6 @@ public class ProtoBufDecode extends Netty4Decode
 				return ;
 			}
 			
-			
 			byte[] data = new byte[bodyLength];
 			buffer.readBytes(data, 0, data.length);
 			
@@ -68,7 +67,12 @@ public class ProtoBufDecode extends Netty4Decode
 		return byteToInt(b);
 	}
 	
-	private static int byteToInt(byte [] b)
+	public static int readInt(byte [] b) 
+	{
+		return byteToInt(b);
+	}
+	
+	public static int byteToInt(byte [] b)
 	{
 		int res = 0;
 		int bLen = b.length;

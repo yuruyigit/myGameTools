@@ -473,6 +473,13 @@ public class MybatisFactoryToolsObject
 //		
 //		return session.getMapper(mapperClass);
 	}
+	
+	public SqlSession getSqlSession(Object sessionNo)
+	{
+		SqlSession session = MYBATIS_SESSION_MAP.get(sessionNo);
+		
+		return session;
+	}
 
 	/**
 	 * 注册的数据源，会全部执行一次。

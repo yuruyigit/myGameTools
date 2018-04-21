@@ -3,6 +3,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -11,6 +12,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import game.tools.log.LogUtil;
 import game.tools.net.netty4.Netty4Handler;
+import game.tools.protocol.protobuffer.ProtocolBuffer;
 import game.tools.threadpool.ThreadGroupFactory;
 import game.tools.utils.ClassUtils;
 import io.netty.channel.Channel;
@@ -243,7 +245,7 @@ public class Netty4ProtocolHandler extends Netty4Handler
 					
 					Method parseFromMethod = methodObject.getProtobufferParseFromMethod();
 					if(parseFromMethod != null)
-						msg = parseFromMethod.invoke(null, msg);
+						msg = parseFromMethod.invoke(null, ProtocolBuffer.subBytes((byte[])msg, 4));			//如果protobuf调用各自己对象的解析函数
 					
 					synchronized (channel)
 					{

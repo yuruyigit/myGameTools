@@ -2,9 +2,11 @@ package game.tools.net.netty4.deencode;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 import game.tools.log.LogUtil;
 import game.tools.net.netty4.Netty4Encode;
+import game.tools.protocol.protobuffer.ProtocolBuffer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -19,18 +21,21 @@ public class ProtoBufEncode extends Netty4Encode
 		
 		try 
 		{
-			byte[] data = (byte[])msg;
+			ProtocolBuffer buffer = (ProtocolBuffer)msg;
 			
 			//数据内容体 + 数据长度
 			/*
 			 * 4byte[length]+2byte[short:commandId]+byte[protocalType]+4byte[stringlength]+json[string]
 			 */
-			int bodyLength = data.length;
-			ByteBuffer buf = ByteBuffer.allocate(bodyLength + 4 ).order(ByteOrder.LITTLE_ENDIAN);
+			int bodyLength = buffer.getBytes().length + 4;
+			ByteBuffer buf = ByteBuffer.allocate(bodyLength + 4).order(ByteOrder.LITTLE_ENDIAN);
 			buf.putInt(bodyLength);
-			buf.put(data);
+			buf.putInt(buffer.getProtocolNo());
+			buf.put(buffer.getBytes());
 			
-			data = buf.array();
+			byte [] data = buf.array();
+			
+//			System.out.println("ProtoBufEncode = " + Arrays.toString(data));
 			
 			out.writeBytes(data);
 		}

@@ -2,6 +2,7 @@ package game.tools.db.mybatis;
 
 import java.util.ArrayList;
 import org.apache.ibatis.plugin.Interceptor;
+import org.apache.ibatis.session.SqlSession;
 
 /**
  * mybatis多数据源工具，该数据源采用druid的数据连接池
@@ -106,6 +107,11 @@ public class MybatisFactoryTools {
 	public static void closePrintDbUrl()
 	{
 		MYBATIS_OBJECT.closePrintDbUrl();
+	}
+	
+	public static SqlSession getSqlSession(Object sessionNo)
+	{
+		return MYBATIS_OBJECT.getSqlSession(sessionNo);
 	}
 	
 }

@@ -12,6 +12,10 @@ import game.tools.net.netty4.Netty4Initializer;
 import game.tools.net.netty4.client.Netty4Client;
 import game.tools.net.netty4.deencode.JSONDecode;
 import game.tools.net.netty4.deencode.JSONEncode;
+import game.tools.net.netty4.deencode.ProtoBufDecode;
+import game.tools.net.netty4.deencode.ProtoBufEncode;
+import game.tools.protocol.protobuffer.ProtocolBuffer;
+import game.tools.protocol.protobuffer.Protocol.Login;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
@@ -217,7 +221,7 @@ public class Netty4ClientSync extends Netty4Client
 	
 	public static void main(String[] args) throws Exception
 	{
-		JSONObject o = JSONObject.parseObject("{\"protocolNo\":110001,\"platfromId\":\"1\",\"userId\":\"2017062613s37ssdddds42\",\"channelId\":\"3000001\"}");
+//		JSONObject o = JSONObject.parseObject("{\"protocolNo\":110001,\"platfromId\":\"1\",\"userId\":\"2017062613s37ssdddds42\",\"channelId\":\"3000001\"}");
 		Runnable r = new Runnable() {
 			
 			@Override
@@ -225,7 +229,17 @@ public class Netty4ClientSync extends Netty4Client
 			{
 				JSONObject o = JSONObject.parseObject("{\"protocolNo\":110001,\"platfromId\":\"1\",\"userId\":\"2017062613s37ssdddds42\",\"channelId\":\"3000001\"}");
 				
-				Netty4ClientSync client = new Netty4ClientSync("127.0.0.1", 1111, new JSONDecode() , new JSONEncode() , new INettyChannelRead() {
+				ProtocolBuffer protocolBuffer = new ProtocolBuffer(110001, 
+						Login.newBuilder()
+						.setUserId("2017062613s37ssdddds42")
+						.setChannl("3000001")
+						.setPlaform("1"));
+				
+				
+				System.out.println(protocolBuffer.toString());
+				
+//				Netty4ClientSync client = new Netty4ClientSync("127.0.0.1", 1111, new JSONDecode() , new JSONEncode() , new INettyChannelRead() {
+				Netty4ClientSync client = new Netty4ClientSync("127.0.0.1", 1111, new ProtoBufDecode() , new ProtoBufEncode() , new INettyChannelRead() {
 					
 					@Override
 					public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception 
@@ -239,14 +253,17 @@ public class Netty4ClientSync extends Netty4Client
 					
 					try 
 					{
-						Object result = client.send(o);
-						o = JSONObject.parseObject("{\"protocolNo\":120001}");
-						client.send(o);
+						
+						Object result = client.send(protocolBuffer);
+						
+//						Object result = client.send(o);
+//						o = JSONObject.parseObject("{\"protocolNo\":120001}");
+//						client.send(o);
 						
 						Thread.sleep(300);
 						
-						o = JSONObject.parseObject("{\"protocolNo\":120002}");
-						client.send(o);
+//						o = JSONObject.parseObject("{\"protocolNo\":120002}");
+//						client.send(o);
 					}
 					catch (InterruptedException e) 
 					{
