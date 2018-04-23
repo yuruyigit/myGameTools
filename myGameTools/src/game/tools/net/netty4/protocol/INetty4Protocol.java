@@ -22,11 +22,20 @@ public interface INetty4Protocol
 	
 	
 	/**
-	 * 消息入口特殊接收处理
+	 * 消息入口接收处理函数开始接口。主要用于特殊接收处理。
 	 * @param channel
 	 * @param msg
 	 */
-	public default void channelRead(Channel channel , Object msg){};
+	public default Object channelReadStart(Channel channel , Object msg){	return null;	};
+	
+	/**
+	 * 消息入口接收处理函数结束接口。主要用于特殊接收处理。
+	 * @param channel
+	 * @param msg
+	 * @param handlerStartReturnResult 该参数由channelHandlerStart返回结果的对象，回传入于该函数。
+	 * @return
+	 */
+	public default void channelReadEnd(Channel channel , Object msg, Object channelReadStartReturnResult){};
 	
 	
 
@@ -44,11 +53,25 @@ public interface INetty4Protocol
 	 */
 	public default void channelInactive(Channel channel){};
 	
+	/**
+	 * 通道进行加密时
+	 * @param channel
+	 */
+	public default void channelEncode(Channel channel){};
+	
+	
+
+	/**通道进行解密时
+	 * @param channel
+	 */
+	public default void channelDecode(Channel channel){};
 	
 
 	/**
 	 * channel连接异常
 	 * @param channel
 	 */
-	public default void exceptionCaught(Channel channel){};
+	public default void exceptionCaught(Channel channel){}
+
+
 }

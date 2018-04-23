@@ -57,6 +57,19 @@ public class Netty4ProtocolServerMain
 				byte [] protoNoArray = {bufArray[0],bufArray[1],bufArray[2],bufArray[3]};
 				return  ProtoBufDecode.readInt(protoNoArray);
 			}
+			
+			@Override
+			public Object channelReadStart(Channel channel, Object msg) 
+			{
+				return "123";
+			}
+			
+			@Override
+			public void channelReadEnd(Channel channel, Object msg, Object channelReadStartReturnResult) 
+			{
+				System.out.println("channelReadEnd :" + channelReadStartReturnResult);
+			}
+			
 		},30));
 		
 		ns.start(1111);
@@ -85,7 +98,8 @@ public class Netty4ProtocolServerMain
 	public void doLogin(Channel channel,  Login msg )
 	{
 		PlayControl playControl = new PlayControl(channel , msg.getUserId());
-		Netty4ProtocolHandler.setAttributeKey(channel, playControl);
+		Netty4ProtocolHandler.setPlayControlAttribute(channel, playControl);
+		
 		System.out.println(channel.hashCode()  + " doLogin 110001 msg : " + msg);
 		
 		
