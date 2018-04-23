@@ -1,14 +1,11 @@
 package game.tools.timer;
-
 import java.util.Calendar;
-
 import game.tools.threadpool.IWork;
 import game.tools.threadpool.ThreadQueueSingle;
 
 /**
  * 时间流逝器， 该线程只向queue添加
  * @author zhibing.zhou
- * 
  */
 public class ScheduledTimer extends Thread
 {
@@ -64,4 +61,18 @@ public class ScheduledTimer extends Thread
 		
 		return timer;
 	}
+	
+	public static void main(String[] args) 
+	{
+		ScheduledTimer world_scheduled_timer = new ScheduledTimer(new IWork<Timer>()
+		{
+			@Override
+			public void work(Timer t)
+			{
+				System.out.println(t);
+			}
+		} , "WorldManager");
+		world_scheduled_timer.start();
+	}
+	
 }
