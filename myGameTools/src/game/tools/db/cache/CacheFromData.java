@@ -45,7 +45,7 @@ public class CacheFromData
 	
 	
 	
-	public static void main(String[] args) 
+	public static void main(String[] args) throws InterruptedException 
 	{
 		
 		CacheFromData cfd1 = new CacheFromData("game.tools.db.entity" , true ,"jdbc:mysql://localhost:3306/static_dev" , "root" , "root" );
@@ -56,7 +56,7 @@ public class CacheFromData
 		cfd1.setAttributeTable("cmd_code_s");
 		cfd1.initCacheFromTableData("cmd_code_s" , "constant_s");
 //		cfd2.initCacheFromTableData("sys_channel");
-		
+//		cfd1.initCacheFromTableData("cmd_code_s" , "constant_s");
 //		cmd_code_s s = cfd1.getObjectById(TableName.cmd_code_s, -1);
 //		System.out.println(s.getS2c_desc());
 //		System.out.println(cmd_code_s.ABBBBB[1][2]);
@@ -67,6 +67,9 @@ public class CacheFromData
 		
 		Object obj1 = cfd1.getObjectById("PlanPayGift", 1002);
 		System.out.println(obj1);
+		
+		
+		Thread.sleep(50000);
 	}
 	
 	
@@ -555,9 +558,28 @@ public class CacheFromData
 		createTableNameJavaFile(tableNameList);
 		
 		fillJavaCacheMapObject(connection , tableNameList);
+		
+		closeConnection();
 	}
 	
 	
+	/**
+	 * 关闭连接
+	 */
+	private void closeConnection() 
+	{
+		if(this.connection != null)
+			try {
+				this.connection.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+	}
+
+
+
+
+
 	/**
 	 * 是否发布执行
 	 */
