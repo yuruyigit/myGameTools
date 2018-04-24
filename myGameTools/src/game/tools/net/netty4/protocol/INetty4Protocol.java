@@ -57,14 +57,14 @@ public interface INetty4Protocol
 	 * 通道进行加密时
 	 * @param channel
 	 */
-	public default void channelEncode(Channel channel){};
+	public default void channelEncode(Channel channel, Object msg){};
 	
 	
 
 	/**通道进行解密时
 	 * @param channel
 	 */
-	public default void channelDecode(Channel channel){};
+	public default void channelDecode(Channel channel , Object msg){};
 	
 
 	/**
