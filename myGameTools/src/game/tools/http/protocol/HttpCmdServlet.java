@@ -1,7 +1,9 @@
 package game.tools.http.protocol;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Set;
 import javax.servlet.ServletException;
@@ -11,6 +13,22 @@ import javax.servlet.http.HttpServletResponse;
 import game.tools.http.HttpClient;
 import game.tools.log.LogUtil;
 import game.tools.utils.ClassUtils;
+
+class MethodObject
+{
+	private Method method;
+	
+	private Object object;
+
+	public MethodObject(Method method, Object object) 
+	{
+		this.method = method;
+		this.object = object;
+	}
+
+	public Method getMethod() {		return method;	}
+	public Object getObject() {		return object;	}
+}
 
 /**
  * @author zhibing.zhou
@@ -32,7 +50,7 @@ public class HttpCmdServlet extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
 	/** 协议处理函数集合 */
-	private static final HashMap<Integer , Method> HTTP_CMD_METHOD_MAP = new HashMap<Integer , Method>();
+	private static final HashMap<Integer , MethodObject> HTTP_CMD_METHOD_MAP = new HashMap<Integer , MethodObject>();
 	/** 扫描函数包的路径 */
 	private static String SCAN_CLASS_PACKAGE;
 	
@@ -71,6 +89,12 @@ public class HttpCmdServlet extends HttpServlet {
 			for (String string : setString) 
 			{
 				Class clzss = ClassLoader.getSystemClassLoader().loadClass(string);
+				
+				Object clzssObject = null;
+				
+				if(isCreate(clzss))			
+					clzssObject = clzss.newInstance();
+				
 				Method[] methodArray = clzss.getDeclaredMethods();
 				
 				for (Method method : methodArray) 
@@ -86,7 +110,7 @@ public class HttpCmdServlet extends HttpServlet {
 							throw new Exception("HttpCmdServlet : duplicate httpCmd key !! at " + cmd.cmdNo());
 						}
 						
-						HTTP_CMD_METHOD_MAP.put(cmd.cmdNo(), method);
+						HTTP_CMD_METHOD_MAP.put(cmd.cmdNo(), new MethodObject(method, clzssObject));
 					}
 				}
 			}
@@ -95,6 +119,24 @@ public class HttpCmdServlet extends HttpServlet {
 		{
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+	 * @return 是否有空的构建函数，用于创建对象使用
+	 */
+	private static boolean isCreate(Class clzss)
+	{
+		boolean isAbs = Modifier.isAbstract(clzss.getModifiers()) ;
+		if(isAbs)			//如果是抽象类
+			return false;
+		
+		Constructor [] constrArray = clzss.getConstructors();
+		for (Constructor constructor : constrArray) 
+		{
+			if(constructor.getParameterTypes().length == 0)
+				return true;
+		}
+		return false;
 	}
 	
 
@@ -128,12 +170,15 @@ public class HttpCmdServlet extends HttpServlet {
 			
 			int httpCmd = httpPkg.get();
 			
-			Method httpCmdMethod = HTTP_CMD_METHOD_MAP.get(httpCmd);
+			MethodObject methodObject = HTTP_CMD_METHOD_MAP.get(httpCmd);
 			
-			if(httpCmdMethod == null)
+			if(methodObject == null)
 				throw new Exception("httpCmd :" + httpCmd + " not Method.");
 			
-			Object result = httpCmdMethod.invoke(null, httpPkg);
+			Method method = methodObject.getMethod();
+			method.setAccessible(true);
+			
+			Object result = method.invoke(methodObject.getObject(), httpPkg);
 			
 			HttpClient.writeHttpObject(resp, result);
 		}

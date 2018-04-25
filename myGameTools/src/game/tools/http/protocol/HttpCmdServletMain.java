@@ -9,7 +9,7 @@ public class HttpCmdServletMain
 {
 	
 	@HttpCmd(cmdNo = 123)
-	public static Object httpCmd1(HttpPackage pkg)
+	public Object httpCmd1(HttpPackage pkg)
 	{
 		System.out.println("pkg = " + pkg);
 		return "httpCmd1ffd";

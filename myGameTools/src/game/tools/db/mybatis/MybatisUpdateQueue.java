@@ -66,8 +66,12 @@ public class MybatisUpdateQueue
 		}
 	}
 	
-	private static long updateByPrimaryKey(Object sessionNo , Class clzss , List updateObjectList) throws Exception
+	private static long updateByPrimaryKey(Object sessionNo , List updateObjectList) throws Exception
 	{
+		Class clzss = null;
+		if(updateObjectList.size() > 0)
+			clzss = updateObjectList.get(0).getClass();
+		
 		SqlSession session = MybatisFactoryTools.getSqlSession(sessionNo);
 		
 		String mapperName = clzss.getName().replaceAll("entity", "mapper") + "Mapper.BaseResultMap";
