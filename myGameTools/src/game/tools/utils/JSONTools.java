@@ -1,6 +1,9 @@
 package game.tools.utils;
-
+import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 
 public class JSONTools 
 {
@@ -26,9 +29,24 @@ public class JSONTools
 		return jsonObject;
 	}
 	
+	public static <T> ArrayList<T> jsonToList(String jsonString , Class<T> clzss)
+	{
+		return JSON.parseObject(jsonString, new TypeReference<ArrayList<T>>(){});
+	}
+	
+	public static <K,V> ConcurrentHashMap<K, V> jsonToMap(String jsonString , Class<V> clzss)
+	{
+		return JSON.parseObject(jsonString, new TypeReference<ConcurrentHashMap<K,V>>(){});
+	}
+	
+	public static <T> T jsonToObject(String jsonString , Class<T> clzss)
+	{
+		return JSON.parseObject(jsonString, new TypeReference<T>(){});
+	}
+	
 	public static void main(String[] args) 
 	{
-		JSONObject o = JSONTools.getJsonObject("{'a':1}");
+		JSONObject o = JSONTools.getJsonObject("{'a':1");
 		System.out.println(o);
 	}
 }
