@@ -7,7 +7,7 @@ import com.alibaba.fastjson.TypeReference;
 
 public class JSONTools 
 {
-	public static JSONObject getJsonObject(String value)
+	public static JSONObject getJSONObject(String value)
 	{
 		JSONObject jsonObject = null;
 		try
@@ -46,7 +46,7 @@ public class JSONTools
 	
 	public static void main(String[] args) 
 	{
-		JSONObject o = JSONTools.getJsonObject("{'a':1");
+		JSONObject o = JSONTools.getJSONObject("{'a':1");
 		System.out.println(o);
 	}
 }
