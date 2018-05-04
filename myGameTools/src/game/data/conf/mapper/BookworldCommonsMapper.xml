@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="game.data.conf.mapper.BookworldCommonsMapper" >
+  <resultMap id="BaseResultMap" type="game.data.conf.entity.BookworldCommons" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="INTEGER" />
+    <result column="kind" property="kind" jdbcType="INTEGER" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="level" property="level" jdbcType="INTEGER" />
+    <result column="need_main_lv" property="needMainLv" jdbcType="INTEGER" />
+    <result column="cd" property="cd" jdbcType="INTEGER" />
+    <result column="need_res" property="needRes" jdbcType="VARCHAR" />
+    <result column="formation_limit" property="formationLimit" jdbcType="INTEGER" />
+    <result column="helper_limit" property="helperLimit" jdbcType="INTEGER" />
+    <result column="storage_limit" property="storageLimit" jdbcType="VARCHAR" />
+    <result column="task" property="task" jdbcType="INTEGER" />
+    <result column="primary_power" property="primaryPower" jdbcType="INTEGER" />
+    <result column="primary_task_time" property="primaryTaskTime" jdbcType="INTEGER" />
+    <result column="primary_task_time_first" property="primaryTaskTimeFirst" jdbcType="INTEGER" />
+    <result column="primary_rewards" property="primaryRewards" jdbcType="VARCHAR" />
+    <result column="medium_power" property="mediumPower" jdbcType="INTEGER" />
+    <result column="medium_task_time" property="mediumTaskTime" jdbcType="INTEGER" />
+    <result column="medium_rewards" property="mediumRewards" jdbcType="VARCHAR" />
+    <result column="senior_power" property="seniorPower" jdbcType="INTEGER" />
+    <result column="senior_task_time" property="seniorTaskTime" jdbcType="INTEGER" />
+    <result column="senior_rewards" property="seniorRewards" jdbcType="VARCHAR" />
+    <result column="senior_rewards_special" property="seniorRewardsSpecial" jdbcType="VARCHAR" />
+    <result column="display" property="display" jdbcType="INTEGER" />
+    <result column="coordinate" property="coordinate" jdbcType="VARCHAR" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+    <result column="levelup_description" property="levelupDescription" jdbcType="VARCHAR" />
+    <result column="primary_task_double_cost" property="primaryTaskDoubleCost" jdbcType="INTEGER" />
+    <result column="medium_task_double_cost" property="mediumTaskDoubleCost" jdbcType="INTEGER" />
+    <result column="senior_task_double_cost" property="seniorTaskDoubleCost" jdbcType="INTEGER" />
+    <result column="effect_name" property="effectName" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, type, kind, name, level, need_main_lv, cd, need_res, formation_limit, helper_limit, 
+    storage_limit, task, primary_power, primary_task_time, primary_task_time_first, primary_rewards, 
+    medium_power, medium_task_time, medium_rewards, senior_power, senior_task_time, senior_rewards, 
+    senior_rewards_special, display, coordinate, description, levelup_description, primary_task_double_cost, 
+    medium_task_double_cost, senior_task_double_cost, effect_name
+  </sql>
+  <select id="selectBy1000" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select <include refid="Base_Column_List" /> from bookworld_common_s limit 1000
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from bookworld_common_s
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from bookworld_common_s
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="game.data.conf.entity.BookworldCommons" >
+    insert into bookworld_common_s (id, type, kind, 
+      name, level, need_main_lv, 
+      cd, need_res, formation_limit, 
+      helper_limit, storage_limit, task, 
+      primary_power, primary_task_time, primary_task_time_first, 
+      primary_rewards, medium_power, medium_task_time, 
+      medium_rewards, senior_power, senior_task_time, 
+      senior_rewards, senior_rewards_special, display, 
+      coordinate, description, levelup_description, 
+      primary_task_double_cost, medium_task_double_cost, 
+      senior_task_double_cost, effect_name)
+    values (#{id,jdbcType=INTEGER}, #{type,jdbcType=INTEGER}, #{kind,jdbcType=INTEGER}, 
+      #{name,jdbcType=VARCHAR}, #{level,jdbcType=INTEGER}, #{needMainLv,jdbcType=INTEGER}, 
+      #{cd,jdbcType=INTEGER}, #{needRes,jdbcType=VARCHAR}, #{formationLimit,jdbcType=INTEGER}, 
+      #{helperLimit,jdbcType=INTEGER}, #{storageLimit,jdbcType=VARCHAR}, #{task,jdbcType=INTEGER}, 
+      #{primaryPower,jdbcType=INTEGER}, #{primaryTaskTime,jdbcType=INTEGER}, #{primaryTaskTimeFirst,jdbcType=INTEGER}, 
+      #{primaryRewards,jdbcType=VARCHAR}, #{mediumPower,jdbcType=INTEGER}, #{mediumTaskTime,jdbcType=INTEGER}, 
+      #{mediumRewards,jdbcType=VARCHAR}, #{seniorPower,jdbcType=INTEGER}, #{seniorTaskTime,jdbcType=INTEGER}, 
+      #{seniorRewards,jdbcType=VARCHAR}, #{seniorRewardsSpecial,jdbcType=VARCHAR}, #{display,jdbcType=INTEGER}, 
+      #{coordinate,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, #{levelupDescription,jdbcType=VARCHAR}, 
+      #{primaryTaskDoubleCost,jdbcType=INTEGER}, #{mediumTaskDoubleCost,jdbcType=INTEGER}, 
+      #{seniorTaskDoubleCost,jdbcType=INTEGER}, #{effectName,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="game.data.conf.entity.BookworldCommons" >
+    insert into bookworld_common_s
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+      <if test="kind != null" >
+        kind,
+      </if>
+      <if test="name != null" >
+        name,
+      </if>
+      <if test="level != null" >
+        level,
+      </if>
+      <if test="needMainLv != null" >
+        need_main_lv,
+      </if>
+      <if test="cd != null" >
+        cd,
+      </if>
+      <if test="needRes != null" >
+        need_res,
+      </if>
+      <if test="formationLimit != null" >
+        formation_limit,
+      </if>
+      <if test="helperLimit != null" >
+        helper_limit,
+      </if>
+      <if test="storageLimit != null" >
+        storage_limit,
+      </if>
+      <if test="task != null" >
+        task,
+      </if>
+      <if test="primaryPower != null" >
+        primary_power,
+      </if>
+      <if test="primaryTaskTime != null" >
+        primary_task_time,
+      </if>
+      <if test="primaryTaskTimeFirst != null" >
+        primary_task_time_first,
+      </if>
+      <if test="primaryRewards != null" >
+        primary_rewards,
+      </if>
+      <if test="mediumPower != null" >
+        medium_power,
+      </if>
+      <if test="mediumTaskTime != null" >
+        medium_task_time,
+      </if>
+      <if test="mediumRewards != null" >
+        medium_rewards,
+      </if>
+      <if test="seniorPower != null" >
+        senior_power,
+      </if>
+      <if test="seniorTaskTime != null" >
+        senior_task_time,
+      </if>
+      <if test="seniorRewards != null" >
+        senior_rewards,
+      </if>
+      <if test="seniorRewardsSpecial != null" >
+        senior_rewards_special,
+      </if>
+      <if test="display != null" >
+        display,
+      </if>
+      <if test="coordinate != null" >
+        coordinate,
+      </if>
+      <if test="description != null" >
+        description,
+      </if>
+      <if test="levelupDescription != null" >
+        levelup_description,
+      </if>
+      <if test="primaryTaskDoubleCost != null" >
+        primary_task_double_cost,
+      </if>
+      <if test="mediumTaskDoubleCost != null" >
+        medium_task_double_cost,
+      </if>
+      <if test="seniorTaskDoubleCost != null" >
+        senior_task_double_cost,
+      </if>
+      <if test="effectName != null" >
+        effect_name,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=INTEGER},
+      </if>
+      <if test="kind != null" >
+        #{kind,jdbcType=INTEGER},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="level != null" >
+        #{level,jdbcType=INTEGER},
+      </if>
+      <if test="needMainLv != null" >
+        #{needMainLv,jdbcType=INTEGER},
+      </if>
+      <if test="cd != null" >
+        #{cd,jdbcType=INTEGER},
+      </if>
+      <if test="needRes != null" >
+        #{needRes,jdbcType=VARCHAR},
+      </if>
+      <if test="formationLimit != null" >
+        #{formationLimit,jdbcType=INTEGER},
+      </if>
+      <if test="helperLimit != null" >
+        #{helperLimit,jdbcType=INTEGER},
+      </if>
+      <if test="storageLimit != null" >
+        #{storageLimit,jdbcType=VARCHAR},
+      </if>
+      <if test="task != null" >
+        #{task,jdbcType=INTEGER},
+      </if>
+      <if test="primaryPower != null" >
+        #{primaryPower,jdbcType=INTEGER},
+      </if>
+      <if test="primaryTaskTime != null" >
+        #{primaryTaskTime,jdbcType=INTEGER},
+      </if>
+      <if test="primaryTaskTimeFirst != null" >
+        #{primaryTaskTimeFirst,jdbcType=INTEGER},
+      </if>
+      <if test="primaryRewards != null" >
+        #{primaryRewards,jdbcType=VARCHAR},
+      </if>
+      <if test="mediumPower != null" >
+        #{mediumPower,jdbcType=INTEGER},
+      </if>
+      <if test="mediumTaskTime != null" >
+        #{mediumTaskTime,jdbcType=INTEGER},
+      </if>
+      <if test="mediumRewards != null" >
+        #{mediumRewards,jdbcType=VARCHAR},
+      </if>
+      <if test="seniorPower != null" >
+        #{seniorPower,jdbcType=INTEGER},
+      </if>
+      <if test="seniorTaskTime != null" >
+        #{seniorTaskTime,jdbcType=INTEGER},
+      </if>
+      <if test="seniorRewards != null" >
+        #{seniorRewards,jdbcType=VARCHAR},
+      </if>
+      <if test="seniorRewardsSpecial != null" >
+        #{seniorRewardsSpecial,jdbcType=VARCHAR},
+      </if>
+      <if test="display != null" >
+        #{display,jdbcType=INTEGER},
+      </if>
+      <if test="coordinate != null" >
+        #{coordinate,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null" >
+        #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="levelupDescription != null" >
+        #{levelupDescription,jdbcType=VARCHAR},
+      </if>
+      <if test="primaryTaskDoubleCost != null" >
+        #{primaryTaskDoubleCost,jdbcType=INTEGER},
+      </if>
+      <if test="mediumTaskDoubleCost != null" >
+        #{mediumTaskDoubleCost,jdbcType=INTEGER},
+      </if>
+      <if test="seniorTaskDoubleCost != null" >
+        #{seniorTaskDoubleCost,jdbcType=INTEGER},
+      </if>
+      <if test="effectName != null" >
+        #{effectName,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="game.data.conf.entity.BookworldCommons" >
+    update bookworld_common_s
+    <set >
+      <if test="type != null" >
+        type = #{type,jdbcType=INTEGER},
+      </if>
+      <if test="kind != null" >
+        kind = #{kind,jdbcType=INTEGER},
+      </if>
+      <if test="name != null" >
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="level != null" >
+        level = #{level,jdbcType=INTEGER},
+      </if>
+      <if test="needMainLv != null" >
+        need_main_lv = #{needMainLv,jdbcType=INTEGER},
+      </if>
+      <if test="cd != null" >
+        cd = #{cd,jdbcType=INTEGER},
+      </if>
+      <if test="needRes != null" >
+        need_res = #{needRes,jdbcType=VARCHAR},
+      </if>
+      <if test="formationLimit != null" >
+        formation_limit = #{formationLimit,jdbcType=INTEGER},
+      </if>
+      <if test="helperLimit != null" >
+        helper_limit = #{helperLimit,jdbcType=INTEGER},
+      </if>
+      <if test="storageLimit != null" >
+        storage_limit = #{storageLimit,jdbcType=VARCHAR},
+      </if>
+      <if test="task != null" >
+        task = #{task,jdbcType=INTEGER},
+      </if>
+      <if test="primaryPower != null" >
+        primary_power = #{primaryPower,jdbcType=INTEGER},
+      </if>
+      <if test="primaryTaskTime != null" >
+        primary_task_time = #{primaryTaskTime,jdbcType=INTEGER},
+      </if>
+      <if test="primaryTaskTimeFirst != null" >
+        primary_task_time_first = #{primaryTaskTimeFirst,jdbcType=INTEGER},
+      </if>
+      <if test="primaryRewards != null" >
+        primary_rewards = #{primaryRewards,jdbcType=VARCHAR},
+      </if>
+      <if test="mediumPower != null" >
+        medium_power = #{mediumPower,jdbcType=INTEGER},
+      </if>
+      <if test="mediumTaskTime != null" >
+        medium_task_time = #{mediumTaskTime,jdbcType=INTEGER},
+      </if>
+      <if test="mediumRewards != null" >
+        medium_rewards = #{mediumRewards,jdbcType=VARCHAR},
+      </if>
+      <if test="seniorPower != null" >
+        senior_power = #{seniorPower,jdbcType=INTEGER},
+      </if>
+      <if test="seniorTaskTime != null" >
+        senior_task_time = #{seniorTaskTime,jdbcType=INTEGER},
+      </if>
+      <if test="seniorRewards != null" >
+        senior_rewards = #{seniorRewards,jdbcType=VARCHAR},
+      </if>
+      <if test="seniorRewardsSpecial != null" >
+        senior_rewards_special = #{seniorRewardsSpecial,jdbcType=VARCHAR},
+      </if>
+      <if test="display != null" >
+        display = #{display,jdbcType=INTEGER},
+      </if>
+      <if test="coordinate != null" >
+        coordinate = #{coordinate,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null" >
+        description = #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="levelupDescription != null" >
+        levelup_description = #{levelupDescription,jdbcType=VARCHAR},
+      </if>
+      <if test="primaryTaskDoubleCost != null" >
+        primary_task_double_cost = #{primaryTaskDoubleCost,jdbcType=INTEGER},
+      </if>
+      <if test="mediumTaskDoubleCost != null" >
+        medium_task_double_cost = #{mediumTaskDoubleCost,jdbcType=INTEGER},
+      </if>
+      <if test="seniorTaskDoubleCost != null" >
+        senior_task_double_cost = #{seniorTaskDoubleCost,jdbcType=INTEGER},
+      </if>
+      <if test="effectName != null" >
+        effect_name = #{effectName,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="game.data.conf.entity.BookworldCommons" >
+    update bookworld_common_s
+    set type = #{type,jdbcType=INTEGER},
+      kind = #{kind,jdbcType=INTEGER},
+      name = #{name,jdbcType=VARCHAR},
+      level = #{level,jdbcType=INTEGER},
+      need_main_lv = #{needMainLv,jdbcType=INTEGER},
+      cd = #{cd,jdbcType=INTEGER},
+      need_res = #{needRes,jdbcType=VARCHAR},
+      formation_limit = #{formationLimit,jdbcType=INTEGER},
+      helper_limit = #{helperLimit,jdbcType=INTEGER},
+      storage_limit = #{storageLimit,jdbcType=VARCHAR},
+      task = #{task,jdbcType=INTEGER},
+      primary_power = #{primaryPower,jdbcType=INTEGER},
+      primary_task_time = #{primaryTaskTime,jdbcType=INTEGER},
+      primary_task_time_first = #{primaryTaskTimeFirst,jdbcType=INTEGER},
+      primary_rewards = #{primaryRewards,jdbcType=VARCHAR},
+      medium_power = #{mediumPower,jdbcType=INTEGER},
+      medium_task_time = #{mediumTaskTime,jdbcType=INTEGER},
+      medium_rewards = #{mediumRewards,jdbcType=VARCHAR},
+      senior_power = #{seniorPower,jdbcType=INTEGER},
+      senior_task_time = #{seniorTaskTime,jdbcType=INTEGER},
+      senior_rewards = #{seniorRewards,jdbcType=VARCHAR},
+      senior_rewards_special = #{seniorRewardsSpecial,jdbcType=VARCHAR},
+      display = #{display,jdbcType=INTEGER},
+      coordinate = #{coordinate,jdbcType=VARCHAR},
+      description = #{description,jdbcType=VARCHAR},
+      levelup_description = #{levelupDescription,jdbcType=VARCHAR},
+      primary_task_double_cost = #{primaryTaskDoubleCost,jdbcType=INTEGER},
+      medium_task_double_cost = #{mediumTaskDoubleCost,jdbcType=INTEGER},
+      senior_task_double_cost = #{seniorTaskDoubleCost,jdbcType=INTEGER},
+      effect_name = #{effectName,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

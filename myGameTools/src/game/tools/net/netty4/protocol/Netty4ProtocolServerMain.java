@@ -95,13 +95,14 @@ public class Netty4ProtocolServerMain
 //	}
 	
 	@Netty4Protocol(protocolNo = 110001)		//如果是登录
-	public void doLogin(Channel channel,  Login msg )
+	public void doLogin(Channel channel,  Login msg ) throws Exception
 	{
 		PlayControl playControl = new PlayControl(channel , msg.getUserId());
 		Netty4ProtocolHandler.setPlayControlAttribute(channel, playControl);
 		
 		System.out.println(channel.hashCode()  + " doLogin 110001 msg : " + msg);
-		
+		String n = null;
+		n.toCharArray();
 		
 		channel.writeAndFlush(new ProtocolBuffer(110001, msg.toBuilder()));
 	}

@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="game.data.conf.mapper.AchievementsMapper" >
+  <resultMap id="BaseResultMap" type="game.data.conf.entity.Achievements" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="pre_id" property="preId" jdbcType="INTEGER" />
+    <result column="next_id" property="nextId" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="INTEGER" />
+    <result column="kind" property="kind" jdbcType="INTEGER" />
+    <result column="skip_type" property="skipType" jdbcType="INTEGER" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+    <result column="is_inherit" property="isInherit" jdbcType="INTEGER" />
+    <result column="target" property="target" jdbcType="INTEGER" />
+    <result column="target2" property="target2" jdbcType="INTEGER" />
+    <result column="coin" property="coin" jdbcType="INTEGER" />
+    <result column="reward_id" property="rewardId" jdbcType="INTEGER" />
+    <result column="icon" property="icon" jdbcType="INTEGER" />
+    <result column="open_level" property="openLevel" jdbcType="INTEGER" />
+    <result column="index" property="index" jdbcType="INTEGER" />
+    <result column="is_one" property="isOne" jdbcType="INTEGER" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, `name`, pre_id, next_id, type, kind, skip_type, description, is_inherit, target, 
+    target2, coin, reward_id, icon, open_level, `index`, is_one
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from achievement_s
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from achievement_s
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="game.data.conf.entity.Achievements" >
+    insert into achievement_s (id, name, pre_id, 
+      next_id, type, kind, 
+      skip_type, description, is_inherit, 
+      target, target2, coin, 
+      reward_id, icon, open_level, 
+      index, is_one)
+    values (#{id,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{preId,jdbcType=INTEGER}, 
+      #{nextId,jdbcType=INTEGER}, #{type,jdbcType=INTEGER}, #{kind,jdbcType=INTEGER}, 
+      #{skipType,jdbcType=INTEGER}, #{description,jdbcType=VARCHAR}, #{isInherit,jdbcType=INTEGER}, 
+      #{target,jdbcType=INTEGER}, #{target2,jdbcType=INTEGER}, #{coin,jdbcType=INTEGER}, 
+      #{rewardId,jdbcType=INTEGER}, #{icon,jdbcType=INTEGER}, #{openLevel,jdbcType=INTEGER}, 
+      #{index,jdbcType=INTEGER}, #{isOne,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective" parameterType="game.data.conf.entity.Achievements" >
+    insert into achievement_s
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="name != null" >
+        name,
+      </if>
+      <if test="preId != null" >
+        pre_id,
+      </if>
+      <if test="nextId != null" >
+        next_id,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+      <if test="kind != null" >
+        kind,
+      </if>
+      <if test="skipType != null" >
+        skip_type,
+      </if>
+      <if test="description != null" >
+        description,
+      </if>
+      <if test="isInherit != null" >
+        is_inherit,
+      </if>
+      <if test="target != null" >
+        target,
+      </if>
+      <if test="target2 != null" >
+        target2,
+      </if>
+      <if test="coin != null" >
+        coin,
+      </if>
+      <if test="rewardId != null" >
+        reward_id,
+      </if>
+      <if test="icon != null" >
+        icon,
+      </if>
+      <if test="openLevel != null" >
+        open_level,
+      </if>
+      <if test="index != null" >
+        index,
+      </if>
+      <if test="isOne != null" >
+        is_one,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="preId != null" >
+        #{preId,jdbcType=INTEGER},
+      </if>
+      <if test="nextId != null" >
+        #{nextId,jdbcType=INTEGER},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=INTEGER},
+      </if>
+      <if test="kind != null" >
+        #{kind,jdbcType=INTEGER},
+      </if>
+      <if test="skipType != null" >
+        #{skipType,jdbcType=INTEGER},
+      </if>
+      <if test="description != null" >
+        #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="isInherit != null" >
+        #{isInherit,jdbcType=INTEGER},
+      </if>
+      <if test="target != null" >
+        #{target,jdbcType=INTEGER},
+      </if>
+      <if test="target2 != null" >
+        #{target2,jdbcType=INTEGER},
+      </if>
+      <if test="coin != null" >
+        #{coin,jdbcType=INTEGER},
+      </if>
+      <if test="rewardId != null" >
+        #{rewardId,jdbcType=INTEGER},
+      </if>
+      <if test="icon != null" >
+        #{icon,jdbcType=INTEGER},
+      </if>
+      <if test="openLevel != null" >
+        #{openLevel,jdbcType=INTEGER},
+      </if>
+      <if test="index != null" >
+        #{index,jdbcType=INTEGER},
+      </if>
+      <if test="isOne != null" >
+        #{isOne,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="game.data.conf.entity.Achievements" >
+    update achievement_s
+    <set >
+      <if test="name != null" >
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="preId != null" >
+        pre_id = #{preId,jdbcType=INTEGER},
+      </if>
+      <if test="nextId != null" >
+        next_id = #{nextId,jdbcType=INTEGER},
+      </if>
+      <if test="type != null" >
+        type = #{type,jdbcType=INTEGER},
+      </if>
+      <if test="kind != null" >
+        kind = #{kind,jdbcType=INTEGER},
+      </if>
+      <if test="skipType != null" >
+        skip_type = #{skipType,jdbcType=INTEGER},
+      </if>
+      <if test="description != null" >
+        description = #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="isInherit != null" >
+        is_inherit = #{isInherit,jdbcType=INTEGER},
+      </if>
+      <if test="target != null" >
+        target = #{target,jdbcType=INTEGER},
+      </if>
+      <if test="target2 != null" >
+        target2 = #{target2,jdbcType=INTEGER},
+      </if>
+      <if test="coin != null" >
+        coin = #{coin,jdbcType=INTEGER},
+      </if>
+      <if test="rewardId != null" >
+        reward_id = #{rewardId,jdbcType=INTEGER},
+      </if>
+      <if test="icon != null" >
+        icon = #{icon,jdbcType=INTEGER},
+      </if>
+      <if test="openLevel != null" >
+        open_level = #{openLevel,jdbcType=INTEGER},
+      </if>
+      <if test="index != null" >
+        index = #{index,jdbcType=INTEGER},
+      </if>
+      <if test="isOne != null" >
+        is_one = #{isOne,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="game.data.conf.entity.Achievements" >
+    update achievement_s
+    set `name` = #{name,jdbcType=VARCHAR},
+      pre_id = #{preId,jdbcType=INTEGER},
+      next_id = #{nextId,jdbcType=INTEGER},
+      type = #{type,jdbcType=INTEGER},
+      kind = #{kind,jdbcType=INTEGER},
+      skip_type = #{skipType,jdbcType=INTEGER},
+      description = #{description,jdbcType=VARCHAR},
+      is_inherit = #{isInherit,jdbcType=INTEGER},
+      target = #{target,jdbcType=INTEGER},
+      target2 = #{target2,jdbcType=INTEGER},
+      coin = #{coin,jdbcType=INTEGER},
+      reward_id = #{rewardId,jdbcType=INTEGER},
+      icon = #{icon,jdbcType=INTEGER},
+      open_level = #{openLevel,jdbcType=INTEGER},
+      `index` = #{index,jdbcType=INTEGER},
+      is_one = #{isOne,jdbcType=INTEGER}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

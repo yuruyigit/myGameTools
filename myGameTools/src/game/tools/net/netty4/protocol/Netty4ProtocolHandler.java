@@ -1,6 +1,7 @@
 package game.tools.net.netty4.protocol;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -273,6 +274,15 @@ public class Netty4ProtocolHandler extends Netty4Handler
 						
 						netty4Protocol.channelReadEnd(channel, msg , handlerStartReturnResult);
 					}
+				}
+				catch (InvocationTargetException e) 
+				{
+					Exception ec = (Exception)e.getTargetException();
+					
+					ec.printStackTrace();
+					game.tools.log.LogUtil.error(ec);
+					
+					netty4Protocol.channelReadException(channel, ec);
 				}
 				catch (Exception e)
 				{
