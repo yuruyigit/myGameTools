@@ -16,11 +16,11 @@ import java.util.concurrent.TimeUnit;
 
 import game.tools.debug.Debug;
 import game.tools.log.LogUtil;
+import game.tools.threadpool.ThreadGroupFactory;
 import game.tools.threadpool.Threads;
 
 public class Events 
 {
-	private static final ThreadFactory THREAD_FACTORY =(r)->{return new Thread(r , "Events.execute.work");};
 	
 	private static final List<Event> EVENT_LIST =  Collections.synchronizedList(new ArrayList<Event>(5));
 	
@@ -192,7 +192,7 @@ public class Events
 				if(THREAD_POOL == null)
 				{
 					int cpuCount = Runtime.getRuntime().availableProcessors();
-					THREAD_POOL = new ThreadPoolExecutor(cpuCount / 2, cpuCount, 65L, TimeUnit.SECONDS,new SynchronousQueue<Runnable>() , THREAD_FACTORY);
+					THREAD_POOL = new ThreadPoolExecutor(cpuCount / 2, cpuCount, 65L, TimeUnit.SECONDS,new SynchronousQueue<Runnable>() , new ThreadGroupFactory(EVENT_THREAD_NAME));
 				}
 				
 			}
@@ -238,11 +238,11 @@ public class Events
 		}));
 		
 		
-		Events.start();
+//		Events.start();
+//		
+//		String sb = Threads.getAllThreadInfo();
 		
-		String sb = Threads.getAllThreadInfo();
-		
-		System.out.println(sb);
+//		System.out.println(sb);
 	}
 
 	public static boolean isSTART() {
