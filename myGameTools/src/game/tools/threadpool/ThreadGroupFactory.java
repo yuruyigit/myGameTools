@@ -16,9 +16,13 @@ public class ThreadGroupFactory implements ThreadFactory
 	@Override
 	public Thread newThread(Runnable r) 
 	{
-		return new Thread(r , threadName + (index++));
+		return new Thread(r , threadName + calcIndex() );
 	}
 
+	private synchronized long calcIndex()
+	{
+		return index++;
+	}
 	
 	public String getThreadName() {		return threadName;	}
 	public long getIndex() {		return index;	}

@@ -2,10 +2,10 @@ package game.tools.db.mybatis;
 
 public class Result 
 {
-	private Object dbNo ; 
+	private String dbNo ; 
 	private Object result;
 	
-	Result(Object dbNo , Object result)
+	Result(String dbNo , Object result)
 	{
 		this.dbNo = dbNo;
 		this.result = result;
@@ -14,7 +14,7 @@ public class Result
 	/**
 	 * @return 返回这个数据节点编号
 	 */
-	public Object getDbNo() {
+	public String getDbNo() {
 		return dbNo;
 	}
 

@@ -26,7 +26,7 @@ public interface INetty4Protocol
 	 * @param channel
 	 * @param msg
 	 */
-	public default Object channelReadStart(Channel channel , Object msg){	return null;	};
+	public default Object channelReadStart(Channel channel , int protocolNo ,  Object msg){	return null;	};
 	
 	/**
 	 * 消息入口接收处理函数结束接口。主要用于特殊接收处理。
@@ -35,7 +35,7 @@ public interface INetty4Protocol
 	 * @param handlerStartReturnResult 该参数由channelHandlerStart返回结果的对象，回传入于该函数。
 	 * @return
 	 */
-	public default void channelReadEnd(Channel channel , Object msg, Object channelReadStartReturnResult){};
+	public default void channelReadEnd(Channel channel ,  int protocolNo ,  Object msg, Object channelReadStartReturnResult){};
 	
 	
 

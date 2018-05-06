@@ -6,115 +6,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.ibatis.mapping.ResultMap;
+
 import org.apache.ibatis.mapping.ResultMapping;
 import org.apache.ibatis.session.SqlSession;
 import org.mybatis.spring.SqlSessionTemplate;
+
 import game.tools.db.UpdateTable;
 import game.tools.log.LogUtil;
 import game.tools.utils.DateTools;
-
-class UpdateObject
-{
-	private List<Object> updateObjectList;
-	
-	private List<ResultMapping> resultMapperList;
-	
-	private String tableName;
-	
-	private String className;
-	
-	private Class clzss;
-
-	public UpdateObject(Object updateObject , SqlSession sqlSession)
-	{
-		init(updateObject , sqlSession);
-	}
-	
-	private void init(Object updateObject, SqlSession sqlSession)
-	{
-		this.updateObjectList = convertToList(updateObject);
-		
-		initResultMaping(updateObjectList , sqlSession);
-		
-		initTableName(this.className , sqlSession);
-		
-	}
-	
-	private void initResultMaping(List<Object> list, SqlSession sqlSession) 
-	{
-		Object o = list.get(0);
-		
-		this.clzss = o.getClass();
-		
-		this.className = getClassName(o);
-		
-		if(className == null)
-			return ;
-					
-		String mapperName = className.replaceAll("entity", "mapper") + "Mapper.BaseResultMap";
-		
-		ResultMap resultMap  = sqlSession.getConfiguration().getResultMap(mapperName);
-		
-		this.resultMapperList = resultMap.getResultMappings();
-	}
-
-	private String getClassName(Object o)
-	{
-		return o.getClass().getName();
-	}
-	
-	private String initTableName(String clzssName, SqlSession sqlSession)
-	{
-		String statementId = clzssName.replaceAll("entity", "mapper") + "Mapper.deleteByPrimaryKey";
-		
-		String sqlString = sqlSession.getConfiguration().getMappedStatement(statementId).getBoundSql("").getSql();
-		
-		String [] sqlArray = sqlString.split("from");
-		
-		String tableName = sqlArray[1];
-		
-		if(tableName.indexOf("\n") >= 0)
-			tableName = tableName.split("\n")[0].trim();
-		else if(tableName.indexOf(" ") >= 0)
-			tableName = tableName.split(" ")[0].trim();
-		
-		this.tableName = tableName;
-		
-		return tableName;
-	}
-	
-	/**
-	 * @return 返回该对象转成list
-	 */
-	private List<Object> convertToList(Object o )
-	{
-		List<Object> list = null;
-		
-		if(o instanceof List)
-		{
-			list = (List<Object>)o;
-		}
-		else if(o instanceof Map)
-		{
-			Map<Object , Object> map = (Map<Object , Object>)o;
-			list = new ArrayList<Object>(map.values());
-		}
-		else
-		{
-			list = new ArrayList<Object>(1);
-			list.add(o);
-		}
-		return list;
-	}
-	
-
-	public List<ResultMapping> getResultMapperList() {		return resultMapperList;	}
-	public String getTableName() {		return tableName;	}
-	public String getClassName() {		return className;	}
-	public List<Object> getUpdateObjectList() {		return updateObjectList;	}
-	public Class getClzss() {		return clzss;	}
-}
 
 class Updates 
 {
@@ -125,12 +24,13 @@ class Updates
 	private long lastUpdateTime;
 	
 	/** 2018年5月4日 上午9:29:03 要更新的表对象列表<类全名,更新对象>*/
-	private HashMap<String , UpdateObject > updateObjectMap = new HashMap<>(16);
+	private HashMap<String , UpdateObject> updateObjectMap = new HashMap<>(16);
 
 	Updates(long id, SqlSession sqlSession) 
 	{
 		this.id = id;
 		this.sqlSession = sqlSession;
+		this.lastUpdateTime = System.currentTimeMillis();
 	}
 
 	void add(Object o)
@@ -141,7 +41,7 @@ class Updates
 		
 		if(upObject == null)
 		{
-			synchronized (updateObjectMap) 
+			synchronized (updateObjectMap)
 			{
 				if(upObject == null)
 				{
@@ -169,22 +69,12 @@ class Updates
 			return o.getClass().getName();
 		}
 	}
-
-	void update(long nowTime) 
-	{
-		long gapTime = nowTime - this.lastUpdateTime;
-		
-		if(gapTime < MybatisFactoryUpdate.getUPDATE_GAP_TIME())
-			return ;
-		
-		if(updateObjectMap.isEmpty())
-			return ;
-		
-		update();
-	}
 	 
 	void update()
 	{
+		if(updateObjectMap.isEmpty())
+			return ;
+		
 		long startTime = System.currentTimeMillis();
 		
 		List<String> sqlStringList = getSqlString();
@@ -192,18 +82,18 @@ class Updates
 		if(sqlStringList.isEmpty())
 			return;
 		
+		SqlSessionTemplate sqlSession = null;
+		Connection conn = null;
+		Statement statment = null;
+		
 		try
 		{
-			SqlSessionTemplate sqlSession = (SqlSessionTemplate)this.sqlSession;
-			Connection conn = sqlSession.getSqlSessionFactory().openSession().getConnection();
+			sqlSession = (SqlSessionTemplate)this.sqlSession;
+			conn = sqlSession.getSqlSessionFactory().openSession().getConnection();
 			
-			Statement statment = conn.createStatement();
+			statment = conn.createStatement();
 			for (String sqlString: sqlStringList) 
 				statment.addBatch(sqlString);
-			
-			statment.executeBatch();
-			statment.clearBatch();
-			statment.close();
 		}
 		catch (Exception e) 
 		{
@@ -212,6 +102,20 @@ class Updates
 		}
 		finally
 		{
+			try 
+			{
+				statment.executeBatch();
+				statment.clearBatch();
+				statment.close();
+				
+				conn.close();
+			}
+			catch (Exception e) 
+			{
+				e.printStackTrace();
+				LogUtil.error(e);
+			}
+			
 			this.lastUpdateTime = System.currentTimeMillis();
 			
 			long endTime = System.currentTimeMillis();
@@ -271,10 +175,11 @@ class Updates
 	void distory()
 	{
 		this.sqlSession = null;
+		
 		this.updateObjectMap.clear();
 		this.updateObjectMap = null;
 	}
 	
-	public long getLastUpdateTime() {  return lastUpdateTime; }
-	public Long getId() {		return this.id;	}
+	long getLastUpdateTime() {  return lastUpdateTime; }
+	Long getId() {		return this.id;	}
 }

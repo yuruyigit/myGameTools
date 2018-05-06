@@ -63,6 +63,23 @@ public class Netty4ClientSync extends Netty4Client
 		@Override
 		public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception 
 		{
+			if(msg != null)
+			{
+				if(syncThread != null)
+				{
+					synchronized (syncThread) 
+					{
+//						this.result = syncThread.getId() + " " + msg;
+						this.result = msg;
+						
+						syncThread.notify();
+						syncThread = null;
+					}
+				}
+				
+				return ;
+			}
+			
 			try 
 			{
 				JSONObject o = (JSONObject)msg;
@@ -235,7 +252,6 @@ public class Netty4ClientSync extends Netty4Client
 						.setChannl("3000001")
 						.setPlaform("1"));
 				
-				
 				System.out.println(protocolBuffer.toString());
 				
 //				Netty4ClientSync client = new Netty4ClientSync("127.0.0.1", 1111, new JSONDecode() , new JSONEncode() , new INettyChannelRead() {
@@ -255,6 +271,20 @@ public class Netty4ClientSync extends Netty4Client
 					{
 						
 						Object result = client.send(protocolBuffer);
+						
+						client.send(new ProtocolBuffer(111001, 
+								Login.newBuilder()
+								.setUserId("2017062613s37ssdddds42")
+								.setChannl("3000001")
+								.setPlaform("1")));
+						
+						
+						client.send(new ProtocolBuffer(120002, 
+								Login.newBuilder()
+								.setUserId("2017062613s37ssdddds42")
+								.setChannl("3000001")
+								.setPlaform("1")));
+						
 						
 //						Object result = client.send(o);
 //						o = JSONObject.parseObject("{\"protocolNo\":120001}");

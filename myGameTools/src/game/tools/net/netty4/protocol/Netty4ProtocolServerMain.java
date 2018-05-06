@@ -1,13 +1,11 @@
 package game.tools.net.netty4.protocol;
 import com.alibaba.fastjson.JSONObject;
 
-import game.tools.net.netty4.deencode.JSONDecode;
-import game.tools.net.netty4.deencode.JSONEncode;
 import game.tools.net.netty4.deencode.ProtoBufDecode;
 import game.tools.net.netty4.deencode.ProtoBufEncode;
 import game.tools.net.netty4.server.Netty4Server;
-import game.tools.protocol.protobuffer.ProtocolBuffer;
 import game.tools.protocol.protobuffer.Protocol.Login;
+import game.tools.protocol.protobuffer.ProtocolBuffer;
 import io.netty.channel.Channel;
 
 class PlayControl
@@ -30,10 +28,11 @@ class PlayControl
 	}
 	
 	@Netty4Protocol(protocolNo = 120002)
-	public void test2(JSONObject msg)
+//	public void test2(JSONObject msg)
+	public void test2(Login msg)	
 	{
 		System.out.println( this.id + " " + this.userId +  " test2 120002 msg : " + msg);
-		channel.writeAndFlush(msg);
+		channel.writeAndFlush(new ProtocolBuffer(120002, msg.toBuilder()));
 	}
 	
 }
@@ -59,15 +58,22 @@ public class Netty4ProtocolServerMain
 			}
 			
 			@Override
-			public Object channelReadStart(Channel channel, Object msg) 
+			public void channelEncode(Channel channel, Object msg) 
 			{
-				return "123";
+				System.out.println("channelEncode " + channel.id());
 			}
 			
 			@Override
-			public void channelReadEnd(Channel channel, Object msg, Object channelReadStartReturnResult) 
+			public Object channelReadStart(Channel channel, int protocolNo, Object msg) 
 			{
-				System.out.println("channelReadEnd :" + channelReadStartReturnResult);
+//				System.out.println("channelReadStart protocolNo " + protocolNo + " msg : " + msg.toString().replaceAll("\n", "|"));
+				return "1";
+			}
+			
+			@Override
+			public void channelReadEnd(Channel channel, int protocolNo, Object msg, Object channelReadStartReturnResult) 
+			{
+				System.out.println("channelReadEnd protocolNo " + protocolNo + " msg : " + msg.toString().replaceAll("\n", "|"));
 			}
 			
 		},30));
@@ -100,14 +106,18 @@ public class Netty4ProtocolServerMain
 		PlayControl playControl = new PlayControl(channel , msg.getUserId());
 		Netty4ProtocolHandler.setPlayControlAttribute(channel, playControl);
 		
-		System.out.println(channel.hashCode()  + " doLogin 110001 msg : " + msg);
-		String n = null;
-		n.toCharArray();
+//		System.out.println(channel.hashCode()  + " doLogin 110001 msg : " + msg);
+//		String n = null;
+//		n.toCharArray();
 		
 		channel.writeAndFlush(new ProtocolBuffer(110001, msg.toBuilder()));
 	}
 	
-	
+	@Netty4Protocol(protocolNo = 111001)		//如果是登录
+	public void test(Channel channel,  Login msg )
+	{
+		System.out.println(channel.hashCode()  + " test 111001 ");
+	}
 }
 
 

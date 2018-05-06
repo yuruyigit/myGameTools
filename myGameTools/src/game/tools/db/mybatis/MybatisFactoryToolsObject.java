@@ -1,5 +1,4 @@
 package game.tools.db.mybatis;
-
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
@@ -10,13 +9,9 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
 import javax.sql.DataSource;
-
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.plugin.Interceptor;
@@ -27,11 +22,7 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.apache.ibatis.transaction.TransactionFactory;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.transaction.SpringManagedTransactionFactory;
-
 import com.alibaba.druid.pool.DruidDataSource;
-
-import game.data.conf.entity.PrfWarZoneTitle;
-import game.data.conf.mapper.PrfWarZoneTitleMapper;
 import game.tools.fork.ForkJoinTools;
 import game.tools.fork.SubForkTask;
 import game.tools.utils.StringTools;
@@ -43,12 +34,12 @@ public class MybatisFactoryToolsObject
 	private static final String MYSQL_DRIVER = "com.mysql.jdbc.Driver";
 	
 	/** 2017年2月16日 上午11:13:35 mybatis的session列表集合<数据源Key， 数据源会话对象>			 */
-	private ConcurrentHashMap<Object, SqlSessionTemplate> MYBATIS_SESSION_MAP = new ConcurrentHashMap<Object, SqlSessionTemplate>();
+	private ConcurrentHashMap<String, SqlSessionTemplate> MYBATIS_SESSION_MAP = new ConcurrentHashMap<String, SqlSessionTemplate>();
 
 	/**
 	 * 第一个注册的数据编号
 	 */
-	private Object FIRST_SESSION_KEY;
+	private String FIRST_SESSION_KEY;
 	
 	/**
 	 * 程序项目运行的路径
@@ -368,9 +359,9 @@ public class MybatisFactoryToolsObject
 	 * @param password 数据源密码
 	 * @return 返回对应数据源的key
 	 */
-	public Object registerMyBatisFactory(String rootMappers,String url, String username, String password) 
+	public String registerMyBatisFactory(String rootMappers,String url, String username, String password) 
 	{
-		Object mysqlKey = MybatisTools.getMysqlKey(url) ;
+		String mysqlKey = MybatisTools.getMysqlKey(url) ;
 		
 		registerMyBatisFactory(mysqlKey, rootMappers , url , username , password , null);
 		
@@ -386,16 +377,16 @@ public class MybatisFactoryToolsObject
 	 * @param interceptor 要添加mybatis的拦截器数组，可多个配置
 	 * @return 返回对应数据源的key
 	 */
-	public Object registerMyBatisFactory(String rootMappers, String url, String username, String password, Interceptor... interceptor) 
+	public String registerMyBatisFactory(String rootMappers, String url, String username, String password, Interceptor... interceptor) 
 	{
-		Object mysqlKey = MybatisTools.getMysqlKey(url) ;
+		String mysqlKey = MybatisTools.getMysqlKey(url) ;
 		
 		registerMyBatisFactory(mysqlKey , rootMappers , url , username , password , interceptor);
 		
 		return mysqlKey;
 	}
 	
-	private void registerMyBatisFactory(Object sessionNo, String rootMappers, String url, String username, String password, Interceptor... interceptor) 
+	private  void registerMyBatisFactory(String sessionNo, String rootMappers, String url, String username, String password, Interceptor... interceptor) 
 	{
 		if(sessionNo == null)
 		{
@@ -409,24 +400,28 @@ public class MybatisFactoryToolsObject
 		
 		if (MYBATIS_SESSION_MAP.get(sessionNo) != null)
 			return;
-
-		SqlSessionFactory factory = createSqlSessionFactory(rootMappers, username, password, url);
-
-		if(interceptor != null)
+		
+		synchronized(this)
 		{
-			for (int i = 0; i < interceptor.length; i++)
-				factory.getConfiguration().addInterceptor(interceptor[i]);
+			SqlSessionFactory factory = createSqlSessionFactory(rootMappers, username, password, url);
+			
+			if(interceptor != null)
+			{
+				for (int i = 0; i < interceptor.length; i++)
+					factory.getConfiguration().addInterceptor(interceptor[i]);
+			}
+			
+			SqlSessionTemplate session = new SqlSessionTemplate(factory);			//这里使用spring的SqlSessionTemplate为sqlsession的包装类，来管理session,否则运行可能出错
+			
+			MYBATIS_SESSION_MAP.put(sessionNo, session);
+			
+			if(MYBATIS_SESSION_MAP.size() == 1)
+				FIRST_SESSION_KEY = sessionNo;
+			
+			
+			System.out.println("------------>Mysql Start On = " + Arrays.toString(MYBATIS_SESSION_MAP.keySet().toArray()));
 		}
 
-		SqlSessionTemplate session = new SqlSessionTemplate(factory);			//这里使用spring的SqlSessionTemplate为sqlsession的包装类，来管理session,否则运行可能出错
-		
-		MYBATIS_SESSION_MAP.put(sessionNo, session);
-		
-		if(MYBATIS_SESSION_MAP.size() == 1)
-			FIRST_SESSION_KEY = sessionNo;
-			
-		
-		System.out.println("------------>Mysql Start On = " + Arrays.toString(MYBATIS_SESSION_MAP.keySet().toArray()));
 	}
 
 //	public SqlSessionFactory getSessionFactory(Object sessionNo)
@@ -528,11 +523,11 @@ public class MybatisFactoryToolsObject
 		{
 			ArrayList<Result> resultList = new ArrayList<>(MYBATIS_SESSION_MAP.size());
 
-			Iterator<Object> iterator = MYBATIS_SESSION_MAP.keySet().iterator();
+			Iterator<String> iterator = MYBATIS_SESSION_MAP.keySet().iterator();
 
 			while (iterator.hasNext()) 
 			{
-				Object dbNo = iterator.next();
+				String dbNo = iterator.next();
 
 				Object result = cmd.doCmd(dbNo, getMapper(dbNo,  cmd.getTClass()));
 				
@@ -545,11 +540,11 @@ public class MybatisFactoryToolsObject
 		{
 			checkForkJoinTool();
 			
-			Iterator<Object> iterator = MYBATIS_SESSION_MAP.keySet().iterator();
+			Iterator<String> iterator = MYBATIS_SESSION_MAP.keySet().iterator();
 			
 			while (iterator.hasNext()) 
 			{
-				Object dbNo = iterator.next();
+				String dbNo = iterator.next();
 				
 				forkJoinTools.addTasks(getSubForkTask(dbNo, cmd.getTClass(), cmd));
 			}
@@ -562,18 +557,18 @@ public class MybatisFactoryToolsObject
 	/**
 	 * @return 返回随机一个数据源结节编号
 	 */
-	private Object getRandomMybatisFactoryDbNo() 
+	private String getRandomMybatisFactoryDbNo() 
 	{
 		if(MYBATIS_SESSION_MAP.size() == 1)
 			return FIRST_SESSION_KEY;
 		
 		int index = 0 , randomIndex = Util.getRandomInt(0, MYBATIS_SESSION_MAP.size() - 1);
 		
-		Iterator<Object> sessionIterator = MYBATIS_SESSION_MAP.keySet().iterator();
+		Iterator<String> sessionIterator = MYBATIS_SESSION_MAP.keySet().iterator();
 		
 		while(sessionIterator.hasNext())
 		{
-			Object dbNo = sessionIterator.next();
+			String dbNo = sessionIterator.next();
 			if(index == randomIndex)
 				return dbNo;
 			
@@ -590,7 +585,7 @@ public class MybatisFactoryToolsObject
 	{
 		Class cls = cmd.getTClass();
 
-		Object dbNo = getRandomMybatisFactoryDbNo();
+		String dbNo = getRandomMybatisFactoryDbNo();
 
 		Object result = cmd.doCmd(dbNo, getMapper(dbNo, cls));
 
@@ -606,11 +601,11 @@ public class MybatisFactoryToolsObject
 	{
 		Class cls = cmd.getTClass();
 
-		Iterator<Object> iterator = MYBATIS_SESSION_MAP.keySet().iterator();
+		Iterator<String> iterator = MYBATIS_SESSION_MAP.keySet().iterator();
 
 		while (iterator.hasNext()) 
 		{
-			Object dbNo = iterator.next();
+			String dbNo = iterator.next();
 
 			Object result = cmd.doCmd(dbNo, getMapper(dbNo, cls));
 
@@ -641,11 +636,11 @@ public class MybatisFactoryToolsObject
 
 		Class cls = cmd.getTClass();
 
-		Iterator<Object> iterator = MYBATIS_SESSION_MAP.keySet().iterator();
+		Iterator<String> iterator = MYBATIS_SESSION_MAP.keySet().iterator();
 
 		while (iterator.hasNext()) 
 		{
-			Object dbNo = iterator.next();
+			String dbNo = iterator.next();
 
 			Object result = cmd.doCmd(dbNo, getMapper(dbNo, cls));
 
@@ -719,126 +714,7 @@ public class MybatisFactoryToolsObject
 		return classList;
 	}
 	
-	public static void main(String[] args) throws Exception 
-	{
-		
-		String path = "file:/C:/Users/zhibing.zhou/Desktop/football_battle_report_server/football_battle_report_server.jar!/game/tools/db/mybatis/";
-		
-		if(path.indexOf("!") >= 0)
-		{
-			String [] array = path.split("!");
-			
-			System.out.println();
-		}
-//		ArrayList<Class> clslist = getJarFileClassList("game.data.conf.mapper");
-//		if(clslist != null)
-//			return;
-		
-//		getJarPath("game.data.conf.mapper");
-		
-		int gameLogicConf1 = 2;
-
-		MybatisFactoryTools.registerMyBatisFactory("game.data.conf.mapper", "jdbc:mysql://182.254.152.149:3306/game_logic_conf" ,
-				"innertest01", "innertest01");
-		MybatisFactoryTools.registerMyBatisFactory("game.data.conf.mapper", "jdbc:mysql://182.254.152.149:3306/game_logic_conf" ,
-				"innertest01", "innertest01");
-		
-		
-		List<Result> listt = MybatisFactoryTools.executeAll(new MybatisFactoryCmd<PrfWarZoneTitleMapper>() {
-
-			@Override
-			public Object doCmd(Object dbNo, PrfWarZoneTitleMapper mapper) {
-				int size = mapper.selectAll().size();
-				
-				System.out.println("test cmd " + size );
-				try
-				{
-					Thread.sleep(1000L);
-				}
-				catch (InterruptedException e)
-				{
-					e.printStackTrace();
-				}
-				return null;
-			}
-
-		});
-		
-		System.out.println("start...");
-		
-		long startTime = System.currentTimeMillis();
-
-		for (int i = 0; i < 1; i++)
-		{
-			List<PrfWarZoneTitle> lists = new ArrayList<>();
-
-//			List<Result> list1 = MybatisFactoryTools.executeAll(new MybatisFactoryCmd<PrfWarZoneTitleMapper>() {
-//
-//				@Override
-//				public Object doCmd(long dbNo, PrfWarZoneTitleMapper mapper) 
-//				{
-//					
-//					lists.addAll(mapper.selectAll());
-//					
-//					System.out.println("cmd");
-//					try
-//					{
-//						Thread.sleep(1000L);
-//					}
-//					catch (InterruptedException e)
-//					{
-//						e.printStackTrace();
-//					}
-//					return null;
-//				}
-//
-//			});
-			
-			
-			
-			List<Result> list2 = MybatisFactoryTools.executeAll(new MybatisFactoryCmd<PrfWarZoneTitleMapper>() {
-
-				@Override
-				public Object doCmd(Object dbNo, PrfWarZoneTitleMapper mapper)
-				{
-					
-					System.out.println("fork cmd");
-					try
-					{
-						Thread.sleep(1000L);
-					}
-					catch (InterruptedException e)
-					{
-						e.printStackTrace();
-					}
-					
-					return lists.addAll(mapper.selectAll());
-				}
-
-			});
-
-			System.out.println(" i = " + i + " " + lists.size());
-		}
-
-		long endTime = System.currentTimeMillis();
-
-		System.out.println("gapTime = " + (endTime - startTime));
-
-//		 PrfWarZoneTitle wt = new PrfWarZoneTitle();
-//		 wt.setTitle("titleupdat111e");
-//		 wt.setReward("test");
-//		 wt.setRankStart(1000);
-//		 wt.setRankEnd(10000);
-		
-//		
-//		 PrfWarZoneTitleMapper mapper = getMapper(2 , PrfWarZoneTitleMapper.class);
-//		 int no = mapper.insert(wt);
-		
-		Thread.sleep(3000L);
-	}
-	
-	
-	private SubForkTask getSubForkTask(Object dbNo, Class cls  , MybatisFactoryCmd cmd  )
+	private SubForkTask getSubForkTask(String dbNo, Class cls  , MybatisFactoryCmd cmd  )
 	{
 		SubForkTask subForkTask = new SubForkTask()
 		{
@@ -860,7 +736,7 @@ public class MybatisFactoryToolsObject
 	/**
 	 * @return 获取第一个注册的数据编号
 	 */
-	public Object getFristSessionKey() 
+	public String getFristSessionKey() 
 	{
 		return FIRST_SESSION_KEY;
 	}

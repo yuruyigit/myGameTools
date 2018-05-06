@@ -1,8 +1,13 @@
 package game.tools.db.mybatis;
 
 import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.session.SqlSession;
+
+import game.data.conf.entity.PrfWarZoneTitle;
+import game.data.conf.mapper.PrfWarZoneTitleMapper;
 
 /**
  * mybatis多数据源工具，该数据源采用druid的数据连接池
@@ -22,7 +27,7 @@ public class MybatisFactoryTools {
 	 * @param password 数据源密码
 	 * @return 返回对应数据源的key
 	 */
-	public static Object registerMyBatisFactory(String rootMappers,String url, String username, String password) 
+	public static String registerMyBatisFactory(String rootMappers,String url, String username, String password) 
 	{
 		return MYBATIS_OBJECT.registerMyBatisFactory(rootMappers, url, username, password);
 	}
@@ -36,7 +41,7 @@ public class MybatisFactoryTools {
 	 * @param interceptor 要添加mybatis的拦截器数组，可多个配置
 	 * @return 返回对应数据源的key
 	 */
-	public static Object registerMyBatisFactory(String rootMappers, String url, String username, String password, Interceptor... interceptor) 
+	public static String registerMyBatisFactory(String rootMappers, String url, String username, String password, Interceptor... interceptor) 
 	{
 		return MYBATIS_OBJECT.registerMyBatisFactory(rootMappers, url, username, password, interceptor);
 	}
@@ -83,7 +88,7 @@ public class MybatisFactoryTools {
 	/**
 	 * @return 获取第一个注册的数据编号
 	 */
-	public static Object getFristSessionKey() 
+	public static String getFristSessionKey() 
 	{
 		return MYBATIS_OBJECT.getFristSessionKey();
 	}
@@ -112,6 +117,127 @@ public class MybatisFactoryTools {
 	public static SqlSession getSqlSession(Object sessionNo)
 	{
 		return MYBATIS_OBJECT.getSqlSession(sessionNo);
+	}
+	
+	
+
+	
+	public static void main(String[] args) throws Exception 
+	{
+		
+		String path = "file:/C:/Users/zhibing.zhou/Desktop/football_battle_report_server/football_battle_report_server.jar!/game/tools/db/mybatis/";
+		
+		if(path.indexOf("!") >= 0)
+		{
+			String [] array = path.split("!");
+			
+			System.out.println();
+		}
+//		ArrayList<Class> clslist = getJarFileClassList("game.data.conf.mapper");
+//		if(clslist != null)
+//			return;
+		
+//		getJarPath("game.data.conf.mapper");
+		
+		int gameLogicConf1 = 2;
+
+		MybatisFactoryTools.registerMyBatisFactory("game.data.conf.mapper", "jdbc:mysql://182.254.152.149:3306/game_logic_conf" ,
+				"innertest01", "innertest01");
+		MybatisFactoryTools.registerMyBatisFactory("game.data.conf.mapper", "jdbc:mysql://182.254.152.149:3306/game_logic_conf" ,
+				"innertest01", "innertest01");
+		
+		
+		List<Result> listt = MybatisFactoryTools.executeAll(new MybatisFactoryCmd<PrfWarZoneTitleMapper>() {
+
+			@Override
+			public Object doCmd(Object dbNo, PrfWarZoneTitleMapper mapper) {
+				int size = mapper.selectAll().size();
+				
+				System.out.println("test cmd " + size );
+				try
+				{
+					Thread.sleep(1000L);
+				}
+				catch (InterruptedException e)
+				{
+					e.printStackTrace();
+				}
+				return null;
+			}
+
+		});
+		
+		System.out.println("start...");
+		
+		long startTime = System.currentTimeMillis();
+
+		for (int i = 0; i < 1; i++)
+		{
+			List<PrfWarZoneTitle> lists = new ArrayList<>();
+
+//			List<Result> list1 = MybatisFactoryTools.executeAll(new MybatisFactoryCmd<PrfWarZoneTitleMapper>() {
+//
+//				@Override
+//				public Object doCmd(long dbNo, PrfWarZoneTitleMapper mapper) 
+//				{
+//					
+//					lists.addAll(mapper.selectAll());
+//					
+//					System.out.println("cmd");
+//					try
+//					{
+//						Thread.sleep(1000L);
+//					}
+//					catch (InterruptedException e)
+//					{
+//						e.printStackTrace();
+//					}
+//					return null;
+//				}
+//
+//			});
+			
+			
+			
+			List<Result> list2 = MybatisFactoryTools.executeAll(new MybatisFactoryCmd<PrfWarZoneTitleMapper>() {
+
+				@Override
+				public Object doCmd(Object dbNo, PrfWarZoneTitleMapper mapper)
+				{
+					
+					System.out.println("fork cmd");
+					try
+					{
+						Thread.sleep(1000L);
+					}
+					catch (InterruptedException e)
+					{
+						e.printStackTrace();
+					}
+					
+					return lists.addAll(mapper.selectAll());
+				}
+
+			});
+
+			System.out.println(" i = " + i + " " + lists.size());
+		}
+
+		long endTime = System.currentTimeMillis();
+
+		System.out.println("gapTime = " + (endTime - startTime));
+
+//		 PrfWarZoneTitle wt = new PrfWarZoneTitle();
+//		 wt.setTitle("titleupdat111e");
+//		 wt.setReward("test");
+//		 wt.setRankStart(1000);
+//		 wt.setRankEnd(10000);
+		
+//		
+//		 PrfWarZoneTitleMapper mapper = getMapper(2 , PrfWarZoneTitleMapper.class);
+//		 int no = mapper.insert(wt);
+		
+		Thread.sleep(3000L);
 	}
 	
 }

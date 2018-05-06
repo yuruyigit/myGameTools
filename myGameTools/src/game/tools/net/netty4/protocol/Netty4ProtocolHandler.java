@@ -89,7 +89,8 @@ public class Netty4ProtocolHandler extends Netty4Handler
 	/**
 	 *	如果使用 Netty4ProtocolHandler，则进行绑定的附加属性对象
 	 */
-	private static final AttributeKey<Object> ATTRIBUTE_PLAY_CONTROL = AttributeKey.valueOf("Netty4ProtocolHandler-PlayControl") , ATTRIBUTE_NETTY4_PROTOCOL = AttributeKey.valueOf("Netty4ProtocolHandler-INetty4Protocol");
+	private static final AttributeKey<Object> ATTRIBUTE_PLAY_CONTROL = AttributeKey.valueOf("Netty4ProtocolHandler-PlayControl") ,
+											ATTRIBUTE_NETTY4_PROTOCOL = AttributeKey.valueOf("Netty4ProtocolHandler-INetty4Protocol");
 	
 	/** 协议处理函数集合 */
 	private HashMap<Integer , MethodObject> protocolHandlerMap = new HashMap<Integer , MethodObject>();
@@ -122,7 +123,7 @@ public class Netty4ProtocolHandler extends Netty4Handler
 			if("src".equalsIgnoreCase(scanClassPackage) || null == scanClassPackage)
 				throw new Exception("scanClassPackage Not src and null");
 			
-			this.threadPool =  new ThreadPoolExecutor(handlerThreadCount , handlerThreadCount * 3, 60, TimeUnit.SECONDS, new SynchronousQueue<Runnable>() ,new ThreadGroupFactory("Netty4ProtocolHandler"));
+			this.threadPool =  new ThreadPoolExecutor(handlerThreadCount , handlerThreadCount * 3, 60, TimeUnit.SECONDS, new SynchronousQueue<Runnable>() ,new ThreadGroupFactory("Netty4ProtocolHandler-Execute"));
 			
 			this.netty4Protocol = netty4Protocol;
 			
@@ -219,17 +220,10 @@ public class Netty4ProtocolHandler extends Netty4Handler
 	}
 	
 	
-	public static void setPlayControlAttribute(Channel channel ,  Object attachObject)
-	{
-		setAttributeKey(channel, ATTRIBUTE_PLAY_CONTROL, attachObject);
-	}
+	public static void setPlayControlAttribute(Channel channel ,  Object attachObject)	{		setAttributeKey(channel, ATTRIBUTE_PLAY_CONTROL, attachObject);	}
+	public static Object getPlayControlAttribute(Channel channel )	{		return getAttributeKey(channel, ATTRIBUTE_PLAY_CONTROL);	}
 	
-	
-	public static INetty4Protocol getNetty4ProtocolAttribute(Channel channel)
-	{
-		return (INetty4Protocol)getAttributeKey(channel , ATTRIBUTE_NETTY4_PROTOCOL);
-	}
-	
+	public static INetty4Protocol getNetty4ProtocolAttribute(Channel channel)	{		return (INetty4Protocol)getAttributeKey(channel , ATTRIBUTE_NETTY4_PROTOCOL);	}
 	
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object revMsg) throws Exception 
@@ -263,16 +257,21 @@ public class Netty4ProtocolHandler extends Netty4Handler
 					
 					synchronized (channel)
 					{
-						Object attach = getAttributeKey(channel , ATTRIBUTE_PLAY_CONTROL);
+						Object handlerStartReturnResult = netty4Protocol.channelReadStart(channel, protocolNo, msg);
 						
-						Object handlerStartReturnResult = netty4Protocol.channelReadStart(channel, msg);
-						
-						if(attach == null)
+						if(methodObject.getObject() != null)
 							method.invoke(methodObject.getObject(), channel, msg);
 						else
-							method.invoke(attach , msg);
+						{
+							Object attach = getPlayControlAttribute(channel);
+							
+							if(attach != null)
+								method.invoke(attach , msg);
+							else
+								method.invoke(null, channel, msg);
+						}
 						
-						netty4Protocol.channelReadEnd(channel, msg , handlerStartReturnResult);
+						netty4Protocol.channelReadEnd(channel, protocolNo, msg , handlerStartReturnResult);
 					}
 				}
 				catch (InvocationTargetException e) 
@@ -299,6 +298,8 @@ public class Netty4ProtocolHandler extends Netty4Handler
 	public void channelActive(ChannelHandlerContext ctx) throws Exception 
 	{
 		Channel channel = ctx.channel();
+		
+		System.out.println("channelActive " + channel.id());
 		
 		Object attach = getAttributeKey(channel , ATTRIBUTE_NETTY4_PROTOCOL);
 		

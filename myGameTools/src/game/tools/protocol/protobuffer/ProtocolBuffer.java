@@ -16,18 +16,22 @@ public class ProtocolBuffer
 	{
 		this.protocolNo = protocolNo;
 		this.build = builder.build();
-		this.byteArray = this.build.toByteArray();
 	}
 	
-	public byte[] getBytes()	{		return byteArray;}
 	public int getProtocolNo() {		return protocolNo;	}
 	public GeneratedMessageLite getBuild() {		return build;	}
 	
+	public byte[] getBytes()	
+	{
+		if(byteArray == null)
+			this.byteArray = this.build.toByteArray();
+		return byteArray;
+	}
 	@Override
 	public String toString() 
 	{
 		if(toString == null)
-			this.toString = this.build.toString().replaceAll("\n", "|");
+			this.toString = "protocolNo: " + protocolNo + " by: " + this.build.toString().replaceAll("\n", "|");
 		return this.toString;
 	}	
 	

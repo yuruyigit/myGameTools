@@ -6,8 +6,11 @@ import java.util.Arrays;
 
 import game.tools.log.LogUtil;
 import game.tools.net.netty4.Netty4Encode;
+import game.tools.net.netty4.protocol.INetty4Protocol;
+import game.tools.net.netty4.protocol.Netty4ProtocolHandler;
 import game.tools.protocol.protobuffer.ProtocolBuffer;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 
 
@@ -21,6 +24,11 @@ public class ProtoBufEncode extends Netty4Encode
 		
 		try 
 		{
+
+			Channel channel = ctx.channel();
+			
+			System.out.println("encode" + channel.id());
+			
 			ProtocolBuffer buffer = (ProtocolBuffer)msg;
 			
 			//数据内容体 + 数据长度
@@ -36,6 +44,10 @@ public class ProtoBufEncode extends Netty4Encode
 			byte [] data = buf.array();
 			
 //			System.out.println("ProtoBufEncode = " + Arrays.toString(data));
+			
+			INetty4Protocol netty4Protocol = Netty4ProtocolHandler.getNetty4ProtocolAttribute(channel);
+			if( netty4Protocol != null )
+				netty4Protocol.channelEncode(channel, msg);
 			
 			out.writeBytes(data);
 		}
