@@ -1,5 +1,7 @@
 package game.tools.db;
 import game.tools.utils.Symbol;
+import game.tools.utils.Util;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
@@ -7,9 +9,11 @@ import java.util.regex.Pattern;
 
 public class UpdateTable
 {
+	private static final int INIT_SIZE = 20;
+	
 	private String tableName;
 	
-	private HashMap<String, ArrayList<UpdateCall>> calMap = new HashMap<String,ArrayList<UpdateCall>>();
+	private HashMap<String, ArrayList<Object[]>> calMap = new HashMap<String,ArrayList<Object[]>>(INIT_SIZE);
 	
 	/**
 	 * 批量更新工具
@@ -20,12 +24,6 @@ public class UpdateTable
 		this.tableName = tableName;
 	}
 	
-	public void add(String callName , ArrayList<UpdateCall> list)
-	{
-		calMap.put(callName, list);
-	}
-	
-	
 	/**
 	 * @param callName 要更新的列名
 	 * @param id 要更新数据行id
@@ -33,45 +31,22 @@ public class UpdateTable
 	 */
 	public void add(String callName , long id , Object value)
 	{
-		ArrayList<UpdateCall> list = calMap.get(callName);
+		ArrayList<Object []> list = calMap.get(callName);
 		if(list == null)
 		{
-			list = new ArrayList<UpdateCall>();
+			list = new ArrayList<Object []>(INIT_SIZE);
 			calMap.put(callName, list);
 		}
-		list.add(new UpdateCall(id, value));
+		list.add(new Object [] {id, value});
+	}
+
+	public void clear() 
+	{
+		calMap.clear();
 	}
 	
-	public static class UpdateCall
-	{
-		public UpdateCall(long id , Object val) 
-		{
-			this.id = id;
-			this.val = val;
-		}
-		
-		private long id ;
-		private Object val;
-		
-		public long getId() {
-			return id;
-		}
-		public Object getVal() {
-			return val;
-		}
-		
-		
-	}
-
-	public String getTableName() 
-	{
-		return this.tableName;
-	}
-
-
-	public HashMap<String, ArrayList<UpdateCall>> getCalMap() {
-		return calMap;
-	}
+	public String getTableName()	{		return this.tableName;	}
+	private HashMap<String, ArrayList<Object[]>> getCalMap()	{		return calMap;	}
 	
 	
 	/**
@@ -100,25 +75,29 @@ public class UpdateTable
 		strBuf.append("update ").append(ut.getTableName()).append(" set ");
 
 		int size = ut.getCalMap().size(), p = 0 , count = 0 , n = 0 ;
+		Object id = null, val = null;
+		
 		Set<String> setList = ut.getCalMap().keySet();
 		
 		for (String string : setList) 
 		{
 			strBuf.append(string).append(" = case id ");
-			ArrayList<UpdateCall> ucList = ut.getCalMap().get(string);
-			for (UpdateCall uc : ucList) 
+			ArrayList<Object[]> ucList = ut.getCalMap().get(string);
+			for (Object [] array : ucList) 
 			{
+				id = array[0];
+				val = array[1];
+				
 				if(count == 0)
 				{
 					if(n < ucList.size() -1)
-						whereStr.append(uc.getId()).append(",");
+						whereStr.append(id).append(",");
 					else
-						whereStr.append(uc.getId());
+						whereStr.append(id);
 					n ++ ;
 				}
 				
-				strBuf.append(" when ").append(uc.getId()).append(" then ");
-				Object val = uc.getVal(); 
+				strBuf.append(" when ").append(id).append(" then ");
 				if(val != null)
 				{
 					if(isNumeric(val.toString()))
@@ -154,10 +133,7 @@ public class UpdateTable
 	 */
 	private static boolean isNumeric(String str)
 	{ 
-		if(str.equals(Symbol.EMPTY))
-			return false;
-	    Pattern pattern = Pattern.compile("[0-9]*"); 
-	    return pattern.matcher(str).matches();    
+		return Util.isNumeric(str);
 	} 
 	
 	
@@ -194,4 +170,6 @@ public class UpdateTable
 //			table.add("state", queue.getId(), queue.getState());
 //		}
 	}
+
+
 }

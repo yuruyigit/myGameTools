@@ -140,7 +140,9 @@ class Updates
 		{
 			for (UpdateObject upObject: updateObjectMap.values()) 			//表
 			{
-				UpdateTable table = new UpdateTable(upObject.getTableName());
+				UpdateTable table = upObject.getUpdateTable();
+				
+				table.clear();
 				
 				for (Object object : upObject.getUpdateObjectList()) 
 				{

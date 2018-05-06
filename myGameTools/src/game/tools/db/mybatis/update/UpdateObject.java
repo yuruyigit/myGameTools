@@ -8,6 +8,8 @@ import org.apache.ibatis.mapping.ResultMap;
 import org.apache.ibatis.mapping.ResultMapping;
 import org.apache.ibatis.session.SqlSession;
 
+import game.tools.db.UpdateTable;
+
 class UpdateObject
 {
 	/** 2018年5月8日 下午10:39:30 要更新的对象列表*/
@@ -20,6 +22,8 @@ class UpdateObject
 	private String className;
 	
 	private Class clzss;
+	
+	private UpdateTable updateTable;
 
 	UpdateObject(Object updateObject , SqlSession sqlSession)
 	{
@@ -75,6 +79,8 @@ class UpdateObject
 		
 		this.tableName = tableName;
 		
+		updateTable = new UpdateTable(tableName);
+		
 		return tableName;
 	}
 	
@@ -108,4 +114,5 @@ class UpdateObject
 	String getClassName() {		return className;	}
 	List<Object> getUpdateObjectList() {		return updateObjectList;	}
 	Class getClzss() {		return clzss;	}
+	UpdateTable getUpdateTable() {		return updateTable;	}
 }

@@ -178,10 +178,15 @@ public class Util
 	 */
 	public static boolean isNumeric(String str)
 	{ 
-		if(str.equals(Symbol.EMPTY))
+		if(StringTools.empty(str))
 			return false;
-	    Pattern pattern = Pattern.compile("[0-9]*"); 
-	    return pattern.matcher(str).matches();    
+		
+		for (int i = 0; i < str.length(); i++) 
+		{
+			if(!Character.isDigit(str.charAt(i)))
+				return false;
+		}
+		return true;
 	 } 
 	
 	public static String pringStrack()
