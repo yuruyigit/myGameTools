@@ -192,7 +192,7 @@ public class Events
 				if(THREAD_POOL == null)
 				{
 					int cpuCount = Runtime.getRuntime().availableProcessors();
-					THREAD_POOL = new ThreadPoolExecutor(cpuCount / 2, cpuCount, 65L, TimeUnit.SECONDS,new SynchronousQueue<Runnable>() , new ThreadGroupFactory(EVENT_THREAD_NAME));
+					THREAD_POOL = new ThreadPoolExecutor(cpuCount, cpuCount * 3, 60L, TimeUnit.SECONDS,new SynchronousQueue<Runnable>() , new ThreadGroupFactory(EVENT_THREAD_NAME));
 				}
 				
 			}
