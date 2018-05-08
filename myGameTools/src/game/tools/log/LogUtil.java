@@ -1,5 +1,6 @@
 package game.tools.log;
 
+import com.alibaba.fastjson.JSONObject;
 
 public class LogUtil 
 {
@@ -67,12 +68,19 @@ public class LogUtil
 				+ "修士抬不起头，依靠长生物质可活几百万年而不死。真仙（不朽者、长生者）:已是大道领域的存在，实力远超人道，依靠长生物质可长生不死。仙古纪元被称为真仙的纪元。在仙战中完整的大界被打残，化作九天十地，"
 				+ "仙域与九天十地通道也被关闭。天地法则残缺不全，导真致乱古纪元九天十地再无人可以成仙。";
 		
-		for (int i = 0; i < 1111111; i++)
-		{
-			info(content);
-			error(i , new Exception("i = " + i ) );
-			
-			System.out.println("i = " + i);
-		}
+//		for (int i = 0; i < 1; i++)
+//		{
+//			info(content);
+//			error(i , new Exception("i = " + i ) );
+//			
+//			System.out.println("i = " + i);
+//		}
+		
+		JSONObject o = new JSONObject();
+		o.put("asdf", content);
+		System.out.println(o.toJSONString());
+		
+		error(1111 , new Exception("asdfasdfasdfsdfasdf") );
+		LogUtil.info("asdfasdf");
 	}
 }

@@ -50,6 +50,8 @@ class Updates
 				}
 			}
 		}
+		
+		System.out.println("registerUpdate add  by id : " + id + " class : " + className);
 	}
 	
 	private String getClassName(Object o)

@@ -43,7 +43,7 @@ public class LogFile
 //	private static final int ALLOC_SIZE = 300;
 	private static final int ALLOC_SIZE = 300;  
 	
-	/** 2016年4月9日下午10:40:02 当前文件段索引 */
+	/** 2016年4月9日下午10:40:02 当前文件段索引 */ 
 	private int index;
 	
 	/** 2016年4月14日上午12:40:04 文件名字*/
@@ -76,8 +76,6 @@ public class LogFile
 		this.fileName = fileName;
 	}
 	
-	
-	
 	/**
 	 *  创建对应的文件
 	 */
@@ -88,8 +86,6 @@ public class LogFile
 		createFileSize();
 	}
 
-	
-	
 	private boolean createFileSize() 
 	{
 		File dir = new File(this.filePath);
@@ -346,16 +342,13 @@ public class LogFile
 		return fileArray;
 	}
 
-
-	
-	
-	public void writeFile(Object content) 
+	public synchronized void writeFile(Object content) 
 	{
 		try 
 		{
 			createFile();
 			
-			stringBuffer.append(DateTools.getCurrentTimeMSString()).append(" ");
+			stringBuffer.append(getWriterTitle());
 			stringBuffer.append(content).append(WRAP);
 
 			bufferWriter.append(stringBuffer);
@@ -407,8 +400,8 @@ public class LogFile
 		try 
 		{
 			createFile();
-
-			stringBuffer.append(getNowTimeString()).append(WRAP);
+			
+			stringBuffer.append(getWriterTitle()).append(WRAP);
 			
 			if(o != null )
 				stringBuffer.append(o).append(WRAP);
@@ -428,36 +421,13 @@ public class LogFile
 		}
 	}
 	
-	public static void main(String[] args) 
+	private String getWriterTitle()
 	{
-//		LogFiles lfs = new LogFiles("test", 7);
-//		for (int i = 0; i < 10000; i++) 
-//		{
-//			lfs.writeFile("asdfasdfsadfsadfsafddsfasdfasdfasdfadfasdf1");
-//			lfs.writeFile("asdfasdfsadfsadfsafddsfasdfasdfasdfadfasdf");
-//			lfs.writeFile("asdfasdfsadfsadfsafddsfasdfasdfasdfadfasdf");
-//			lfs.writeFile("asdfasdfsadfsadfsafddsfasdfasdfasdfadfasdf");
-//		}
-//		
-//		String s = lfs.readFile();
-//		
-		System.out.println("OK");
-		
-		
-		for (int i = 0; i < 50; i++) {
-			JSONObject o = new JSONObject();
-			o.put("i", i);
-			o.put("@timestamp", System.currentTimeMillis());
-			o.put("message", "测试内容");
-			try {
-				Thread.sleep(100L);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			System.out.println(o.toJSONString());
-		}
+		Thread t = Thread.currentThread();
+		String idName = DateTools.getCurrentTimeMSString() + " [" + t.getName()+"-" + t.getId() + "] ";
+		return idName;
 	}
-
+	
 	public String getFileName() 
 	{
 		return fileName;
