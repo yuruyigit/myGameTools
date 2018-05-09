@@ -6,8 +6,9 @@ public class LogUtil
 {
 
 	/** zzb 2014年12月5日下午12:06:22 错误 ， 信息，日志文件对象 */
-	private static LogFile ERR_LF = new LogFile("err"),
-	INFO_LF = new LogFile("info"),
+	private static LogFile ERR_LF = new LogFile("err" , 30),
+	INFO_LF = new LogFile("info" , 30),
+	DEBUG_LF = new LogFile("debug" , 30),
 	PROTOCOL_LF = new LogFile("protocol" , 30);
 	
 	/**
@@ -54,6 +55,11 @@ public class LogUtil
 		PROTOCOL_LF.writeFile(content);
 	}
 	
+	public static void debug(String content) 
+	{
+		DEBUG_LF.writeFile(content);
+	}
+	
 	public static void main(String[] args)
 	{
 		String content = "搬血：需调动全身精血，滚滚如雷鸣，熔炼骨文，在血液中催发出神曦，从而淬炼天地造化，滋养肉身。最高可使肉身达至十万斤极境。洞天："
@@ -83,4 +89,5 @@ public class LogUtil
 		error(1111 , new Exception("asdfasdfasdfsdfasdf") );
 		LogUtil.info("asdfasdf");
 	}
+
 }

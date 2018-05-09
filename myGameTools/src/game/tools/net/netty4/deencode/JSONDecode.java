@@ -1,5 +1,6 @@
 package game.tools.net.netty4.deencode;
 
+import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,21 +36,35 @@ public class JSONDecode extends Netty4Decode
 			/*
 			 * 4byte[length]+2byte[short:commandId]+byte[protocalType]+4byte[stringlength]+json[string]
 			 */
-			int totalLength = readInt(buffer);			//协议总长
+//			buffer.order(ByteOrder.LITTLE_ENDIAN);
+//			buffer.order(ByteOrder.BIG_ENDIAN);
 			
-			if(buffer.readableBytes() < totalLength)		//数据体长度不对
+			
+			int totalLength = buffer.readInt();
+			
+//			int totalLength = readInt(buffer);			//协议总长
+			
+			if(buffer.readableBytes() < totalLength - 4 )		//数据体长度不对
 			{
 				buffer.resetReaderIndex();
+				buffer.markReaderIndex();
 				return ;
 			}
 			
-			buffer.readBytes(new byte[2]);
-			buffer.readByte();
+			int bodyLength = buffer.readInt();
+//			byte[] t = new byte[4];
+//			buffer.readBytes(t);
+//			int bodyLength = byteToInt(t);
+//			
+//			int bodyLength1 = readInt(buffer);
 			
 			
-			int bodyLength = readInt(buffer);
 			byte[] data = new byte[bodyLength];
-			buffer.readBytes(data, 0, data.length);
+			buffer.readBytes(data);
+			
+//			System.out.println(Arrays.toString(data));
+			
+//			buffer.readBytes(data, 0, data.length);
 			
 //			System.out.println("bodyLength1 = " + bodyLength + " " +Arrays.toString(data));
 //			

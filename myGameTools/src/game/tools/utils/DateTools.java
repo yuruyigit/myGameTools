@@ -297,7 +297,7 @@ public class DateTools
 		Calendar beforeday = getCalendarByDate(date);
 		beforeday.add(Calendar.DATE, num);
 		
-		return getCurrentTimeString(beforeday.getTimeInMillis());
+		return getCurrentDateString(beforeday.getTimeInMillis());
 	}
 	
 	public static  int[] getTimeArray()

@@ -24,7 +24,8 @@ public class JSONEncode extends Netty4Encode
 			JSONObject o = (JSONObject)msg;
 			o.put("srvTime", System.currentTimeMillis());
 			
-			String content = o.toString() + "\0";
+//			String content = o.toString() + "\0";
+			String content = o.toString();
 //			String content = JSON.toJSONString(o ,SerializerFeature.DisableCircularReferenceDetect) + "\0";
 			byte[] data = content.getBytes(MSG_ENCODE);
 			
@@ -43,11 +44,11 @@ public class JSONEncode extends Netty4Encode
 			 */
 			
 			int bodyLength = data.length;
-			int totalLength = bodyLength + 7;
-			ByteBuffer buf = ByteBuffer.allocate(totalLength + 4 ).order(ByteOrder.LITTLE_ENDIAN);
+			int totalLength = bodyLength + 4;
+			ByteBuffer buf = ByteBuffer.allocate(totalLength + 4);
 			buf.putInt(totalLength);
-			buf.putShort((short)104);
-			buf.put((byte)0);
+//			buf.putShort((short)104);
+//			buf.put((byte)0);
 			buf.putInt(bodyLength);
 			buf.put(data);
 			

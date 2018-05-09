@@ -1,8 +1,9 @@
 package game.tools.net.netty4.protocol;
 import com.alibaba.fastjson.JSONObject;
 
+import game.tools.net.netty4.deencode.JSONDecode;
+import game.tools.net.netty4.deencode.JSONEncode;
 import game.tools.net.netty4.deencode.ProtoBufDecode;
-import game.tools.net.netty4.deencode.ProtoBufEncode;
 import game.tools.net.netty4.server.Netty4Server;
 import game.tools.protocol.protobuffer.Protocol.Login;
 import game.tools.protocol.protobuffer.ProtocolBuffer;
@@ -41,20 +42,20 @@ public class Netty4ProtocolServerMain
 	public static void main(String[] args) throws Exception
 	{
 		Netty4Server ns = new Netty4Server(
-//				new JSONDecode(), 
-//				new JSONEncode(),
-				new ProtoBufDecode(), 
-				new ProtoBufEncode(),
+				new JSONDecode(), 
+				new JSONEncode(),
+//				new ProtoBufDecode(), 
+//				new ProtoBufEncode(),
 		new Netty4ProtocolHandler("game.tools.net" , new INetty4Protocol() 
 		{
 			@Override
 			public int getProtocolNo(Object msg) 
 			{
-//				return ((JSONObject)msg).getIntValue("protocolNo");
+				return ((JSONObject)msg).getIntValue("protocolNo");
 				
-				byte [] bufArray = (byte [])msg;
-				byte [] protoNoArray = {bufArray[0],bufArray[1],bufArray[2],bufArray[3]};
-				return  ProtoBufDecode.readInt(protoNoArray);
+//				byte [] bufArray = (byte [])msg;
+//				byte [] protoNoArray = {bufArray[0],bufArray[1],bufArray[2],bufArray[3]};
+//				return  ProtoBufDecode.readInt(protoNoArray);
 			}
 			
 			@Override
@@ -114,9 +115,12 @@ public class Netty4ProtocolServerMain
 	}
 	
 	@Netty4Protocol(protocolNo = 111001)		//如果是登录
-	public void test(Channel channel,  Login msg )
+//	public void test(Channel channel,  Login msg )
+	public void test(Channel channel,  JSONObject o)
 	{
-		System.out.println(channel.hashCode()  + " test 111001 ");
+//		System.out.println(channel.hashCode()  + " test 111001 ");
+		
+		channel.writeAndFlush(o);
 	}
 }
 

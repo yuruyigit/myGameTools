@@ -1,5 +1,4 @@
 package game.tools.event;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -7,22 +6,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import game.tools.debug.Debug;
-import game.tools.log.LogUtil;
 import game.tools.threadpool.ThreadGroupFactory;
-import game.tools.threadpool.Threads;
 
 public class Events 
 {
 	
 	private static final List<Event> EVENT_LIST =  Collections.synchronizedList(new ArrayList<Event>(5));
+
+	private static final Calendar CALE = Calendar.getInstance();
 	
 	private static ExecutorService THREAD_POOL;
 	
@@ -92,16 +88,18 @@ public class Events
 		EVENT_THREAD = null;
 	}
 	
-
 	/**
 	 * @return 返回年月日时分秒周数组
 	 */
 	private static int []  getDate()
 	{
+//		Calendar cale = Calendar.getInstance();
+//		cale.setFirstDayOfWeek(Calendar.MONDAY);
+		
 		int [] dateArr = new int[7];
 		
-		Calendar cale = Calendar.getInstance();
-		cale.setFirstDayOfWeek(Calendar.MONDAY);
+		Calendar cale = CALE;
+		cale.setTimeInMillis(System.currentTimeMillis());
 		
 		dateArr[0] = cale.get(Calendar.YEAR);
 		dateArr[1] = cale.get(Calendar.MONTH) + 1;
@@ -112,13 +110,6 @@ public class Events
 		dateArr[6] = getWeekDay(cale);
 		
 		return dateArr;
-	}
-	
-	
-	private static int getWeekDay()
-	{
-		Calendar CALENDAR = Calendar.getInstance();
-		return getWeekDay(CALENDAR);
 	}
 	
 	private static int getWeekDay(Calendar cale)
@@ -164,12 +155,17 @@ public class Events
 				{
 					int [] dateArr = getDate();
 					
-					for (Event event : EVENT_LIST) 
-						if(event.isExecute(dateArr))
+					synchronized (EVENT_LIST) 
+					{
+						for (Event event : EVENT_LIST) 
 						{
-							checkExecuteWorkThread();
-							THREAD_POOL.execute(event.getRunable());
+							if(event.isExecute(dateArr))
+							{
+								checkExecuteWorkThread();
+								THREAD_POOL.execute(event.getRunable());
+							}
 						}
+					}
 					
 					Thread.sleep(1000L);
 				}
@@ -187,7 +183,7 @@ public class Events
 	{
 		if(THREAD_POOL == null)
 		{
-			synchronized(EVENT_LIST)
+			synchronized(CALE)
 			{
 				if(THREAD_POOL == null)
 				{
@@ -213,39 +209,8 @@ public class Events
         }
 	}
 	
-	public static void main(String[] args) 
+	public static boolean isSTART() 
 	{
-		
-		int dateArr [] = getDate();
-		System.out.println(Arrays.toString(dateArr));
-		
-//		Events.addEvent(new Event("0 0 0 19 23 30 2", new Runnable() {
-//			public void run() {
-//				System.out.println("0 0 0 19 23 30 2");
-//			}
-//		}));
-		
-		
-		Events.addEvent(new Event("- - - - - 1 -", new Runnable() {
-			public void run() {
-				System.out.println("0 0 0 19 23 30 2");
-			}
-		}));
-		Events.addEvent(new Event("- - - - - 1 -", new Runnable() {
-			public void run() {
-				System.out.println("0 0 0 19 222222222222222222 30 2");
-			}
-		}));
-		
-		
-//		Events.start();
-//		
-//		String sb = Threads.getAllThreadInfo();
-		
-//		System.out.println(sb);
-	}
-
-	public static boolean isSTART() {
 		return START;
 	}
 	
@@ -262,4 +227,34 @@ public class Events
 		
 	}
 	
+	public static void main(String[] args) 
+	{
+		
+		int dateArr [] = getDate();
+		System.out.println(Arrays.toString(dateArr));
+		
+//		Events.addEvent(new Event("0 0 0 19 23 30 2", new Runnable() {
+//			public void run() {
+//				System.out.println("0 0 0 19 23 30 2");
+//			}
+//		}));
+		
+		Debug.debugStrack("event1111111111");
+		
+		Events.addEvent(new Event("- - - - - 1 -", new Runnable() {
+			public void run() {
+				System.out.println("0 0 0 19 23 30 2");
+				Debug.debugStrack("event");
+			}
+		}));
+		Events.addEvent(new Event("- - - - - 1 -", new Runnable() {
+			public void run() {
+				System.out.println("0 0 0 19 222222222222222222 30 2");
+			}
+		}));
+		
+//		Events.start();
+//		String sb = Threads.getAllThreadInfo();
+//		System.out.println(sb);
+	}
 }

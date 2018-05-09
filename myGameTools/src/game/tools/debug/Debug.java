@@ -22,14 +22,15 @@ public class Debug
 	}
 	
 	public static String debugStrack(String methodInfo)
-	{	
+	{
 		String strack = getStrackStr();
-		String threadName = Thread.currentThread().getName();
-		long threadId = Thread.currentThread().getId();
+//		String threadName = Thread.currentThread().getName();
+//		long threadId = Thread.currentThread().getId();
 		
-		String content = DateTools.getCurrentTimeMSString()+ " methodInfo "+methodInfo+"\n threadId " +threadId + " threadName " +threadName + "\n strack :" + strack;
+//		String content = " methodInfo "+methodInfo+"\n threadId " +threadId + " threadName " +threadName + "\n strack :" + strack;
+		String content =  " methodInfo "+methodInfo+ " \n" + strack;
 		
-		LogUtil.info(content);
+		LogUtil.debug(content);
 		
 		return content;
 		

@@ -424,7 +424,7 @@ public class LogFile
 	private String getWriterTitle()
 	{
 		Thread t = Thread.currentThread();
-		String idName = DateTools.getCurrentTimeMSString() + " [" + t.getName()+"-" + t.getId() + "] ";
+		String idName = DateTools.getCurrentTimeMSString() + " [" + t.getName()+" <" + t.getId() + ">] ";
 		return idName;
 	}
 	

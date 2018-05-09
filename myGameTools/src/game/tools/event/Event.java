@@ -1,7 +1,5 @@
 package game.tools.event;
 
-import java.util.Calendar;
-
 public class Event 
 {
 	private String eventName;
