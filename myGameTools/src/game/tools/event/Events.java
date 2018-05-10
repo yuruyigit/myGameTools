@@ -27,6 +27,11 @@ public class Events
 	
 	private static String EVENT_THREAD_NAME = "Events.execute";
 	
+	static
+	{
+		checkExecuteWorkThread();
+	}
+	
 	public static void addEvent(Event event)
 	{
 		EVENT_LIST.add(event);
@@ -160,7 +165,6 @@ public class Events
 						{
 							if(event.isExecute(dateArr))
 							{
-								checkExecuteWorkThread();
 								THREAD_POOL.execute(event.getRunable());
 							}
 						}
@@ -239,7 +243,7 @@ public class Events
 		
 		Events.addEvent(new Event("* * * * -3 5 *", new Runnable() {
 			public void run() {
-				System.out.println("Event 每隔5秒执行 " + DateTools.getCurrentTimeMSString());
+				System.out.println("Event 每3分钟隔到时间5秒执行 " + DateTools.getCurrentTimeMSString());
 //				Debug.debugStrack("event");
 			}
 		}));
