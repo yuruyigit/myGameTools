@@ -9,9 +9,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import game.tools.debug.Debug;
 import game.tools.threadpool.ThreadGroupFactory;
+import game.tools.utils.DateTools;
 
 public class Events 
 {
@@ -190,7 +189,6 @@ public class Events
 					int cpuCount = Runtime.getRuntime().availableProcessors();
 					THREAD_POOL = new ThreadPoolExecutor(cpuCount, cpuCount * 3, 60L, TimeUnit.SECONDS,new SynchronousQueue<Runnable>() , new ThreadGroupFactory(EVENT_THREAD_NAME));
 				}
-				
 			}
 		}
 	}
@@ -239,17 +237,16 @@ public class Events
 //			}
 //		}));
 		
-		Debug.debugStrack("event1111111111");
-		
-		Events.addEvent(new Event("- - - - - 1 -", new Runnable() {
+		Events.addEvent(new Event("* * * * -3 5 *", new Runnable() {
 			public void run() {
-				System.out.println("0 0 0 19 23 30 2");
-				Debug.debugStrack("event");
+				System.out.println("Event 每隔5秒执行 " + DateTools.getCurrentTimeMSString());
+//				Debug.debugStrack("event");
 			}
 		}));
-		Events.addEvent(new Event("- - - - - 1 -", new Runnable() {
+		Events.addEvent(new Event("* * * * * 2 *", new Runnable() {
 			public void run() {
-				System.out.println("0 0 0 19 222222222222222222 30 2");
+//				System.out.println("0 0 0 19 222222222222222222 30 2");
+				System.out.println("Event 时间秒到2执行 " + DateTools.getCurrentTimeMSString());
 			}
 		}));
 		
