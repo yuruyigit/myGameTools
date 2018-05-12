@@ -9,6 +9,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import game.tools.log.LogUtil;
 import game.tools.threadpool.ThreadGroupFactory;
 import game.tools.utils.DateTools;
 
@@ -175,7 +177,8 @@ public class Events
 			}
 			catch (InterruptedException e) 
 			{
-//				e.printStackTrace();
+				e.printStackTrace();
+				LogUtil.error(e);
 			}
 		} , EVENT_THREAD_NAME);
 		
@@ -232,27 +235,37 @@ public class Events
 	public static void main(String[] args) 
 	{
 		
-		int dateArr [] = getDate();
-		System.out.println(Arrays.toString(dateArr));
+//		int dateArr [] = getDate();
+//		System.out.println(Arrays.toString(dateArr));
 		
-//		Events.addEvent(new Event("0 0 0 19 23 30 2", new Runnable() {
-//			public void run() {
-//				System.out.println("0 0 0 19 23 30 2");
-//			}
+		Events.addEvents(
+				new Event(()->
+				{
+					System.out.println("测试事件1 " + DateTools.getCurrentTimeMSString() );
+				} , 
+				"* * * * -2 0 *", 
+				"* * * * -5 10 *"),
+				new Event(()->
+				{
+					System.out.println("测试事件2 " + DateTools.getCurrentTimeMSString() );
+				} , 
+				"* * * * -2/-5 0/10 *"));
+		
+//		Events.addEvent(new Event("* * -2 0 0 0 *", ()->{
+//			System.out.println("每隔2天0点0分0分，执行开启赛季时间。" + DateTools.getCurrentTimeMSString());
 //		}));
 		
-		Events.addEvent(new Event("* * * * -3 5 *", new Runnable() {
-			public void run() {
-				System.out.println("Event 每3分钟隔到时间5秒执行 " + DateTools.getCurrentTimeMSString());
-//				Debug.debugStrack("event");
-			}
-		}));
-		Events.addEvent(new Event("* * * * * 2 *", new Runnable() {
-			public void run() {
-//				System.out.println("0 0 0 19 222222222222222222 30 2");
-				System.out.println("Event 时间秒到2执行 " + DateTools.getCurrentTimeMSString());
-			}
-		}));
+		
+//		Events.addEvent(new Event("* * * * -3 5 *", new Runnable() {
+//			public void run() {
+//				System.out.println("Event 每3分钟隔到时间5秒执行 " + DateTools.getCurrentTimeMSString());
+//			}
+//		}));
+//		Events.addEvent(new Event("* * * * * 2 *", new Runnable() {
+//			public void run() {
+//				System.out.println("Event 时间秒到2执行 " + DateTools.getCurrentTimeMSString());
+//			}
+//		}));
 		
 //		Events.start();
 //		String sb = Threads.getAllThreadInfo();

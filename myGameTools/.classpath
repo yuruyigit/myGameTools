@@ -3,7 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="lib/dubbo/dubbo-2.5.3.jar"/>
 	<classpathentry kind="lib" path="lib/dubbo/javassist-3.18.1-GA.jar"/>
-	<classpathentry kind="lib" path="lib/dubbo/netty-3.2.5.Final.jar"/>
 	<classpathentry kind="lib" path="lib/jetty/jetty-http-9.3.9.v20160517.jar"/>
 	<classpathentry kind="lib" path="lib/jetty/jetty-io-9.3.9.v20160517.jar"/>
 	<classpathentry kind="lib" path="lib/jetty/jetty-security-9.3.9.v20160517.jar"/>
@@ -18,7 +17,6 @@
 	<classpathentry kind="lib" path="lib/mybatis/commons-pool-1.5.4.jar"/>
 	<classpathentry kind="lib" path="lib/mybatis/mybatis-3.2.3.jar"/>
 	<classpathentry kind="lib" path="lib/mybatis/mybatis-spring-1.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/protocol-buffer/protobuf-java-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/protocol-buffer/protobuf-java-3.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/spring/spring-asm-3.1.1.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/spring/spring-beans-3.1.1.RELEASE.jar"/>
@@ -31,12 +29,10 @@
 	<classpathentry kind="lib" path="lib/commons-lang3-3.4.jar"/>
 	<classpathentry kind="lib" path="lib/commons-pool2-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/druid-1.0.21.jar"/>
-	<classpathentry kind="lib" path="lib/fastjson-1.2.31.jar"/>
 	<classpathentry kind="lib" path="lib/google-flatbuffer-v1.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/JavaPNS_2.2.jar"/>
 	<classpathentry kind="lib" path="lib/jedis-2.9.0.jar"/>
 	<classpathentry kind="lib" path="lib/jxl.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
 	<classpathentry kind="lib" path="lib/luajava-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.38.jar"/>
@@ -48,5 +44,6 @@
 	<classpathentry kind="lib" path="lib/tomcat-juli.jar"/>
 	<classpathentry kind="lib" path="lib/xmlbeans-2.6.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.8.0_162"/>
+	<classpathentry kind="lib" path="lib/fastjson-1.2.31.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
