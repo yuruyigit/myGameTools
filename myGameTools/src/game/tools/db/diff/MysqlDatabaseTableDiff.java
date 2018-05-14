@@ -3,7 +3,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -12,10 +11,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-
-import com.alibaba.fastjson.JSONObject;
-
-import game.tools.log.LogUtil;
 
 /**
  * @author zhouzhibin
@@ -182,7 +177,6 @@ public class MysqlDatabaseTableDiff
 		}
 		catch (Exception e) 
 		{
-			LogUtil.error(e);
 			e.printStackTrace();// 打印出错详细信息
 		}
 		
@@ -233,7 +227,6 @@ public class MysqlDatabaseTableDiff
 		}
 		catch (Exception e) 
 		{
-			LogUtil.error(e);
 			e.printStackTrace();
 		}
 		finally
@@ -267,22 +260,55 @@ public class MysqlDatabaseTableDiff
 		} 
 		catch (Exception e) 
 		{
-			LogUtil.error(e);
 			System.out.println("数据库关闭错误");
 			e.printStackTrace();
 		}
 	}
 	
+	private static void printDemo()
+	{
+		System.out.println("java -jar (server1)ip地址:端口:用户名:密码:数据库  (server2)ip地址:端口:用户名:密码:数据库  生成的sql目录地址\n"+
+				"以server1为准进行比较差异\n"+
+				"例如：java -jar mysqlStructsync.jar 192.168.56.31:3306:root:123456:game_dev 192.168.56.31:3306:root:123456:game_test d:");
+		
+	}
+	
 	public static void main(String[] args) 
 	{
 		MysqlDatabaseTableDiff diff = new MysqlDatabaseTableDiff();
-//		String server1 = args[0];
-//		String server2 = args[1];
-//		String writerPath = args[2];
+		if(args == null || args.length == 0)
+		{
+			printDemo();
+			System.out.println("Rec Param Is Empty");
+			System.exit(-1);
+		}
 		
-		String server1 = "192.168.56.31:3306:root:123456:game_dev";
-		String server2 = "192.168.56.31:3306:root:123456:game_test";
-		String writerPath = "d:/";
+		String server1 = args[0];
+		String server2 = args[1];
+		String writerPath = args[2];
+		
+		if(server1 == null || "".equals(server1))
+		{
+			System.out.println("Rec Param server1 Is Empty");
+			printDemo();
+			System.exit(-1);
+		}
+		if(server2 == null || "".equals(server2))
+		{
+			System.out.println("Rec Param server2 Is Empty");
+			printDemo();
+			System.exit(-1);
+		}
+		if(writerPath == null || "".equals(writerPath))
+		{
+			System.out.println("Rec Param writerPathIs Empty");
+			printDemo();
+			System.exit(-1);
+		}
+			
+//		String server1 = "192.168.56.31:3306:root:123456:game_dev";
+//		String server2 = "192.168.56.31:3306:root:123456:game_test";
+//		String writerPath = "d:/";
 		 
 		diff.doDiff(server1 , server2 , writerPath);
 	}
