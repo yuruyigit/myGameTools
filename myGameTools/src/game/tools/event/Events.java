@@ -51,9 +51,26 @@ public class Events
 			start();
 	}
 	
+	public static boolean removeEvent(String eventName)
+	{
+		Event removeEvent = null;
+		
+		for (Event event : EVENT_LIST) 
+		{
+			if(event.getEventName().equals(eventName))
+			{
+				removeEvent = event;
+				break;
+			}
+		}
+		return removeEvent(removeEvent);
+	}
 	
 	public static boolean removeEvent(Event event)
 	{
+		if(event == null)
+			return false;
+		
 		return EVENT_LIST.remove(event);
 	}
 	
@@ -219,7 +236,6 @@ public class Events
 		return START;
 	}
 	
-	
 	public static String eventInfo()
 	{
 		String eventName = "";
@@ -229,38 +245,35 @@ public class Events
 			eventName += " [" + event.getEventName() + "] , ";
 		}
 		return eventName;
-		
 	}
 	
 	public static void main(String[] args) 
 	{
-		
-//		int dateArr [] = getDate();
-//		System.out.println(Arrays.toString(dateArr));
-		
 		Events.addEvents(
-				new Event(()->
+				new Event((event)->
 				{
 					System.out.println("测试事件1 " + DateTools.getCurrentTimeMSString() );
 				} , 
 				"* * * * -2 0 *", 
 				"* * * * -5 10 *"),
-				new Event(()->
+				new Event((event)->
 				{
 					System.out.println("测试事件2 " + DateTools.getCurrentTimeMSString() );
+					
+					Events.removeEvent(event);
 				} , 
-				"* * * * -2/-5 0/10 *"));
+				"* * * * * -0/-10 *"));
 		
 //		Events.addEvent(new Event("* * -2 0 0 0 *", ()->{
 //			System.out.println("每隔2天0点0分0分，执行开启赛季时间。" + DateTools.getCurrentTimeMSString());
 //		}));
-		
 		
 //		Events.addEvent(new Event("* * * * -3 5 *", new Runnable() {
 //			public void run() {
 //				System.out.println("Event 每3分钟隔到时间5秒执行 " + DateTools.getCurrentTimeMSString());
 //			}
 //		}));
+		
 //		Events.addEvent(new Event("* * * * * 2 *", new Runnable() {
 //			public void run() {
 //				System.out.println("Event 时间秒到2执行 " + DateTools.getCurrentTimeMSString());

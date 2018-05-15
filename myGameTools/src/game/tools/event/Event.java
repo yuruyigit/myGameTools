@@ -5,6 +5,10 @@ import com.alibaba.fastjson.JSONObject;
 
 public class Event 
 {
+	/** 2018年5月10日 下午4:56:05  表示不判断这个数值 , 要表示的日期时间的数组长度*/
+	private static final int EMPTY = 99 , DATE_TIME_LEGNTH = 7;
+	/** 2018年5月10日 下午5:00:31 表示不判断这个数值的字符串*/
+	
 	private String eventName;
 	
 	private int [][] triggerArray;
@@ -13,9 +17,6 @@ public class Event
 	
 	private Runnable job;
 	
-	/** 2018年5月10日 下午4:56:05  表示不判断这个数值 , 要表示的日期时间的数组长度*/
-	private static final int EMPTY = 99 , DATE_TIME_LEGNTH = 7;
-	/** 2018年5月10日 下午5:00:31 表示不判断这个数值的字符串*/
 	private static final String EMPTY_STRING = "*";
 	
 	private boolean [] resultArr = null;
@@ -29,6 +30,7 @@ public class Event
 	private int trigger = 0;
 	
 	/**
+	 * @param work 需要执行的任务。
 	 * @param trigger 触发器条件,格式：年 月 日 时 分 秒 周, 未指定:"*", 多条件:"/"。 <br/>
 	 * <b>注意：正整数为绝对时间点触发，负整数为指定间隔点触发。</b> <br/>
 	 * 如：("* * * 3 15 0 1") 则表示，每周一3点15分0秒去执行 。<br/>
@@ -37,21 +39,35 @@ public class Event
 	 * 如：("* * * * -2/-6 0 *") 则表示，每隔2分和6分去执行次。<br/>
 	 * 如：取消使用该时段则使用"*"来表示。<br/>
 	 * <b>注意：如果在同一个Event里面配置，多条相同的事件触发点，则会执行最前配置。</b><br/>
-	 * <t>如：("* * * * -2/-6 0 *")该配置则有可能在42分钟的时间点来触发，-2与-6，则默认只执行-2的一次事件点</t>
-	 * @param job 需要执行的任务
+	 * <t>如：("* * * * -2/-6 0 *")该配置则有可能在42分钟的时间点来触发，<br/>
+	 * -2与-6，则默认只执行-2的一次事件点。</t>
 	 */
-	public Event(Runnable job , String ...triggerArray) 
+	public Event(EventWork work , String ...triggerArray) 
 	{
 		this.eventName = Arrays.toString(triggerArray);
 		this.triggerResultArray = new boolean [DATE_TIME_LEGNTH];
-		this.job = job;
 		
 		if(triggerArray.length == 1)
 			parseTriggers(triggerArray[0]);
 		else
 			parseTriggerArray(triggerArray);
 		
-		printTrigger();
+		initJob(work);
+		
+//		printTrigger();
+	}
+	
+	private void initJob(EventWork work)
+	{
+		Event thisObject = this;
+		this.job = new Runnable() 
+		{
+			@Override
+			public void run() 
+			{
+				work.work(thisObject);
+			}
+		};
 	}
 	
 	private void parseTriggerArray(String []triggerArray)
