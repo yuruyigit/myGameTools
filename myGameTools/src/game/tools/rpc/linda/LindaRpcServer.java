@@ -1,26 +1,20 @@
 package game.tools.rpc.linda;
-
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
 import com.alibaba.fastjson.JSONObject;
+import game.tools.method.IMethodNo;
+import game.tools.method.MethodInvokeTools;
+import game.tools.method.MethodObject;
 import game.tools.net.netty4.Netty4Handler;
 import game.tools.net.netty4.ObjectInitializer;
-import game.tools.net.netty4.protocol.Netty4Protocol;
 import game.tools.net.netty4.server.Netty4Server;
 import game.tools.redis.RedisCmd;
 import game.tools.redis.RedisOper;
-import game.tools.utils.ClassUtils;
 import game.tools.utils.StringTools;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -40,8 +34,10 @@ public class LindaRpcServer
 {	
 	private static final String LINDA_RPC_KEY = "LINDA-RPC-SERVER";
 	
+	public static final int GAP_TIME = 1 * 60 * 1000;
+	
 	/** 协议处理函数集合 */
-	private HashMap<Integer , Method> protocolHandlerMap = new HashMap<Integer , Method>();
+	private HashMap<Integer , MethodObject> protocolHandlerMap = new HashMap<Integer , MethodObject>();
 	
 	private String registerRedis;
 	
@@ -53,7 +49,13 @@ public class LindaRpcServer
 	
 	private ILindaRpcNo rpcNo;
 	
+	/** 2018年5月17日 下午3:13:56 rpc的linda实体对象*/
+	private Linda linda;
+	
 	private String scanClassPackage;
+
+	/** 2018年5月17日 下午3:25:43 上一次接收处理的时间戳*/
+	private long lastHandlerTimeLong;
 	
 	/**
 	
@@ -65,7 +67,7 @@ public class LindaRpcServer
 基于netty4通信，与服务器客户端建立连接，进行远程调用。
 LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new IRpc()
 {
-	public Object execute(RpcPackage rpcPackage) 
+	public Object getNo(RpcPackage rpcPackage) 
 	{
 		//在此处理相应的逻辑
 	}
@@ -93,9 +95,9 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new IRpc()
 	 * @param rpc 	对应所实现功能的接口
 <pre>
 基于netty4通信，与服务器客户端建立连接，进行远程调用。
-LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new IRpc()
+LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new ILindaRpcNo()
 {
-	public Object execute(RpcPackage rpcPackage) 
+	public Object getNo(RpcPackage rpcPackage) 
 	{
 		//在此处理相应的逻辑
 	}
@@ -125,42 +127,16 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new IRpc()
 
 	private void registerHander() 
 	{
-		try 
+		protocolHandlerMap = MethodInvokeTools.getInvokeMethod(scanClassPackage, LindaRpcNo.class, new IMethodNo() 
 		{
-			Set<String> setString = ClassUtils.getClassName(scanClassPackage, true);
-			
-			for (String string : setString) 
+			public int getMethodNo(Annotation annot) 
 			{
-				Class clzss = ClassLoader.getSystemClassLoader().loadClass(string);
-				Method[] methodArray = clzss.getDeclaredMethods();
-				
-				for (Method method : methodArray) 
-				{
-					Annotation annot = method.getAnnotation(LindaRpcNo.class);
-
-					if(annot != null)
-					{
-						LindaRpcNo rpcNo = (LindaRpcNo)annot;
-						
-						if(protocolHandlerMap.containsKey(rpcNo.rpcNo()))
-						{
-							throw new Exception("LindaRpcServer : duplicate rpcNo key !! at " + rpcNo.rpcNo());
-						}
-						
-						protocolHandlerMap.put(rpcNo.rpcNo(), method);
-					}
-				}
+				LindaRpcNo rpcNo = (LindaRpcNo)annot;
+				return rpcNo.rpcNo();
 			}
-			
-			if(protocolHandlerMap.isEmpty())
-			{
-				throw new Exception("LindaRpcServer : protocolHandlerMap isEmpty");
-			}
-		} 
-		catch (Exception e) 
-		{
-			e.printStackTrace();
-		}
+		});
+		
+		lastHandlerTimeLong = System.currentTimeMillis();
 	}
 	
 	private void registerNetty() 
@@ -203,14 +179,13 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new IRpc()
 				{
 					Object [] paramArray = (Object [] ) msg;
 					
-//					Object result = rpcNo.execute(new RpcPackage(paramArray));
 					Object result = executeHandler(new LindaRpcPackage(paramArray));
 					
 					Object [] resultArray = new Object [] {result , paramArray[paramArray.length - 1]};
 					
-//					System.out.println(Arrays.toString(resultArray));
-					
 					ctx.channel().writeAndFlush(resultArray);
+					
+					executeEndHander();
 				}
 				catch (Exception e) 
 				{
@@ -224,16 +199,38 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new IRpc()
 		nettyServer.start(this.port);
 	}
 	
+
+	private void executeEndHander() 
+	{
+		this.linda.hit();
+		
+		long nowTime = System.currentTimeMillis();
+		long gapTime = nowTime - lastHandlerTimeLong;
+		
+		
+		if(gapTime > 3000)
+		{
+			String jsonString = JSONObject.toJSONString(linda);
+			
+			RedisOper.execute(RedisCmd.hset, LINDA_RPC_KEY, linda.getName() , jsonString);
+			
+			lastHandlerTimeLong = System.currentTimeMillis();
+			
+			this.linda.reset();
+		}
+	}
+	
+	
 	private Object executeHandler(LindaRpcPackage pkg) throws Exception
 	{
 		int protocolNo = rpcNo.getNo(pkg);
 		
-		Method protocolHandlerMethod = protocolHandlerMap.get(protocolNo);
+		MethodObject methodObject = protocolHandlerMap.get(protocolNo);
 		
-		if(protocolHandlerMethod == null)
+		if(methodObject == null)
 			throw new Exception("LindaRpcServer.executeHandler:" + protocolNo + " Not Handler.");
 		
-		return protocolHandlerMethod.invoke(null,pkg);
+		return methodObject.getMethod().invoke(methodObject.getObject() , pkg);
 	}
 	
 	/**
@@ -296,6 +293,7 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new IRpc()
 		connectionRedist(registerRedis);
 			
 		String localIp = this.appointIp;
+		
 		try 
 		{
 			if(StringTools.empty(localIp))
@@ -308,14 +306,13 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new IRpc()
 		
 		String nameKey = localIp+":"+this.port;
 		
-		Linda linda = new Linda();
+		this.linda = new Linda();
 		linda.setName(nameKey);
 		linda.setIp(localIp);
 		linda.setPort(this.port);
 		linda.setWeight(weight);
 		
 		RedisOper.execute(RedisCmd.hset, LINDA_RPC_KEY, nameKey , JSONObject.toJSON(linda));
-		
 	}
 	
 	@LindaRpcNo(rpcNo = 156)
@@ -334,7 +331,7 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new IRpc()
 //		r.run();
 		
 		final int port = 12345;
-		LindaRpcServer server = new LindaRpcServer("game" , "127.0.0.1:6379",  port , 20, new ILindaRpcNo() 
+		LindaRpcServer server = new LindaRpcServer("game.tools.rpc" , "127.0.0.1:6379",  port , 20, new ILindaRpcNo() 
 		{
 			@Override
 			public int getNo(LindaRpcPackage rpcPackage) {
@@ -344,7 +341,7 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new IRpc()
 		
 		
 		final int port1 = 12346;
-		LindaRpcServer server1 = new LindaRpcServer("game" , "127.0.0.1:6379", port1 , 20, new ILindaRpcNo() 
+		LindaRpcServer server1 = new LindaRpcServer("game.tools.rpc" , "127.0.0.1:6379", port1 , 20, new ILindaRpcNo() 
 		{
 			@Override
 			public int getNo(LindaRpcPackage rpcPackage) {

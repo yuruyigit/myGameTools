@@ -2,6 +2,8 @@ package game.tools.utils;
 
 import java.io.File;  
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.JarURLConnection;  
@@ -177,5 +179,29 @@ public class ClassUtils {
 	{
 	    String path = System.getProperty("user.dir");
 	    return path.replace("\\\\", "\\");
+	}
+	
+	
+	
+	/**
+	 * @return 是否有空的构建函数，用于创建对象使用
+	 */
+	public static boolean isCreate(Class clzss)
+	{
+		boolean isAbs = Modifier.isAbstract(clzss.getModifiers()) ;
+		if(isAbs)			//如果是抽象类
+			return false;
+		
+		boolean isInter = Modifier.isInterface(clzss.getModifiers());
+		if(isInter)			//如果是接口
+			return false;
+		
+		Constructor [] constrArray = clzss.getConstructors();
+		for (Constructor constructor : constrArray) 
+		{
+			if(constructor.getParameterTypes().length == 0)		//如果有空的构造函数
+				return true;
+		}
+		return false;
 	}
 }  

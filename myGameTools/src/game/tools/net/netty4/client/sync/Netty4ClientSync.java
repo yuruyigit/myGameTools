@@ -1,9 +1,7 @@
 package game.tools.net.netty4.client.sync;
 
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import com.alibaba.fastjson.JSONObject;
 import game.tools.net.netty4.Netty4Decode;
 import game.tools.net.netty4.Netty4Encode;
@@ -12,10 +10,6 @@ import game.tools.net.netty4.Netty4Initializer;
 import game.tools.net.netty4.client.Netty4Client;
 import game.tools.net.netty4.deencode.JSONDecode;
 import game.tools.net.netty4.deencode.JSONEncode;
-import game.tools.net.netty4.deencode.ProtoBufDecode;
-import game.tools.net.netty4.deencode.ProtoBufEncode;
-import game.tools.protocol.protobuffer.ProtocolBuffer;
-import game.tools.protocol.protobuffer.Protocol.Login;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
@@ -246,16 +240,16 @@ public class Netty4ClientSync extends Netty4Client
 			{
 				JSONObject o = JSONObject.parseObject("{\"protocolNo\":110001,\"platfromId\":\"1\",\"userId\":\"2017062613s37ssdddds42\",\"channelId\":\"3000001\"}");
 				
-				ProtocolBuffer protocolBuffer = new ProtocolBuffer(110001, 
-						Login.newBuilder()
-						.setUserId("2017062613s37ssdddds42")
-						.setChannl("3000001")
-						.setPlaform("1"));
+//				ProtocolBuffer protocolBuffer = new ProtocolBuffer(110001, 
+//						Login.newBuilder()
+//						.setUserId("2017062613s37ssdddds42")
+//						.setChannl("3000001")
+//						.setPlaform("1"));
 				
-				System.out.println(protocolBuffer.toString());
+//				System.out.println(protocolBuffer.toString());
 				
-//				Netty4ClientSync client = new Netty4ClientSync("127.0.0.1", 1111, new JSONDecode() , new JSONEncode() , new INettyChannelRead() {
-				Netty4ClientSync client = new Netty4ClientSync("127.0.0.1", 1111, new ProtoBufDecode() , new ProtoBufEncode() , new INettyChannelRead() {
+				Netty4ClientSync client = new Netty4ClientSync("127.0.0.1", 1111, new JSONDecode() , new JSONEncode() , new INettyChannelRead() {
+//				Netty4ClientSync client = new Netty4ClientSync("127.0.0.1", 1111, new ProtoBufDecode() , new ProtoBufEncode() , new INettyChannelRead() {
 					
 					@Override
 					public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception 
@@ -270,30 +264,25 @@ public class Netty4ClientSync extends Netty4Client
 					try 
 					{
 						
-						Object result = client.send(protocolBuffer);
-						
-						client.send(new ProtocolBuffer(111001, 
-								Login.newBuilder()
-								.setUserId("2017062613s37ssdddds42")
-								.setChannl("3000001")
-								.setPlaform("1")));
-						
-						
-						client.send(new ProtocolBuffer(120002, 
-								Login.newBuilder()
-								.setUserId("2017062613s37ssdddds42")
-								.setChannl("3000001")
-								.setPlaform("1")));
+//						Object result = client.send(protocolBuffer);
+//						client.send(new ProtocolBuffer(111001, 
+//								Login.newBuilder()
+//								.setUserId("2017062613s37ssdddds42")
+//								.setChannl("3000001")
+//								.setPlaform("1")));
+//						client.send(new ProtocolBuffer(120002, 
+//								Login.newBuilder()
+//								.setUserId("2017062613s37ssdddds42")
+//								.setChannl("3000001")
+//								.setPlaform("1")));
 						
 						
-//						Object result = client.send(o);
-//						o = JSONObject.parseObject("{\"protocolNo\":120001}");
-//						client.send(o);
-						
+						Object result = client.send(o);
+						o = JSONObject.parseObject("{\"protocolNo\":120001}");
+						client.send(o);
 						Thread.sleep(300);
-						
-//						o = JSONObject.parseObject("{\"protocolNo\":120002}");
-//						client.send(o);
+						o = JSONObject.parseObject("{\"protocolNo\":120002}");
+						client.send(o);
 					}
 					catch (InterruptedException e) 
 					{
@@ -389,13 +378,13 @@ public class Netty4ClientSync extends Netty4Client
 //		sends(client, o);
 	}
 	
-	private static void sends(Netty4ClientSync client , JSONObject o)
-	{
-		long startTime = System.currentTimeMillis();
-		Object result = client.send(o);
-		long endTime = System.currentTimeMillis();
-		System.out.println("send = " + (endTime - startTime) + "\t result = " + result);
-	}
+//	private static void sends(Netty4ClientSync client , JSONObject o)
+//	{
+//		long startTime = System.currentTimeMillis();
+//		Object result = client.send(o);
+//		long endTime = System.currentTimeMillis();
+//		System.out.println("send = " + (endTime - startTime) + "\t result = " + result);
+//	}
 	
 
 }

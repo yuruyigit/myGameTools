@@ -1,7 +1,4 @@
 package game.tools.http.protocol;
-import javax.servlet.http.HttpServletRequest;
-
-import game.tools.http.HttpClient;
 import game.tools.http.HttpServer;
 import game.tools.http.HttpTools;
 

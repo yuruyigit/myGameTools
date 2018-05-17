@@ -51,19 +51,30 @@ public class LindaRpcClient
 LindaClient lindaClient = new LindaClient("127.0.0.1:6379");
 Object o = lindaClient.call(array);
 </pre>
+	 * @param checkChannelHit 是否是收集命中
 	 */
-	public LindaRpcClient(String registerRedis) 
+	public LindaRpcClient(String registerRedis , boolean checkChannelHit) 
 	{
 		this.registerRedis = registerRedis;
+		this.checkChannelHit = checkChannelHit;
 		
 		init();
 	}
+	
+	
+	public LindaRpcClient(String registerRedis) 
+	{
+		this(registerRedis , false);
+	}
+	
 
 	private void init() 
 	{
 		registerRedis();
 		
 		initLindaServer();
+		
+		initChannelHit();
 	}
 	
 	private void registerRedis() 
@@ -85,6 +96,17 @@ Object o = lindaClient.call(array);
 		if(nettyClientMap == null)
 			this.nettyClientMap = new HashMap<>(this.lindaMap.size());
 	}
+	
+	
+	private void initChannelHit()
+	{
+		if(this.checkChannelHit)
+		{
+			if(channelHitMap == null)
+				this.channelHitMap = new HashMap<String,LindaChannelHit>(this.lindaMap.size());
+		}
+	}
+	
 	
 	private synchronized Netty4Client createNettyClient(Linda linda) 
 	{
@@ -156,6 +178,16 @@ Object o = lindaClient.call(array);
 	 */
 	private synchronized Netty4Client getNettyClient()
 	{
+		if(this.totalWeight <= 0)
+		{
+			try {
+				throw new Exception("Linda Rpc totalWeight is 0 !!");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+		
 		long nowTime = System.currentTimeMillis();
 		long gapTime = (nowTime - lastInitLindaServerMapTime) / 1000 / 60;
 		if(gapTime >= RELOAD_SERVER_MAP_GAP_TIME)
@@ -214,19 +246,6 @@ Object o = lindaClient.call(array);
 			channelHit.addHitCount(nowTime);
 		}
 	}
-	
-	
-	public synchronized void checkChannelHit(boolean checkChannelHit)
-	{
-		this.checkChannelHit = checkChannelHit;
-		
-		if(this.checkChannelHit)
-		{
-			if(channelHitMap == null)
-				this.channelHitMap = new HashMap<String,LindaChannelHit>(this.lindaMap.size());
-		}
-	}
-	
 	
 	/**
 	 * 检测通信客户端是否满的
@@ -341,14 +360,8 @@ Object o = lindaClient.call(array);
 	{
 		if(!checkChannelHit)
 		{
-			try 
-			{
-				throw new Exception("checkChannelHit not true ");
-			}
-			catch (Exception e) 
-			{
-				e.printStackTrace();
-			}
+			System.err.println("checkChannelHit not true ");
+			return null;
 		}
 		
 		return JSONObject.toJSONString(channelHitMap);
@@ -358,31 +371,45 @@ Object o = lindaClient.call(array);
 	{
 		Object [] array = {1,12,3,"张三",1.2f,"第二步，是对全国18家铁路局和3家专业运输公司（中铁集装箱运输有限责任公司、中铁特货运输有限责任公司、中铁快运股份有限公司）的公司制改革，即对运输主业的改革。对于这部分企业，中铁总正在加紧做好相关准备工作，并形成指导意见，改制方案和公司章程、议事规则范本。其中，完善企业化、市场化运行机制是这部分企业改革的指导方针，中铁总计划在2017年年底前启动直属运输企业改革。　　最后一步是改革最难的部分，即对中铁总公司的公司制改革。上述人士称，对总公司的改革原则就是要实现绝对的政企分开，目前方案正在国务院和财政部审核，待上述部门作出批复意见后方可实施推进。　　财新记者获悉，在近期中铁总举行的推进铁路公司制改革会议上，中铁总总经理陆东福表示，铁路企业公司制改革今年是起步和探索阶段，2018年要全面深化开展，目的是建立收、支、利刚性"};
 		
-		for (int j = 0; j < 100; j++) 
+		for (int j = 0; j < 1; j++) 
 		{
 			LindaRpcClient lindaClient = new LindaRpcClient("127.0.0.1:6379");
-//			lindaClient.checkChannelHit(true);
 			
 			Thread t1 = new Thread(()->{
-				for (int i = 0; i < 10; i++) {
+				for (int i = 0; i < 30; i++) {
 					int index = getIndex(lindaClient);
 					Object result = lindaClient.call(index ,156, "参数1","参数2","参数3");
+					try {
+						Thread.sleep(10);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 					System.out.println(index + ":" + Thread.currentThread().getId() + ": t1 result = " + result);
 				}
 			});
 			
 			Thread t2 = new Thread(()->{
-				for (int i = 0; i < 10; i++) {
+				for (int i = 0; i < 30; i++) {
 					int index = getIndex(lindaClient);
 					Object result = lindaClient.call(index ,156, "参数1","参数2","参数3");
+					try {
+						Thread.sleep(10);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 					System.out.println(index + ":" + Thread.currentThread().getId() + ": t1 result = " + result);
 				}
 			});
 			
 			Thread t3 = new Thread(()->{
-				for (int i = 0; i < 10; i++) {
+				for (int i = 0; i < 30; i++) {
 					int index = getIndex(lindaClient);
 					Object result = lindaClient.call(index , 156,"参数1","参数2","参数3");
+					try {
+						Thread.sleep(10);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 					System.out.println(index + ":" + Thread.currentThread().getId() + ": t1 result = " + result);
 				}
 			});
@@ -391,8 +418,8 @@ Object o = lindaClient.call(array);
 			t2.start();
 			t3.start();
 			
-//			Thread.sleep(1500);
-//			System.out.println(j +" getChannelHitSInfoString = " + lindaClient.getChannelHitSInfoString());
+			Thread.sleep(3000);
+			System.out.println(j +" getChannelHitSInfoString = " + lindaClient.getChannelHitSInfoString());
 //			Thread.sleep(1500);
 			
 		}

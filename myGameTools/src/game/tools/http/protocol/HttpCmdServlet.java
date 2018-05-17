@@ -1,34 +1,17 @@
 package game.tools.http.protocol;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
-import java.util.Set;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import game.tools.http.HttpClient;
 import game.tools.log.LogUtil;
-import game.tools.utils.ClassUtils;
-
-class MethodObject
-{
-	private Method method;
-	
-	private Object object;
-
-	public MethodObject(Method method, Object object) 
-	{
-		this.method = method;
-		this.object = object;
-	}
-
-	public Method getMethod() {		return method;	}
-	public Object getObject() {		return object;	}
-}
+import game.tools.method.IMethodNo;
+import game.tools.method.MethodInvokeTools;
+import game.tools.method.MethodObject;
 
 /**
  * @author zhibing.zhou
@@ -50,9 +33,11 @@ public class HttpCmdServlet extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
 	/** 协议处理函数集合 */
-	private static final HashMap<Integer , MethodObject> HTTP_CMD_METHOD_MAP = new HashMap<Integer , MethodObject>();
+	private static HashMap<Integer , MethodObject> HTTP_CMD_METHOD_MAP;
 	/** 扫描函数包的路径 */
 	private static String SCAN_CLASS_PACKAGE;
+	
+	private static Object lock = new Object();
 	
 	/**
 	 * 设置扫描函数包的路径，<b>注意：只有初次才有效，如二次设置，则直接丢弃。</b>
@@ -62,7 +47,7 @@ public class HttpCmdServlet extends HttpServlet {
 	{
 		if(HttpCmdServlet.SCAN_CLASS_PACKAGE == null)
 		{
-			synchronized (HTTP_CMD_METHOD_MAP) 
+			synchronized (lock) 
 			{
 				if(HttpCmdServlet.SCAN_CLASS_PACKAGE == null)
 				{
@@ -79,66 +64,15 @@ public class HttpCmdServlet extends HttpServlet {
 	 */
 	private static void initInvokeMethod()
 	{
-		try 
+		HTTP_CMD_METHOD_MAP  = MethodInvokeTools.getInvokeMethod(HttpCmdServlet.SCAN_CLASS_PACKAGE, HttpCmd.class, new IMethodNo() 
 		{
-			if(!HTTP_CMD_METHOD_MAP.isEmpty())		//如果不是空
-				HTTP_CMD_METHOD_MAP.clear();
-				
-			Set<String> setString = ClassUtils.getClassName("game.tools.http", true);
-			
-			for (String string : setString) 
+			public int getMethodNo(Annotation annot) 
 			{
-				Class clzss = ClassLoader.getSystemClassLoader().loadClass(string);
-				
-				Object clzssObject = null;
-				
-				if(isCreate(clzss))			
-					clzssObject = clzss.newInstance();
-				
-				Method[] methodArray = clzss.getDeclaredMethods();
-				
-				for (Method method : methodArray) 
-				{
-					Annotation annot = method.getAnnotation(HttpCmd.class);
-
-					if(annot != null)
-					{
-						HttpCmd cmd = ((HttpCmd)annot);
-						
-						if(HTTP_CMD_METHOD_MAP.containsKey(cmd.cmdNo()))
-						{
-							throw new Exception("HttpCmdServlet : duplicate httpCmd key !! at " + cmd.cmdNo());
-						}
-						
-						HTTP_CMD_METHOD_MAP.put(cmd.cmdNo(), new MethodObject(method, clzssObject));
-					}
-				}
+				HttpCmd cmd = ((HttpCmd)annot);
+				return cmd.cmdNo();
 			}
-		}
-		catch (Exception e) 
-		{
-			e.printStackTrace();
-		}
+		});
 	}
-	
-	/**
-	 * @return 是否有空的构建函数，用于创建对象使用
-	 */
-	private static boolean isCreate(Class clzss)
-	{
-		boolean isAbs = Modifier.isAbstract(clzss.getModifiers()) ;
-		if(isAbs)			//如果是抽象类
-			return false;
-		
-		Constructor [] constrArray = clzss.getConstructors();
-		for (Constructor constructor : constrArray) 
-		{
-			if(constructor.getParameterTypes().length == 0)
-				return true;
-		}
-		return false;
-	}
-	
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

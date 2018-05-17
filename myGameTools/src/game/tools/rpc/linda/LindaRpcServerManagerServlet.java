@@ -56,7 +56,7 @@ public class  LindaRpcServerManagerServlet extends HttpServlet
 			HashMap<String, Linda>lindaMap = LindaRpcServer.getLindaServerHashMap();
 			
 			StringBuffer tableContent = new StringBuffer();
-			tableContent.append("<tr><td>名称</td><td>ip地址</td><td>端口</td><td>分配权重</td></tr>");
+			tableContent.append("<tr><td>名称</td><td>ip地址</td><td>端口</td><td>分配权重</td><td><div style=\"width:120px\">每3秒命中</div></td></tr>");
 			
 			for(Linda linda : lindaMap.values())
 			{
@@ -65,6 +65,7 @@ public class  LindaRpcServerManagerServlet extends HttpServlet
 						.append("<td width='25%' >").append(linda.getIp()).append("</td>")
 						.append("<td width='10%' >").append(linda.getPort()).append("</span></td>")
 						.append("<td width='40%' > <input type=\"text\"  name='"+linda.getName()+"' style=\"width:120px\" value=\'").append(linda.getWeight()).append("'/></td>")
+						.append("<td width='10%' >").append("<div>   " + linda.getHit() + "   </div>").append("</td>")
 						.append("</tr>");
 			}
 			
@@ -80,17 +81,17 @@ public class  LindaRpcServerManagerServlet extends HttpServlet
 			.append("<body><br/><br/>");
 			if(update)
 				pageContent.append(alert("更新成功！"));
-			else 
+			else 	
 			{
 				if(paramMap.size() > 0)
 					pageContent.append(alert("参数无更改！"));
 			}
 			
 			pageContent.append("<div align=\"center\" > <form action='"+localUrl+"' method='post'><table width=\"1000px\" height=\"100%\" cellpadding=\"0\" cellspacing=\"0\" >")
-			.append("<tr height=\"50px\">  <td colspan=\"4\" align=\"center\"><img src=\"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1503652789614&di=1a5f7630ef133c257f3187d26da81d7d&imgtype=0&src=http%3A%2F%2Fthemagichappensnow.com%2Fwp-content%2Fuploads%2F2015%2F03%2Fwipe-97583_640.png\" weight=\"50px\" height=\"50px\"  valign=\"middle\"/>Linda 服务管理</td></tr>")
+			.append("<tr height=\"50px\">  <td colspan=\"5\" align=\"center\"><img src=\"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1503652789614&di=1a5f7630ef133c257f3187d26da81d7d&imgtype=0&src=http%3A%2F%2Fthemagichappensnow.com%2Fwp-content%2Fuploads%2F2015%2F03%2Fwipe-97583_640.png\" weight=\"50px\" height=\"50px\"  valign=\"middle\"/>Linda 服务管理</td></tr>")
 //			.append("<tr height=\"50px\">  <td colspan=\"4\" align=\"center\">Linda 服务管理</td></tr>")
 			.append(tableContent)
-			.append("<tr height=\"50px\"><td colspan=\"4\" align=\"center\">")
+			.append("<tr height=\"50px\"><td colspan=\"5\" align=\"center\">")
 				.append("<input type=\"submit\" style=\"width:120px\" value=\"更新权重\"/>  ")
 //				.append("<input type=\"button\" style=\"width:120px\" value=\"删除服务\"/>")
 			.append("</td></tr></table></div></body>")

@@ -29,12 +29,17 @@ class PlayControl
 	}
 	
 	@Netty4Protocol(protocolNo = 120002)
-//	public void test2(JSONObject msg)
-	public void test2(Login msg)	
+	public void test2(JSONObject msg)
 	{
 		System.out.println( this.id + " " + this.userId +  " test2 120002 msg : " + msg);
-		channel.writeAndFlush(new ProtocolBuffer(120002, msg.toBuilder()));
+		channel.writeAndFlush(msg);
 	}
+//	@Netty4Protocol(protocolNo = 120002)
+//	public void test2(Login msg)	
+//	{
+//		System.out.println( this.id + " " + this.userId +  " test2 120002 msg : " + msg);
+//		channel.writeAndFlush(new ProtocolBuffer(120002, msg.toBuilder()));
+//	}
 	
 }
 public class Netty4ProtocolServerMain 
@@ -87,32 +92,28 @@ public class Netty4ProtocolServerMain
 	 * @param msg
 	 * @param attach
 	 */
-//	@Netty4Protocol(protocolNo = 110001)		//如果是登录
-//	public void doLogin(Channel channel,  Object msg )
-//	{
-//		JSONObject o = (JSONObject)msg;
-//		
-//		PlayControl playControl = new PlayControl(channel , o.getString("userId"));
-//		
-//		Netty4ProtocolHandler.setAttributeKey(channel, playControl);
-//		
-//		System.out.println(channel.hashCode()  + " doLogin 110001 msg : " + msg);
-//		
-//		channel.writeAndFlush(msg);
-//	}
-	
 	@Netty4Protocol(protocolNo = 110001)		//如果是登录
-	public void doLogin(Channel channel,  Login msg ) throws Exception
+	public void doLogin(Channel channel,  JSONObject msg )
 	{
-		PlayControl playControl = new PlayControl(channel , msg.getUserId());
+		JSONObject o = (JSONObject)msg;
+		
+		PlayControl playControl = new PlayControl(channel , o.getString("userId"));
+		
 		Netty4ProtocolHandler.setPlayControlAttribute(channel, playControl);
 		
-//		System.out.println(channel.hashCode()  + " doLogin 110001 msg : " + msg);
-//		String n = null;
-//		n.toCharArray();
+		System.out.println(channel.hashCode()  + " doLogin 110001 msg : " + msg);
 		
-		channel.writeAndFlush(new ProtocolBuffer(110001, msg.toBuilder()));
+		channel.writeAndFlush(msg);
 	}
+	
+//	@Netty4Protocol(protocolNo = 110001)		//如果是登录
+//	public void doLogin(Channel channel,  Login msg ) throws Exception
+//	{
+//		PlayControl playControl = new PlayControl(channel , msg.getUserId());
+//		Netty4ProtocolHandler.setPlayControlAttribute(channel, playControl);
+		
+//		channel.writeAndFlush(new ProtocolBuffer(110001, msg.toBuilder()));
+//	}
 	
 	@Netty4Protocol(protocolNo = 111001)		//如果是登录
 //	public void test(Channel channel,  Login msg )

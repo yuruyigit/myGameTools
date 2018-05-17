@@ -4,14 +4,17 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
 import game.tools.log.LogUtil;
+import game.tools.method.IMethodNo;
+import game.tools.method.MethodInvokeTools;
+import game.tools.method.MethodObject;
 import game.tools.net.netty4.Netty4Handler;
 import game.tools.protocol.protobuffer.ProtocolBuffer;
 import game.tools.threadpool.ThreadGroupFactory;
@@ -19,41 +22,6 @@ import game.tools.utils.ClassUtils;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
-
-class MethodObject
-{
-
-	/** 2018年4月19日 上午2:21:07 protocol解析数据函数名*/
-	private static final String protobuffer_parse_form = "parseFrom";
-	
-	private Object object;
-	
-	private int protocolNo;
-	
-	private Method method;
-	
-	private Method protobufferParseFromMethod;
-
-	public MethodObject(int protocolNo, Object object, Method method) 
-	{
-		this.object = object;
-		this.protocolNo = protocolNo;
-		this.method = method;
-		Class clzssParams [] = this.method.getParameterTypes();
-		Class paramClass = clzssParams[clzssParams.length - 1];
-		try 
-		{
-			if(paramClass.getSuperclass().getName().indexOf("com.google.protobuf") >= 0)
-				this.protobufferParseFromMethod = paramClass.getMethod(MethodObject.protobuffer_parse_form, byte[].class);
-		}
-		catch (Exception e)		{		}
-	}
-
-	public Object getObject() {		return object;	}
-	public int getProtocolNo() {		return protocolNo;	}
-	public Method getMethod() {		return method;	}
-	public Method getProtobufferParseFromMethod() {		return protobufferParseFromMethod;	}
-}
 
 /**
  * @author zhouzhibin
@@ -141,64 +109,16 @@ public class Netty4ProtocolHandler extends Netty4Handler
 	
 	private void init(String scanClassPackage) throws Exception
 	{
-		Set<String> setString = ClassUtils.getClassName(scanClassPackage, true);
-		
-		boolean isCreate = false;
-		
-		for (String string : setString) 
+		protocolHandlerMap = MethodInvokeTools.getInvokeMethod(scanClassPackage, Netty4Protocol.class, false ,new IMethodNo() 
 		{
-			Class clzss = ClassLoader.getSystemClassLoader().loadClass(string);
-			
-			isCreate = isCreate(clzss);
-			
-			Object clzssObject = null;
-			
-			if(isCreate)			
-				clzssObject = clzss.newInstance();
-			
-			Method[] methodArray = clzss.getDeclaredMethods();
-			
-			for (Method method : methodArray) 
+			@Override
+			public int getMethodNo(Annotation annot) 
 			{
-				method.setAccessible(true);
-				
-				Annotation annot = method.getAnnotation(Netty4Protocol.class);
-
-				if(annot != null)
-				{
-					Netty4Protocol protocol = ((Netty4Protocol)annot);
-					
-					int protocolNo = protocol.protocolNo();
-					
-					if(protocolHandlerMap.containsKey(protocolNo))
-						throw new Exception("Netty4ProtocolHandler : duplicate protocolNo key !! at " + protocolNo);
-					
-					MethodObject methodObject = new MethodObject(protocolNo, clzssObject, method);
-					
-					protocolHandlerMap.put(protocolNo, methodObject);
-				}
+				Netty4Protocol protocol = ((Netty4Protocol)annot);
+				return protocol.protocolNo();
 			}
-		}
+		});
 	}
-	
-	/**
-	 * @return 是否有空的构建函数，用于创建对象使用
-	 */
-	private boolean isCreate(Class clzss)
-	{
-		boolean isAbs = Modifier.isAbstract(clzss.getModifiers()) ;
-		if(isAbs)			//如果是抽象类
-			return false;
-		
-		Constructor [] constrArray = clzss.getConstructors();
-		for (Constructor constructor : constrArray) 
-		{
-			if(constructor.getParameterTypes().length == 0)
-				return true;
-		}
-		return false;
-	}
-	
 	
 	/**
 	 * 设置渠道附加对象
