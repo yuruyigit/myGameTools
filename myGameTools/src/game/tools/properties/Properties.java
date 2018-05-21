@@ -12,28 +12,31 @@ import game.tools.utils.StringTools;
 
 public class Properties 
 {
-	private static HashMap<String, Object> CONFIG_MAP = new HashMap<>();
+	private HashMap<String, Object> configMap = new HashMap<>();
 	
 	@SuppressWarnings("unchecked")
-	public static <T> T getValue(String key)
+	public <T> T getValue(String key)
 	{
-		return (T)CONFIG_MAP.get(key);
+		return (T)configMap.get(key);
 	}
 	
-	protected static java.util.Properties initProperties(String path)
+	protected java.util.Properties initProperties(String path)
 	{
 		return initProperties(getInputStream(path) , Properties.class);
 	}
 	
-	
-	protected static java.util.Properties initProperties(String path , Class clzss)
+	protected java.util.Properties initProperties(String path , Class clzss)
 	{
 		return initProperties(getInputStream(path) , clzss);
 	}
 	
+	protected static java.util.Properties initProperties(Properties p , String path , Class clzss)
+	{
+		return p.initProperties(getInputStream(path) , clzss);
+	}
 	
 	@SuppressWarnings("rawtypes")
-	protected static java.util.Properties initProperties(InputStream is, Class clzss)
+	protected java.util.Properties initProperties(InputStream is, Class clzss)
 	{
 		java.util.Properties properties = null;
 		try
@@ -97,7 +100,7 @@ public class Properties
 				else
 					value = fieldValue;
 				
-				CONFIG_MAP.put(fieldName, value);
+				configMap.put(fieldName, value);
 			}
 			
 			System.err.println(notFieldMessage);
@@ -171,10 +174,12 @@ public class Properties
 		System.out.println(StringTools.isNumber("0.a55000011111"));
 		
 		
-		initProperties("conf/jdbc.properties");
+		Properties p = new Properties();
 		
-		String db_user = getValue("db_user");
-		int n = getValue("db_retryAttempts");
+		p.initProperties("conf/jdbc.properties");
+		
+		String db_user = p.getValue("db_user");
+		int n = p.getValue("db_retryAttempts");
 		
 		System.out.println("db_user = " + db_user + " n = " + n);
 //		System.out.println("db_url = " + db_url);

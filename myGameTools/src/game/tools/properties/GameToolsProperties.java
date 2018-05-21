@@ -15,7 +15,7 @@ public class GameToolsProperties extends Properties
 	
 	static 
 	{
-		initProperties("conf/jdbc.properties", GameToolsProperties.class);
+		initProperties(new GameToolsProperties() , "conf/jdbc.properties", GameToolsProperties.class);
 	}
 
 
