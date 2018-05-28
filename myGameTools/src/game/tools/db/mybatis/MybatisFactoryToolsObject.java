@@ -186,7 +186,14 @@ public class MybatisFactoryToolsObject
 	 
 	private String getRunJarPath(String rootMapper) 
 	{
-		String projectPath = "/" + getProjectPath() + "/" + System.getProperty("java.class.path");
+		String projectPath = null;
+		String classPath = System.getProperty("java.class.path");
+		
+		if(classPath.indexOf(";") >= 0)
+			projectPath = classPath.split("\\;")[0];
+		else
+			projectPath = "/" + getProjectPath() + "/" + classPath;
+		
 //		String allPath = MybatisFactoryTools.class.getResource("/"+rootMapper.replace('.', '/')+"/").getPath();
 ////		allPath = System.getProperty("java.class.path"); 
 ////		allPath = " file:/data/server/gameLogic/gameLogic.jar!/game/data/sys/mapper/";
@@ -206,7 +213,12 @@ public class MybatisFactoryToolsObject
 //			String [] arrayString = allPath.split("!")[0].split(":");
 //			projectPath = arrayString[arrayString.length - 1];
 //		}
-//		System.out.println("projectPath = "  + projectPath);
+		
+//		String path = this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile();
+//		
+//		System.out.println("getProjectPath() = "  + getProjectPath());
+//		System.out.println("path = "  + path);
+//		System.out.println("java.class.path = "  + System.getProperty("java.class.path"));
 		
 		return projectPath;
 	}
@@ -678,6 +690,9 @@ public class MybatisFactoryToolsObject
 		try
 		{
 			String runProjectPath = getRunJarPath(rootMapperDir);
+		
+			System.out.println("runProjectPath = " + runProjectPath);
+			
 			ZipFile  zipFile = new ZipFile(runProjectPath);
 			
 			Enumeration<ZipEntry> enu = (Enumeration<ZipEntry>) zipFile.entries();  

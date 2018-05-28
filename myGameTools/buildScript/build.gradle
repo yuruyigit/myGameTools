@@ -1,0 +1,61 @@
+//配置构建可运行jar包，配置构建可运行jar包。
+//配置构建可运行jar包，配置构建可运行jar包。
+//配置构建可运行jar包，配置构建可运行jar包。
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = 'main.Main'
+archivesBaseName = 'app'
+
+sourceCompatibility = 1.8			//指定源码编译版本
+
+//不将配置文件打包到jar文件内
+processResources {
+    exclude { "**/*.*" }
+}
+
+
+compileJava {  
+    options.encoding = "UTF-8"  // 设置编译语言为UTF-8  
+}  
+
+sourceSets {
+   main {
+      java {
+         srcDir 'src'
+         println "===================sourceSets==================="
+      }
+      resources {
+            srcDir 'src' //资源目录
+      }
+   }
+}
+
+dependencies {
+	compile project(':myGameTools')		// 设置项目依赖  
+
+    compile fileTree(dir: 'lib', include: ['*.jar'])		//设置lib下的所有jar依赖
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': mainClassName					//设置启动类
+        attributes "Class-Path": configurations.compile.collect { "${it.name}" }.join(' ')
+    }
+    
+    //from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }			//所有依赖将编译打到jar里面
+    
+    into('assets') {
+        from 'assets'
+    }
+    
+    exclude('LICENSE.txt', 'NOTICE.txt', 'rootdoc.txt')  
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'  
+    exclude 'META-INF/NOTICE', 'META-INF/NOTICE.txt'  
+    exclude 'META-INF/LICENSE', 'META-INF/LICENSE.txt'  
+    exclude 'META-INF/DEPENDENCIES'  
+    
+    
+    println "===================jar==================="
+}
