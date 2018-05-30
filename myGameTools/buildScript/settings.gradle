@@ -1,3 +1,3 @@
 
-include ':myGameTools' // ÔÚsettings.gradleÖĞÉèÖÃºÃmyGameToolsµÄÏîÄ¿ÒıÓÃÇé¿ö  
+include ':myGameTools' // åœ¨settings.gradleä¸­è®¾ç½®å¥½myGameToolsçš„é¡¹ç›®å¼•ç”¨æƒ…å†µ   
 project(':myGameTools').projectDir = new File('D:\\WorkSpace\\SvnSpace\\myGameTools\\trunk\\myGameTools')  

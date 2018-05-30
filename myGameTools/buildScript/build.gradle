@@ -1,6 +1,7 @@
-//ÅäÖÃ¹¹½¨¿ÉÔËĞĞjar°ü£¬ÅäÖÃ¹¹½¨¿ÉÔËĞĞjar°ü¡£
-//ÅäÖÃ¹¹½¨¿ÉÔËĞĞjar°ü£¬ÅäÖÃ¹¹½¨¿ÉÔËĞĞjar°ü¡£
-//ÅäÖÃ¹¹½¨¿ÉÔËĞĞjar°ü£¬ÅäÖÃ¹¹½¨¿ÉÔËĞĞjar°ü¡£
+//é…ç½®æ„å»ºå¯è¿è¡ŒjaråŒ…ï¼Œé…ç½®æ„å»ºå¯è¿è¡ŒjaråŒ…ã€‚
+//é…ç½®æ„å»ºå¯è¿è¡ŒjaråŒ…ï¼Œé…ç½®æ„å»ºå¯è¿è¡ŒjaråŒ…ã€‚
+//é…ç½®æ„å»ºå¯è¿è¡ŒjaråŒ…ï¼Œé…ç½®æ„å»ºå¯è¿è¡ŒjaråŒ…ã€‚
+//ç›®å‰settings.gradleï¼Œä¸ºé…ç½®å¯¼å…¥ä¾èµ–é¡¹ç›®jaråŒ…ã€‚ 
 
 apply plugin: 'java'
 apply plugin: 'application'
@@ -8,16 +9,16 @@ apply plugin: 'application'
 mainClassName = 'main.Main'
 archivesBaseName = 'app'
 
-sourceCompatibility = 1.8			//Ö¸¶¨Ô´Âë±àÒë°æ±¾
+sourceCompatibility = 1.8			//æŒ‡å®šæºç ç¼–è¯‘ç‰ˆæœ¬
 
-//²»½«ÅäÖÃÎÄ¼ş´ò°üµ½jarÎÄ¼şÄÚ
+//ä¸å°†é…ç½®æ–‡ä»¶æ‰“åŒ…åˆ°jaræ–‡ä»¶å†…
 processResources {
     exclude { "**/*.*" }
 }
 
 
 compileJava {  
-    options.encoding = "UTF-8"  // ÉèÖÃ±àÒëÓïÑÔÎªUTF-8  
+    options.encoding = "UTF-8"  // è®¾ç½®ç¼–è¯‘è¯­è¨€ä¸ºUTF-8  
 }  
 
 sourceSets {
@@ -27,24 +28,24 @@ sourceSets {
          println "===================sourceSets==================="
       }
       resources {
-            srcDir 'src' //×ÊÔ´Ä¿Â¼
+            srcDir 'src' //èµ„æºç›®å½•
       }
    }
 }
 
 dependencies {
-	compile project(':myGameTools')		// ÉèÖÃÏîÄ¿ÒÀÀµ  
+	compile project(':myGameTools')		// è®¾ç½®é¡¹ç›®ä¾èµ–  
 
-    compile fileTree(dir: 'lib', include: ['*.jar'])		//ÉèÖÃlibÏÂµÄËùÓĞjarÒÀÀµ
+    compile fileTree(dir: 'lib', include: ['*.jar'])		//è®¾ç½®libä¸‹çš„æ‰€æœ‰jarä¾èµ–
 }
 
 jar {
     manifest {
-        attributes 'Main-Class': mainClassName					//ÉèÖÃÆô¶¯Àà
+        attributes 'Main-Class': mainClassName					//è®¾ç½®å¯åŠ¨ç±»
         attributes "Class-Path": configurations.compile.collect { "${it.name}" }.join(' ')
     }
     
-    //from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }			//ËùÓĞÒÀÀµ½«±àÒë´òµ½jarÀïÃæ
+    //from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }			//æ‰€æœ‰ä¾èµ–å°†ç¼–è¯‘æ‰“åˆ°jaré‡Œé¢
     
     into('assets') {
         from 'assets'
