@@ -51,6 +51,16 @@ public class Events
 			start();
 	}
 	
+	public static boolean existEvent(String eventName)
+	{
+		for (Event event : EVENT_LIST) 
+		{
+			if(event.getEventName().equals(eventName))
+				return true;
+		}
+		return false;
+	}
+	
 	public static boolean removeEvent(String eventName)
 	{
 		Event removeEvent = null;

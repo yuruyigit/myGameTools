@@ -206,6 +206,15 @@ public class DateTools
 		return dateArr;
 	}
 	
+	
+	/**
+	 * @return 返回年月日时分秒周数组
+	 */
+	public static int [] getDateTimeArray(long time)
+	{
+		return getCalenderArray(time);
+	}
+	
 	/**
 	 * zzb 
 	 * @param time1
