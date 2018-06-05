@@ -1,6 +1,8 @@
 package game.tools.event;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+
 import com.alibaba.fastjson.JSONObject;
 
 public class Event 
@@ -44,7 +46,8 @@ public class Event
 	 */
 	public Event(EventWork work , String ...triggerArray) 
 	{
-		this.eventName = Arrays.toString(triggerArray);
+		this.eventName = getName(triggerArray);
+		
 		this.triggerResultArray = new boolean [DATE_TIME_LEGNTH];
 		
 		if(triggerArray.length == 1)
@@ -55,6 +58,23 @@ public class Event
 		initJob(work);
 		
 //		printTrigger();
+	}
+	
+	private String getName(String ...triggerArray)
+	{
+		StringBuffer triggerString = new StringBuffer();
+		String string = null;
+		
+		for (int i = 0; i < triggerArray.length; i++) 
+		{
+			string = triggerArray[i];
+			if(i < triggerArray.length - 1 )
+				triggerString.append(string).append(",");
+			else
+				triggerString.append(string);
+		}
+		
+		return eventName = triggerString.toString();
 	}
 	
 	private void initJob(EventWork work)
