@@ -1,6 +1,6 @@
 package game.tools.db.cache.expire;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
-
 import game.tools.utils.DateTools;
 
 class KeyValue<K,V>
@@ -121,6 +121,19 @@ public class ExpireCacheDataMap<K,V>
 		
 		return value.getValue();
 	}
+	
+	public ArrayList<V> values()
+	{
+		ArrayList<V> list = new ArrayList<V>(keyIndexMap.size());
+		
+		for (KeyValue<K,V> keyVal: keyIndexMap.values()) 
+		{
+			list.add(keyVal.getValue());
+		}
+		return list;
+	}
+
+	
 	
 	@Override
 	public String toString() {
