@@ -122,7 +122,7 @@ public class ExpireCacheDataMap<K,V>
 		return value.getValue();
 	}
 	
-	public ArrayList<V> values()
+	public ArrayList<V> toArrayList()
 	{
 		ArrayList<V> list = new ArrayList<V>(keyIndexMap.size());
 		
@@ -132,8 +132,6 @@ public class ExpireCacheDataMap<K,V>
 		}
 		return list;
 	}
-
-	
 	
 	@Override
 	public String toString() {
