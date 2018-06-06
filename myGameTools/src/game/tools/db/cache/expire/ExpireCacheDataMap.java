@@ -124,6 +124,8 @@ public class ExpireCacheDataMap<K,V>
 	
 	public ArrayList<V> toArrayList()
 	{
+		checkExpireKey();
+		
 		ArrayList<V> list = new ArrayList<V>(keyIndexMap.size());
 		
 		for (KeyValue<K,V> keyVal: keyIndexMap.values()) 
