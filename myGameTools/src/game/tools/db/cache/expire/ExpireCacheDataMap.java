@@ -122,6 +122,11 @@ public class ExpireCacheDataMap<K,V>
 		return value.getValue();
 	}
 	
+	public void clear()
+	{
+		keyIndexMap.clear();
+	}
+	
 	public ArrayList<V> toArrayList()
 	{
 		checkExpireKey();
