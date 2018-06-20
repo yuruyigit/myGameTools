@@ -49,25 +49,25 @@ public class StringTools
 	
 	public static boolean isNumber(String str) 
 	{  
-		str = str.trim();
-		try 
-		{
-			Float.parseFloat(str);
-		}
-		catch (Exception e) 
-		{
-			return false;
-		}
-		return true;
 //		str = str.trim();
-//		
-//		for(int i=str.length();--i>=0;)
+//		try 
 //		{
-//	        int chr=str.charAt(i);
-//	        if(chr<48 || chr>57)
-//	            return false;
-//	    }
+//			Float.parseFloat(str);
+//		}
+//		catch (Exception e) 
+//		{
+//			return false;
+//		}
 //		return true;
+		str = str.trim();
+		
+		for(int i=str.length();--i>=0;)
+		{
+	        int chr=str.charAt(i);
+	        if(chr<48 || chr>57)
+	            return false;
+	    }
+		return true;
 		
 //		  String bigStr;
 //        try 

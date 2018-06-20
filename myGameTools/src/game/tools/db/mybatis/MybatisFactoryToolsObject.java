@@ -191,6 +191,8 @@ public class MybatisFactoryToolsObject
 		
 		if(classPath.indexOf(";") >= 0)
 			projectPath = classPath.split("\\;")[0];
+		else if(classPath.indexOf(":") >= 0)
+			projectPath = classPath.split("\\:")[0];
 		else
 			projectPath = "/" + getProjectPath() + "/" + classPath;
 		

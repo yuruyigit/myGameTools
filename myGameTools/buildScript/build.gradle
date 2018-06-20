@@ -1,31 +1,75 @@
 //配置构建可运行jar包，配置构建可运行jar包。
 //配置构建可运行jar包，配置构建可运行jar包。
 //配置构建可运行jar包，配置构建可运行jar包。
-//目前settings.gradle，为配置导入依赖项目jar包。 
+//目前settings.gradle，为配置导入依赖项目jar包。
 
+//构建脚本所执行的命令=======>[gradle build deployApp clean]<=======
+//构建脚本所执行的命令=======>[gradle build deployApp clean]<=======
+//构建脚本所执行的命令=======>[gradle build deployApp clean]<=======
+
+//设置构建脚本所使用的插件
 apply plugin: 'java'
 apply plugin: 'application'
+buildscript {
+  repositories {
+    jcenter()
+  }
+  dependencies {
+    classpath 'org.hidetake:gradle-ssh-plugin:2.9.0'
+  }
+}
+//使用ssh的插件
+apply plugin: 'org.hidetake.ssh'
 
+
+//程序启动类  
 mainClassName = 'main.Main'
-archivesBaseName = 'app'
+//指定源码编译版本
+sourceCompatibility = 1.8			
 
-sourceCompatibility = 1.8			//指定源码编译版本
+
+
+////////////////////////////////////////////////////*///////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////*///*/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////*///////*///////////////////////////////////////////////////////////////
+//////////////////////////////////////////////*///////////*/////////////////////////////////////////////////////////////
+////////////////////////////////////////////*///////////////*///////////////////////////////////////////////////////////
+//////////////////////////////////////////*///////////////////*/////////////////////////////////////////////////////////
+
+
+//配置远程服务器地址访问权限
+ssh.settings {  
+  knownHosts = allowAnyHosts  
+}  
+//配置服务器地址与密码
+remotes {  
+  innerServer01 {  		
+    host = '192.168.56.31'  
+    user = 'root'  
+    password = 'playmore!@#QWE'  
+  }  
+}  
 
 //不将配置文件打包到jar文件内
 processResources {
     exclude { "**/*.*" }
 }
 
+repositories {			//所需的jar仓库配置  
+    jcenter()  			//jcenter仓库配置  
+    mavenCentral()  	//mavenCentral仓库配置  
+}  
 
+// 设置编译语言为UTF-8
 compileJava {  
     options.encoding = "UTF-8"  // 设置编译语言为UTF-8  
 }  
 
-sourceSets {
+//设置源码，与资源目录 ，同为src下。
+sourceSets {				
    main {
       java {
          srcDir 'src'
-         println "===================sourceSets==================="
       }
       resources {
             srcDir 'src' //资源目录
@@ -33,12 +77,30 @@ sourceSets {
    }
 }
 
+//设置程序所开发的依赖
 dependencies {
 	compile project(':myGameTools')		// 设置项目依赖  
+	compile project(':Lib')		// 设置项目依赖  
 
-    compile fileTree(dir: 'lib', include: ['*.jar'])		//设置lib下的所有jar依赖
+    //compile fileTree(dir: 'lib', include: ['*.jar'])		//设置lib下的所有jar依赖
+    
+     println "===================dependencies ok==================="
+    
 }
 
+
+//复制拷贝资源到发布的目录
+task copyRes (type: Copy) {
+     copy {
+      	from 'conf'
+        into 'D:\\WorkSpace\\EclipseSpace\\xuanYuanJianServer1\\build\\scripts\\conf'				//设置把conf文件目录，复制到启动脚本目录下。
+        include '*.*'
+     }
+     
+     println "===================copyRes ok==================="
+}
+
+//打包jar包
 jar {
     manifest {
         attributes 'Main-Class': mainClassName					//设置启动类
@@ -56,7 +118,37 @@ jar {
     exclude 'META-INF/NOTICE', 'META-INF/NOTICE.txt'  
     exclude 'META-INF/LICENSE', 'META-INF/LICENSE.txt'  
     exclude 'META-INF/DEPENDENCIES'  
-    
-    
-    println "===================jar==================="
+ 
+    println "===================jar ok==================="
 }
+
+//发布程序
+task deployApp << {  
+    ssh.run {
+    	//使用innerServer01的服务器配置
+		session(remotes.innerServer01) {
+	       
+	       def targetDir = '/data/server'		//服务器目标路径
+	       def appName = rootProject.name
+	       
+	       put from: buildDir.toString() + '/distributions/' + appName + '.zip', into: targetDir				//put执行上传，from来设置上传的文件，或者是目录 ，into来设置服务器目标目录位置
+	         
+	       def unzipScript = ' unzip -o ' + appName + '.zip;'			//解压上传的zip包
+	       def toAppDir = ' cd ' + targetDir + ';'						//转到app目录 
+	       def runApp = ' cd ' + appName + '/bin; screen -dmS '+appName+' ./'+appName + ';'			//运行脚本命令
+	       
+	       def javaInstallDir = '/usr/local/java-1.8'					//java安装的目录
+	       def javaEnvironment = ' export JAVA_HOME='+javaInstallDir+' export PATH=$JAVA_HOME/bin:$PATH export CLASSPATH=$JAVA_HOME/jre/lib/rt.jar:.'	//设置java环境变量
+	       
+	       def screenLs = ' screen -ls;' 
+
+	       def result = execute 'pwd; ls;' + toAppDir + unzipScript + javaEnvironment + runApp					//执行拼装的ssh命令语句
+	       
+	       //println "ssh:\n"+result
+		}
+	}
+	
+	println "===================deployApp ok==================="
+} 
+
+

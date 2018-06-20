@@ -14,6 +14,13 @@ public class Properties
 {
 	private HashMap<String, Object> configMap = new HashMap<>();
 	
+	public Properties() {	}
+	
+	public Properties(String path)
+	{	
+		initProperties(getInputStream(path) , Properties.class);
+	}
+	
 	@SuppressWarnings("unchecked")
 	public <T> T getValue(String key)
 	{
