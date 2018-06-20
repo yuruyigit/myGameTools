@@ -1,7 +1,5 @@
-rootProject.name = 'xuanYuanJianServer1'			//设置生成的程序名称
+rootProject.name = 'usercenter'			//设置生成的程序名称
 
-include ':myGameTools' // 在settings.gradle中设置好myGameTools的项目引用情况  
-project(':myGameTools').projectDir = new File('D:\\WorkSpace\\SvnSpace\\myGameTools\\trunk\\myGameTools')
+include ':utils' // 在settings.gradle中设置好myGameTools的项目引用情况  
+project(':utils').projectDir = new File('../utils')
 
-include ':Lib' // 在settings.gradle中设置好myGameTools的项目引用情况  
-project(':Lib').projectDir = new File('D:\\WorkSpace\\EclipseSpace\\Lib')    

@@ -23,9 +23,10 @@ apply plugin: 'org.hidetake.ssh'
 
 
 //程序启动类  
-mainClassName = 'main.Main'
+mainClassName = 'com.playmore.http.jetty.SpringContextLoader'
 //指定源码编译版本
-sourceCompatibility = 1.8			
+sourceCompatibility = 1.8
+targetCompatibility = 1.8			
 
 
 
@@ -47,7 +48,12 @@ remotes {
     host = '192.168.56.31'  
     user = 'root'  
     password = 'playmore!@#QWE'  
-  }  
+  }
+  innerServer02 {  		
+    host = '192.168.56.32'  
+    user = 'root'  
+    password = 'xuanyuanjian'  
+  }
 }  
 
 //不将配置文件打包到jar文件内
@@ -72,19 +78,18 @@ sourceSets {
          srcDir 'src'
       }
       resources {
-            srcDir 'src' //资源目录
+         srcDir 'src' //资源目录
       }
    }
 }
 
 //设置程序所开发的依赖
 dependencies {
-	compile project(':myGameTools')		// 设置项目依赖  
-	compile project(':Lib')		// 设置项目依赖  
+	compile project(':utils')		// 设置项目依赖  
 
     //compile fileTree(dir: 'lib', include: ['*.jar'])		//设置lib下的所有jar依赖
     
-     println "===================dependencies ok==================="
+    println "===================dependencies ok==================="
     
 }
 
@@ -93,10 +98,16 @@ dependencies {
 task copyRes (type: Copy) {
      copy {
       	from 'conf'
-        into 'D:\\WorkSpace\\EclipseSpace\\xuanYuanJianServer1\\build\\scripts\\conf'				//设置把conf文件目录，复制到启动脚本目录下。
+        into 'build\\scripts\\conf'				//设置把conf文件目录，复制到启动脚本目录下。
         include '*.*'
      }
      
+	 copy {
+      	from 'src'
+        into 'build\\scripts'				//设置把sh脚本文件目录，复制到启动脚本目录下。
+        include '*.sh'
+     }
+	 
      println "===================copyRes ok==================="
 }
 
@@ -109,6 +120,10 @@ jar {
     
     //from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }			//所有依赖将编译打到jar里面
     
+    from('src') {		//包含src所有文件
+        include '*.*'
+   	}
+   
     into('assets') {
         from 'assets'
     }
@@ -131,20 +146,25 @@ task deployApp << {
 	       def targetDir = '/data/server'		//服务器目标路径
 	       def appName = rootProject.name
 	       
+	       println "appName = " + appName
+	       
 	       put from: buildDir.toString() + '/distributions/' + appName + '.zip', into: targetDir				//put执行上传，from来设置上传的文件，或者是目录 ，into来设置服务器目标目录位置
 	         
 	       def unzipScript = ' unzip -o ' + appName + '.zip;'			//解压上传的zip包
 	       def toAppDir = ' cd ' + targetDir + ';'						//转到app目录 
-	       def runApp = ' cd ' + appName + '/bin; screen -dmS '+appName+' ./'+appName + ';'			//运行脚本命令
+	       //def runApp = ' cd ' + appName + '/bin; ./stop.sh; sleep 1; ./start.sh;'			//运行脚本命令
+		   def runApp = ' cd ' + appName + '/bin; ./stop.sh; sleep 1; screen -dmS '+appName+' ./start.sh;'			//运行脚本命令
 	       
 	       def javaInstallDir = '/usr/local/java-1.8'					//java安装的目录
-	       def javaEnvironment = ' export JAVA_HOME='+javaInstallDir+' export PATH=$JAVA_HOME/bin:$PATH export CLASSPATH=$JAVA_HOME/jre/lib/rt.jar:.'	//设置java环境变量
+	       def javaEnvironment = ' export JAVA_HOME='+javaInstallDir+' export PATH=$JAVA_HOME/bin:$PATH export CLASSPATH=$JAVA_HOME/jre/lib/rt.jar:.;'	//设置java环境变量
 	       
 	       def screenLs = ' screen -ls;' 
-
-	       def result = execute 'pwd; ls;' + toAppDir + unzipScript + javaEnvironment + runApp					//执行拼装的ssh命令语句
+			
+		   def exeScript = toAppDir + unzipScript + javaEnvironment + runApp			//执行拼装的ssh命令语句
+		   
+	       def result = execute 'pwd; ls;' + exeScript					
 	       
-	       //println "ssh:\n"+result
+	       println "exeScript:"+exeScript
 		}
 	}
 	
