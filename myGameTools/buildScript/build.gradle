@@ -5,9 +5,9 @@
 
 //-PbuildType=dev为命令行传入的buildType参数名，值为dev。在这里buildType默认为innerServer01
 
-//构建脚本所执行的命令=======>[gradle build deployApp clean  -PbuildType=dev]<=======
-//构建脚本所执行的命令=======>[gradle build deployApp clean  -PbuildType=dev]<=======
-//构建脚本所执行的命令=======>[gradle build deployApp clean  -PbuildType=dev]<=======
+//构建脚本所执行的命令=======>[gradle build deployApp -PbuildType=dev -PupdateConf=true]<=======
+//构建脚本所执行的命令=======>[gradle build deployApp -PbuildType=dev -PupdateConf=true]<=======
+//构建脚本所执行的命令=======>[gradle build deployApp -PbuildType=dev -PupdateConf=true]<=======
 
 //设置构建脚本所使用的插件
 apply plugin: 'java'
@@ -28,7 +28,7 @@ apply plugin: 'org.hidetake.ssh'
 
 
 //程序启动类  
-mainClassName = 'com.playmore.http.jetty.SpringContextLoader'
+mainClassName = 'com.playmore.net.netty.context.SpringContextLoader'
 //指定源码编译版本
 sourceCompatibility = 1.8
 targetCompatibility = 1.8			
@@ -42,6 +42,13 @@ targetCompatibility = 1.8
 ////////////////////////////////////////////*///////////////*///////////////////////////////////////////////////////////
 //////////////////////////////////////////*///////////////////*/////////////////////////////////////////////////////////
 
+//设置程序所需要的配置文件有哪些
+def useConfigs=
+[
+	'db.properties',
+	'global.config',
+	'info.properties'
+]
 
 //配置远程服务器地址访问权限
 ssh.settings 
@@ -52,14 +59,14 @@ ssh.settings
 //配置服务器地址与密码
 remotes 
 {  
-  innerServer01 
-  {  		
+  dev 
+  {
     host = '192.168.56.31'  
     user = 'root'  
     password = 'playmore!@#QWE'  
   }
   
-  innerServer02 
+  test 
   {  		
     host = '192.168.56.32'  
     user = 'root'  
@@ -67,11 +74,11 @@ remotes
   }
 }  
 
-//不将配置文件打包到jar文件内
-processResources 
-{
-    exclude { "**/*.*" }
-}
+//将配置文件打包到jar文件内
+//processResources 
+//{
+//   exclude { "**/*.*" }
+//}
 
 repositories 		//所需的jar仓库配置  
 {			
@@ -104,9 +111,13 @@ sourceSets
 //设置程序所开发的依赖
 dependencies 
 {
-	compile project(':utils')		// 设置项目依赖  
-
-    //compile fileTree(dir: 'lib', include: ['*.jar'])		//设置lib下的所有jar依赖
+	compile fileTree(dir: '../lib/lib', include: ['*.jar'])		//设置lib下的所有jar依赖
+	
+  	compile project(':attribute')
+  	compile project(':gameCore')		
+  	compile project(':netCore')		
+  	compile project(':remoteComms')		
+  	compile project(':xNetty4')				
     
     println "===================dependencies ok==================="
     
@@ -158,25 +169,65 @@ jar
     exclude 'META-INF/NOTICE', 'META-INF/NOTICE.txt'  
     exclude 'META-INF/LICENSE', 'META-INF/LICENSE.txt'  
     exclude 'META-INF/DEPENDENCIES'  
-	
-    println "===================jar ok==================="
+		
+    println "===================Q10Server jar ok==================="
 }
 
 //发布程序
 task deployApp << 
 {  
-    ssh.run 
+	println "buildType=" + buildType
+	
+	if(buildType == 'all')
 	{
-		println "buildType=" + buildType
-		
-		def remoteServer = remotes.innerServer01
-		
+		for(remoteServer in remotes)
+		{
+			def updateConfig = getUpdateConfigScript(useConfigs , remoteServer)
+	
+			remoteSession(remoteServer , updateConfig)
+		}
+	}
+	else
+	{
+		def remoteServer = remotes.dev
+	
 		//根据不同类型，执行不同的服务器配置
 		if(buildType == 'dev')
-			remoteServer = remotes.innerServer01
+			remoteServer = remotes.dev
 		else if(buildType == 'test')
-			remoteServer = remotes.innerServer02
+			remoteServer = remotes.test
 		
+		def updateConfig = getUpdateConfigScript(useConfigs , remoteServer)
+		
+		remoteSession(remoteServer , updateConfig)
+	}
+	
+	println "===================deployApp ok==================="
+} 
+
+
+String getUpdateConfigScript(useConfigs , remoteServer)
+{
+ 	def updateConfig = ''
+ 	if(updateConf == 'false')
+ 		return updateConfig
+ 	
+	for(conf in useConfigs)
+	{
+		def array = conf.split("\\.")
+		
+		def remoteName = remoteServer.toString().split("\\[")[0]
+		
+  		updateConfig += 'cat ' + array[0] + '_' + remoteName + '.' + array[1] + ' > ' + conf + ' ;'
+	}
+	
+	return updateConfig
+}
+
+void remoteSession(remoteServer , updateConfig)
+{
+	ssh.run 
+	{
 		//连接远程服务器
 		session(remoteServer) 
 		{
@@ -188,24 +239,28 @@ task deployApp <<
 	       put from: buildDir.toString() + '/distributions/' + appName + '.zip', into: targetDir				//put执行上传，from来设置上传的文件，或者是目录 ，into来设置服务器目标目录位置
 	         
 	       def unzipScript = ' unzip -o ' + appName + '.zip;'			//解压上传的zip包
-	       def toAppDir = ' cd ' + targetDir + ';'						//转到app目录 
-	       //def runApp = ' cd ' + appName + '/bin; ./stop.sh; sleep 1; ./start.sh;'			//运行脚本命令
-		   def runApp = ' cd ' + appName + '/bin; ./stop.sh; sleep 1; screen -dmS '+appName+' ./start.sh;'			//运行脚本命令
 	       
-	       def javaInstallDir = '/usr/local/java-1.8'					//java安装的目录
+	       def toAppDir = ' cd ' + targetDir + ';'						//转到app目录 
+	       def toRunDir = ' cd ' + appName + '/bin;'					//转到运行目录
+	       def toConfDir = ' cd conf;'									//转到conf目录
+	       
+	       def javaInstallDir = '/usr/local/java-1.8'										//java安装的目录
 	       def javaEnvironment = ' export JAVA_HOME='+javaInstallDir+' export PATH=$JAVA_HOME/bin:$PATH export CLASSPATH=$JAVA_HOME/jre/lib/rt.jar:.;'	//设置java环境变量
 	       
-	       def screenLs = ' screen -ls;' 
-			
-		   def execScript = toAppDir + unzipScript + javaEnvironment + runApp			//执行拼装的ssh命令语句
+		   def runApp = ' ./stop.sh; sleep 1; screen -dmS '+appName+' ./start.sh;'			//运行脚本命令
+		   
+	       if(updateConfig != '')
+	       {
+	       		updateConfig = toConfDir + updateConfig
+	       		runApp = 'cd ../; ' + runApp
+	       }
+	       
+		   def execScript = toAppDir + unzipScript + javaEnvironment + toRunDir +  updateConfig + runApp			//执行拼装的ssh命令语句
 		   
 	       def result = execute 'pwd; ls;' + execScript					
 	       
 	       println "execScript:"+execScript
 		}
 	}
-	
-	println "===================deployApp ok==================="
-} 
-
+}
 

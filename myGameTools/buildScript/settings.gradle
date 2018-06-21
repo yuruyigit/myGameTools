@@ -1,5 +1,16 @@
-rootProject.name = 'usercenter'			//设置生成的程序名称
+rootProject.name = 'Q10Server'			//设置生成的程序名称
 
-include ':utils' // 在settings.gradle中设置好myGameTools的项目引用情况  
-project(':utils').projectDir = new File('../utils')
+include ':attribute' 
+project(':attribute').projectDir = new File('../Attributes')
 
+include ':gameCore' 
+project(':gameCore').projectDir = new File('../Game_Core')
+
+include ':netCore' 
+project(':netCore').projectDir = new File('../Net_Core')
+
+include ':remoteComms' 
+project(':remoteComms').projectDir = new File('../RemoteComms')
+
+include ':xNetty4' 
+project(':xNetty4').projectDir = new File('../XNetty4')
