@@ -1,8 +1,10 @@
 package game.tools.threadpool;
 
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -76,5 +78,33 @@ public class Threads
 		return sb.toString();
 	}
 	
+	
+	public static void main(String[] args) throws Exception 
+	{
+		ExecutorService es = Executors.newSingleThreadExecutor();
+		
+		Future<Integer> f = es.submit(new Callable<Integer>() 
+		{
+			@Override
+			public Integer call() throws Exception 
+			{
+				Thread.sleep(3000);
+				return 10;
+			}
+		});
+		
+//		System.out.println("f.isDone() = " + f.isDone());
+		while(!f.isDone())
+		{
+			System.out.print("*");
+			Thread.sleep(100);
+		}
+		
+		System.out.println("结果:" + f.get());
+		
+		es.shutdown();
+		
+//		Thread.sleep(1000000L);
+	}
 }
 

@@ -18,6 +18,7 @@ public class DateTools
 	
 	public static String getCurrentDateString(long time) {		return LocalDateTime.ofInstant(Instant.ofEpochMilli(time) , ZoneId.systemDefault()).format(DTF);	}
 	public static String getCurrentTimeString(long time) {		return LocalDateTime.ofInstant(Instant.ofEpochMilli(time) , ZoneId.systemDefault()).format(DTF_TIME);	}
+	public static String getCurrentTimeMSString(long time) {		return LocalDateTime.ofInstant(Instant.ofEpochMilli(time) , ZoneId.systemDefault()).format(DTF_TIMES);	}
 	
 	public static long getCurrentDateLong(String date)	{		return LocalDate.parse(date,DTF).atTime(0, 0, 0).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();	}
 	public static long getCurrentTimeLong(String dateTime)	{		return LocalDateTime.parse(dateTime,DTF_TIME).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();	}

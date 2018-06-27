@@ -15,6 +15,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import com.alibaba.fastjson.JSONObject;
 
 public class HttpsClient 
 {
@@ -29,7 +30,7 @@ public class HttpsClient
     };
     
 	
-	public static HttpsURLConnection getHttpsURLConnection(String uri) throws IOException 
+	public static HttpsURLConnection getHttpsURLConnection(String uri , String method) throws IOException 
 	{
         SSLContext ctx = null;
         
@@ -45,8 +46,6 @@ public class HttpsClient
         
         SSLSocketFactory ssf = ctx.getSocketFactory();
         
-//        uri = URLEncoder.encode(uri,"utf-8");
-        
         URL url = new URL(uri);
         HttpsURLConnection httpsConn = (HttpsURLConnection) url.openConnection();
         httpsConn.setSSLSocketFactory(ssf);
@@ -59,8 +58,7 @@ public class HttpsClient
             }
         });
         
-        httpsConn.setRequestMethod("POST");
-        httpsConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        httpsConn.setRequestMethod(method);
         
         httpsConn.setDoInput(true);
         httpsConn.setDoOutput(true);
@@ -77,7 +75,13 @@ public class HttpsClient
 		try 
 		{
 			//读取服务器端返回的内容
-			InputStream is = conn.getInputStream();
+			InputStream is = null;
+			
+			if(conn.getResponseCode() >= 400)
+				is = conn.getErrorStream();
+			else
+				is = conn.getInputStream();
+			
 			InputStreamReader isr = new InputStreamReader(is,"utf-8");
 			BufferedReader br = new BufferedReader(isr);
 			buffer = new StringBuffer();
@@ -117,38 +121,80 @@ public class HttpsClient
 	}
 	
 	
-	/*
-	 * 处理https GET/POST请求
-	 * 请求地址、请求方法、参数
-	 * */
-	public static String httpsRequest(String requestUrl,String outputStr)
+	/**
+	 * @param requestUrl 请求地址、
+	 * @param method  GET/POST请求
+	 * @param writeContent 要写入的内容
+	 * @param headerProperty 协议头的属性
+	 * @return [请求返的状态码, 返回的内容]
+	 */
+	public static Object[] httpsRequest(String requestUrl, String method , String writeContent , String ... headerProperty)
 	{
 		String content = null;
+		
+		HttpsURLConnection conn = null;
+		
 		try 
 		{
-			HttpsURLConnection conn = HttpsClient.getHttpsURLConnection(requestUrl);
+			conn = HttpsClient.getHttpsURLConnection(requestUrl , method);
 			
-			HttpsClient.writerHttpsURLConnectionContent(conn, outputStr);
+			for (int i = 0; i < headerProperty.length; i++) 
+				conn.setRequestProperty(headerProperty[i],headerProperty[++i]);
+			
+			HttpsClient.writerHttpsURLConnectionContent(conn, writeContent);
 			
 			content = HttpsClient.readHttpsURLConnectionContent(conn);
+			
+			return new Object[] { conn.getResponseCode() , content};
 		}
 		catch (IOException e) 
 		{
 			e.printStackTrace();
 		}
 		
-		return content;
+		return null;
 	}
+	
+	
+	public static String httpsRequestContent(String requestUrl, String method , String writeContent , String ... headerProperty)
+	{
+		return (String)httpsRequest(requestUrl , method , writeContent , headerProperty)[1];
+	}
+	
+	
+	private static final String ONESTORE_DEV_URL = "https://sbpp.onestore.co.kr";
+	private static final String ONESTORE_PUBLISH_URL = "https://apis.onestore.co.kr";
 	
 	
 	public static void main(String[] args)  throws Exception
 	{
-		HttpsURLConnection urlConnection = HttpsClient.getHttpsURLConnection("https://apis.onestore.co.kr/api/oauth/token");
-		urlConnection.setRequestProperty("Authorization","Basic[Base64(com.monawa.hyunwkum:Z0PWRVoXafxfYUdo5YkkYkL/qAGT456wlKY90LkXLwA=)]");
-		urlConnection.setRequestMethod("POST");
-		HttpsClient.writerHttpsURLConnectionContent(urlConnection, "{\"grant_type\":\"client_credentials\"}");
+		String host = ONESTORE_PUBLISH_URL;
+		if(args.length >= 1)
+			if("dev".equals(args[0]))
+				host = ONESTORE_DEV_URL;
+				
+		String result = HttpsClient.httpsRequestContent(host+"/v2/oauth/token", 
+				"POST" , 
+				"grant_type=client_credentials&client_id=com.monawa.hyunwkum&client_secret=Z0PWRVoXafxfYUdo5YkkYkL/qAGT456wlKY90LkXLwA=",  
+				"Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
 		
-		String content = HttpsClient.readHttpsURLConnectionContent(urlConnection);
-        System.out.println("content = " + content );
+		System.out.println("result1 = " + result);
+		
+		if(result != null)
+		{
+			JSONObject o = JSONObject.parseObject(result);
+			
+			if(o.getString("status").equals("SUCCESS"))
+			{
+				String accessToken = o.getString("access_token");
+				
+				result = (String)HttpsClient.httpsRequest(host+"/v2/purchase/details/SANDBOX3000000035082/com.monawa.hyunwkum",
+						"GET" , 
+						null,
+						"Authorization", accessToken,
+						"Content-Type", "application/json")[1];
+				
+			}
+		}
 	}
 }

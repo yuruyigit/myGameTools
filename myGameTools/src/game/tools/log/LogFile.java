@@ -1,32 +1,19 @@
 package game.tools.log;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.alibaba.fastjson.JSONObject;
-
 import game.tools.utils.DateTools;
 
-public class LogFile 
+class LogFile 
 {
-	private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-	
 	private static final Pattern NUMBER_PATTERN = Pattern.compile("[0-9]*");
 	
 	private static final String WRAP = "\n";
@@ -40,12 +27,11 @@ public class LogFile
 	
 	
 	/*** zzb  分割文件的大小 单MB*/
-//	private static final int ALLOC_SIZE = 300;
-	private static final int ALLOC_SIZE = 300;  
+	private static final int ALLOC_SIZE = 300;
+//	private static final int ALLOC_SIZE = 3;  
 	
 	/** 2016年4月9日下午10:40:02 当前文件段索引 */ 
 	private int index;
-	
 	/** 2016年4月14日上午12:40:04 文件名字*/
 	private String fileName;
 	/** 2016年9月27日下午3:29:47 文件路径 */
@@ -54,27 +40,29 @@ public class LogFile
 	private String oldTimeName;
 	/** 2016年9月27日下午2:26:12  删除log日期 的时间范围 (0 为不删除) , 初始为不删除 */
 	private int deleteDateNum = 0;
-	
-	/** 2016年9月27日下午3:37:52  日期对象*/
-	private Date date = new Date();
-	
+	/** 是否使用缓存列表写入数据*/
+	private boolean isCache;
 	
 	private File file ;
 	
 	private BufferedWriter bufferWriter;
 	
-	private StringBuffer stringBuffer = new StringBuffer();
+	private StringBuilder stringBuffer = new StringBuilder();
 	
-	public LogFile(String fileName , int deleteDateNum) 
+	
+	public LogFile(String fileName , int deleteDateNum , boolean isCache) 
 	{
 		this.fileName = fileName;
 		this.deleteDateNum = deleteDateNum;
+//		this.isCache = isCache;
+//		if(isCache)
+//			writerList = new ArrayList<StringBuilder>(50);
 	}
 	
-	public LogFile(String fileName) 
-	{
-		this.fileName = fileName;
-	}
+	public LogFile(String fileName) 	{		this(fileName , 0 , false);	}	
+	public LogFile(String fileName , boolean isCache) 	{		this(fileName , 0 , isCache);	}
+	public LogFile(String fileName , int deleteDateNum)	{		this(fileName , deleteDateNum , false);	}
+	
 	
 	/**
 	 *  创建对应的文件
@@ -293,8 +281,10 @@ public class LogFile
 	 */
 	private String getDateString()
 	{
-		date.setTime(System.currentTimeMillis());		
-		return DATE_FORMAT.format(date);
+//		date.setTime(System.currentTimeMillis());		
+//		return DATE_FORMAT.format(date);
+		
+		return DateTools.getCurrentDateString(System.currentTimeMillis());
 	}
 	
 	/** 
@@ -302,8 +292,10 @@ public class LogFile
 	 */
 	private String getNowTimeString()
 	{
-		date.setTime(System.currentTimeMillis());		
-		return SDF.format(date);
+//		date.setTime(System.currentTimeMillis());		
+//		return SDF.format(date);
+		
+		return DateTools.getCurrentTimeString(System.currentTimeMillis());
 	}
 	
 	
@@ -350,15 +342,15 @@ public class LogFile
 			
 			stringBuffer.append(getWriterTitle());
 			stringBuffer.append(content).append(WRAP);
-
+			
 			bufferWriter.append(stringBuffer);
 			bufferWriter.flush();
-
 		}
 		catch (IOException e1) 
 		{
 			e1.printStackTrace();
 		}
+		
 	}
 	
 
@@ -410,10 +402,9 @@ public class LogFile
 			StackTraceElement[] ste = e.getStackTrace();
 			for (int i = 0; i < ste.length; i++)
 				stringBuffer.append(TAB).append(TAB).append(ste[i].toString()).append(WRAP);
-
+			
 			bufferWriter.append(stringBuffer);
 			bufferWriter.flush();
-
 		} 
 		catch (IOException e1) 
 		{
@@ -428,8 +419,6 @@ public class LogFile
 		return idName;
 	}
 	
-	public String getFileName() 
-	{
-		return fileName;
-	}
+	public String getFileName() 	{		return fileName;	}
+	public boolean isCache() {		return isCache;	}
 }

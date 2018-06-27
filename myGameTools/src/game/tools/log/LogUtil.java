@@ -1,15 +1,13 @@
 package game.tools.log;
 
-import com.alibaba.fastjson.JSONObject;
-
 public class LogUtil 
 {
-
-	/** zzb 2014年12月5日下午12:06:22 错误 ， 信息，日志文件对象 */
-	private static LogFile ERR_LF = new LogFile("err" , 30),
+	private static final LogFile 
+	ERR_LF = new LogFile("err" , 30),
 	INFO_LF = new LogFile("info" , 30),
 	DEBUG_LF = new LogFile("debug" , 30),
 	PROTOCOL_LF = new LogFile("protocol" , 30);
+	
 	
 	/**
 	 * 读取文件内容
@@ -60,7 +58,23 @@ public class LogUtil
 		DEBUG_LF.writeFile(content);
 	}
 	
-	public static void main(String[] args)
+	public static void debugs(String content) 
+	{
+		StringBuilder sb = new StringBuilder();
+		StackTraceElement[] ste = Thread.currentThread().getStackTrace();
+		for (int i = 0; i < ste.length; i++)
+			sb.append("\t").append(ste[i].toString()).append("\n");
+		
+		
+		String strack = sb.toString();
+		
+		content =  " methodInfo "+content+ " \n" + strack;
+		
+		DEBUG_LF.writeFile(content);
+	}
+	
+	
+	public static void main(String[] args) throws Exception
 	{
 		String content = "搬血：需调动全身精血，滚滚如雷鸣，熔炼骨文，在血液中催发出神曦，从而淬炼天地造化，滋养肉身。最高可使肉身达至十万斤极境。洞天："
 				+ "开辟洞天。等于是夺了天地造化，不断直接吸收外界神精，补充己身。最多可有十大洞天，石昊将十大洞天合一化为唯一无上洞天，是遮天轮海境的雏形。疑为演化或修补仙域的重要手段之一。"
@@ -74,20 +88,18 @@ public class LogUtil
 				+ "修士抬不起头，依靠长生物质可活几百万年而不死。真仙（不朽者、长生者）:已是大道领域的存在，实力远超人道，依靠长生物质可长生不死。仙古纪元被称为真仙的纪元。在仙战中完整的大界被打残，化作九天十地，"
 				+ "仙域与九天十地通道也被关闭。天地法则残缺不全，导真致乱古纪元九天十地再无人可以成仙。";
 		
-//		for (int i = 0; i < 1; i++)
-//		{
-//			info(content);
-//			error(i , new Exception("i = " + i ) );
-//			
-//			System.out.println("i = " + i);
-//		}
 		
-		JSONObject o = new JSONObject();
-		o.put("asdf", content);
-		System.out.println(o.toJSONString());
+		LogUtil.error(1111 , new Exception("asdfasdfasdfsdfasdf") );
 		
-		error(1111 , new Exception("asdfasdfasdfsdfasdf") );
-		LogUtil.info("asdfasdf");
+		long startTime = System.currentTimeMillis();
+		for (int i = 0; i < 10000; i++) 
+			LogUtil.info(content);
+		
+		long endTime = System.currentTimeMillis();
+		
+		System.out.println("gapTime = " + (endTime - startTime));
+		
+		Thread.sleep(5000L);
 	}
 
 }
