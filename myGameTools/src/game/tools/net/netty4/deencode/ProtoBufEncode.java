@@ -45,11 +45,9 @@ public class ProtoBufEncode extends Netty4Encode
 			
 //			System.out.println("ProtoBufEncode = " + Arrays.toString(data));
 			
-			INetty4Protocol netty4Protocol = Netty4ProtocolHandler.getNetty4ProtocolAttribute(channel);
-			if( netty4Protocol != null )
-				netty4Protocol.channelEncode(channel, msg);
-			
 			out.writeBytes(data);
+			
+			Netty4ProtocolHandler.channelHandler(ctx.channel() , data , "channelEncode");
 		}
 		catch(Exception e )
 		{

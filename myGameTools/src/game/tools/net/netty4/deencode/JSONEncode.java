@@ -7,6 +7,8 @@ import com.alibaba.fastjson.JSONObject;
 
 import game.tools.log.LogUtil;
 import game.tools.net.netty4.Netty4Encode;
+import game.tools.net.netty4.protocol.INetty4Protocol;
+import game.tools.net.netty4.protocol.Netty4ProtocolHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -63,6 +65,8 @@ public class JSONEncode extends Netty4Encode
 //			}
 			
 			out.writeBytes(data);
+			
+			Netty4ProtocolHandler.channelHandler(ctx.channel() , o , "channelEncode");
 		}
 		catch(Exception e )
 		{

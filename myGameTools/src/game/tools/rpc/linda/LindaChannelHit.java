@@ -7,20 +7,19 @@ class LindaChannelHit
 	private long hitCount ;
 	private transient long lastTime;
 	
-	public LindaChannelHit(long hitCount , long nowTime) 
+	public LindaChannelHit(long hitCount) 
 	{
 		this.hitCount = hitCount;
-		this.lastTime = nowTime;
 	}
 
 	public long getHitCount() {
 		return hitCount;
 	}
 
-	public synchronized void addHitCount(long nowTime)
+	public synchronized void addHitCount()
 	{
 		this.hitCount ++;
-		this.lastTime = nowTime;
+		this.lastTime = System.currentTimeMillis();;
 	}
 	
 	public String getLastTime() {

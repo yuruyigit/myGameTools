@@ -9,6 +9,8 @@ import com.alibaba.fastjson.JSONObject;
 import game.tools.gzip.ZLibUtils;
 import game.tools.log.LogUtil;
 import game.tools.net.netty4.Netty4Decode;
+import game.tools.net.netty4.protocol.INetty4Protocol;
+import game.tools.net.netty4.protocol.Netty4ProtocolHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -80,6 +82,8 @@ public class JSONDecode extends Netty4Decode
 			JSONObject o = JSONObject.parseObject(content);
 			
 			out.add(o);
+			
+			Netty4ProtocolHandler.channelHandler(ctx.channel() , o , "channelDecode");
 		}
 		catch (Exception e) 
 		{

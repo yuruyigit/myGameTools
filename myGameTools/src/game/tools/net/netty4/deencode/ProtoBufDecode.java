@@ -4,6 +4,8 @@ import java.util.List;
 
 import game.tools.log.LogUtil;
 import game.tools.net.netty4.Netty4Decode;
+import game.tools.net.netty4.protocol.INetty4Protocol;
+import game.tools.net.netty4.protocol.Netty4ProtocolHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -38,6 +40,8 @@ public class ProtoBufDecode extends Netty4Decode
 			buffer.readBytes(data, 0, data.length);
 			
 			out.add(data);
+			
+			Netty4ProtocolHandler.channelHandler(ctx.channel() , data , "channelDecode");
 		}
 		catch (Exception e) 
 		{

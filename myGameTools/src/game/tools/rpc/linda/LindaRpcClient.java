@@ -139,6 +139,7 @@ Object o = lindaClient.call(array);
 							Thread syncThread = (Thread)object;
 							
 							Object result = resultArray[1];
+							
 							threadResultMap.put(threadId , result);
 							
 							if(syncThread != null)
@@ -227,24 +228,21 @@ Object o = lindaClient.call(array);
 		if(!checkChannelHit)
 			return ;
 		
-		long nowTime = System.currentTimeMillis();
-		
 		LindaChannelHit channelHit = channelHitMap.get(netty.getName());
 		if(channelHit == null)
 		{
 			synchronized(lock)
 			{
+				channelHit = channelHitMap.get(netty.getName());
+				
 				if(channelHit == null)
 				{
-					channelHit = new LindaChannelHit(1 , nowTime);
+					channelHit = new LindaChannelHit(0);
 					channelHitMap.put(netty.getName(), channelHit);
 				}
 			}
 		}
-		else
-		{
-			channelHit.addHitCount(nowTime);
-		}
+		channelHit.addHitCount();
 	}
 	
 	/**
@@ -373,7 +371,7 @@ Object o = lindaClient.call(array);
 		
 		for (int j = 0; j < 1; j++) 
 		{
-			LindaRpcClient lindaClient = new LindaRpcClient("127.0.0.1:6379");
+			LindaRpcClient lindaClient = new LindaRpcClient("127.0.0.1:6379" , true);
 			
 			Thread t1 = new Thread(()->{
 				for (int i = 0; i < 30; i++) {

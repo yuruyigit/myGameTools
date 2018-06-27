@@ -143,7 +143,20 @@ public class Netty4ProtocolHandler extends Netty4Handler
 	public static void setPlayControlAttribute(Channel channel ,  Object attachObject)	{		setAttributeKey(channel, ATTRIBUTE_PLAY_CONTROL, attachObject);	}
 	public static Object getPlayControlAttribute(Channel channel )	{		return getAttributeKey(channel, ATTRIBUTE_PLAY_CONTROL);	}
 	
-	public static INetty4Protocol getNetty4ProtocolAttribute(Channel channel)	{		return (INetty4Protocol)getAttributeKey(channel , ATTRIBUTE_NETTY4_PROTOCOL);	}
+	
+	public static void channelHandler(Channel channel , Object msg, String method)
+	{
+		INetty4Protocol netty4Protocol = (INetty4Protocol)getAttributeKey(channel , ATTRIBUTE_NETTY4_PROTOCOL);
+		
+		if(netty4Protocol == null)
+			return ;
+		
+		if("channelEncode".equals(method))
+			netty4Protocol.channelEncode(channel, msg);
+		else if("channelDecode".equals(method))
+			netty4Protocol.channelDecode(channel, msg);
+		
+	}
 	
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object revMsg) throws Exception 
