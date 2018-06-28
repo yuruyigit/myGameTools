@@ -37,11 +37,9 @@ public class LindaRpcServer
 	public static final int GAP_TIME = 1 * 60 * 1000;
 	
 	/** 协议处理函数集合 */
-	private HashMap<Integer , MethodObject> protocolHandlerMap = new HashMap<Integer , MethodObject>();
+	private HashMap<Integer , MethodObject> protocolHandlerMap;
 	
-	private String registerRedis;
-	
-	private String appointIp;
+	private String registerRedis , appointIp , lindaRpcKeyName;
 	
 	private int port;
 	
@@ -76,15 +74,13 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new IRpc()
 	 */
 	public LindaRpcServer(String scanClassPackage , String registerRedis , int port , int weight, ILindaRpcNo rpc) 
 	{
-		this.scanClassPackage = scanClassPackage;
-		this.registerRedis = registerRedis;
-		this.port = port;
-		this.weight = weight;
-		this.rpcNo = rpc;
-		
-		init();
+		this(scanClassPackage , registerRedis , null , null , port , weight , rpc);
 	}
 	
+	public LindaRpcServer(String scanClassPackage , String registerRedis , String lindaRpcKeyName, int port , int weight, ILindaRpcNo rpc) 
+	{
+		this(scanClassPackage , registerRedis , null , lindaRpcKeyName , port , weight , rpc);
+	}
 	
 	/**
 	
@@ -104,11 +100,12 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new ILindaR
 }
 </pre>
 	 */
-	public LindaRpcServer(String scanClassPackage , String registerRedis , String appointIp ,int port , int weight, ILindaRpcNo rpc) 
+	public LindaRpcServer(String scanClassPackage , String registerRedis , String appointIp , String lindaRpcKeyName ,int port , int weight, ILindaRpcNo rpc) 
 	{
 		this.scanClassPackage = scanClassPackage;
 		this.registerRedis = registerRedis;
 		this.appointIp = appointIp;
+		this.lindaRpcKeyName = lindaRpcKeyName;
 		this.port = port;
 		this.weight = weight;
 		this.rpcNo = rpc;
@@ -312,7 +309,12 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new ILindaR
 		linda.setPort(this.port);
 		linda.setWeight(weight);
 		
-		RedisOper.execute(RedisCmd.hset, LINDA_RPC_KEY, nameKey , JSONObject.toJSON(linda));
+		String keyName = LINDA_RPC_KEY;
+		
+		if(!StringTools.empty(lindaRpcKeyName))
+			keyName += "-" + lindaRpcKeyName;
+			
+		RedisOper.execute(RedisCmd.hset, keyName, nameKey , JSONObject.toJSON(linda));
 	}
 	
 	@LindaRpcNo(rpcNo = 156)
@@ -335,7 +337,7 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new ILindaR
 		{
 			@Override
 			public int getNo(LindaRpcPackage rpcPackage) {
-				return rpcPackage.get(1);
+				return rpcPackage.get(0);
 			}
 		});
 		
@@ -345,7 +347,7 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new ILindaR
 		{
 			@Override
 			public int getNo(LindaRpcPackage rpcPackage) {
-				return rpcPackage.get(1);
+				return rpcPackage.get(0);
 			}
 		});
 

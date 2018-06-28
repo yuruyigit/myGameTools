@@ -61,7 +61,7 @@ public class Netty4ProtocolHandler extends Netty4Handler
 											ATTRIBUTE_NETTY4_PROTOCOL = AttributeKey.valueOf("Netty4ProtocolHandler-INetty4Protocol");
 	
 	/** 协议处理函数集合 */
-	private HashMap<Integer , MethodObject> protocolHandlerMap = new HashMap<Integer , MethodObject>();
+	private HashMap<Integer , MethodObject> protocolHandlerMap;
 	
 	private ExecutorService threadPool;
 	

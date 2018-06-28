@@ -376,7 +376,7 @@ Object o = lindaClient.call(array);
 			Thread t1 = new Thread(()->{
 				for (int i = 0; i < 30; i++) {
 					int index = getIndex(lindaClient);
-					Object result = lindaClient.call(index ,156, "参数1","参数2","参数3");
+					Object result = lindaClient.call(156, index ,"参数1","参数2",array);
 					try {
 						Thread.sleep(10);
 					} catch (InterruptedException e) {
@@ -389,7 +389,7 @@ Object o = lindaClient.call(array);
 			Thread t2 = new Thread(()->{
 				for (int i = 0; i < 30; i++) {
 					int index = getIndex(lindaClient);
-					Object result = lindaClient.call(index ,156, "参数1","参数2","参数3");
+					Object result = lindaClient.call(156, index ,"参数1","参数2","参数3");
 					try {
 						Thread.sleep(10);
 					} catch (InterruptedException e) {
@@ -402,7 +402,7 @@ Object o = lindaClient.call(array);
 			Thread t3 = new Thread(()->{
 				for (int i = 0; i < 30; i++) {
 					int index = getIndex(lindaClient);
-					Object result = lindaClient.call(index , 156,"参数1","参数2","参数3");
+					Object result = lindaClient.call(156,index , "参数1","参数2","参数3");
 					try {
 						Thread.sleep(10);
 					} catch (InterruptedException e) {
