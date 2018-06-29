@@ -23,6 +23,8 @@ import org.apache.ibatis.transaction.TransactionFactory;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.transaction.SpringManagedTransactionFactory;
 import com.alibaba.druid.pool.DruidDataSource;
+import com.zaxxer.hikari.HikariDataSource;
+
 import game.tools.fork.ForkJoinTools;
 import game.tools.fork.SubForkTask;
 import game.tools.utils.StringTools;
@@ -85,9 +87,31 @@ public class MybatisFactoryToolsObject
 
 	private DataSource createDataSource(String username, String password, String jdbcUrl)
 	{
+//		return createHikaricpDataSource(username, password, jdbcUrl, initialSize, maxActive, maxWait);
 		return createDbcpDataSource(username, password, jdbcUrl, initialSize, maxActive, maxWait);
+//		return createDruidDataSource(username, password, jdbcUrl, initialSize, maxActive, maxWait);
 	}
 
+	private DataSource createHikaricpDataSource(String username, String password, String jdbcUrl, int initialSize,int maxActive, int maxWait) 
+	{
+		// System.out.println("createDbcpDataSource " + jdbcUrl );
+
+		HikariDataSource  hds = new HikariDataSource();
+		hds.setDriverClassName(MYSQL_DRIVER);
+		hds.setUsername(username);
+		hds.setPassword(password);
+		hds.setJdbcUrl(jdbcUrl + "?autoReconnect=true&autoReconnectForPools=true&QuseUnicode=true&characterEncoding=utf-8&serverTimezone=UTC");
+		
+		hds.setIdleTimeout(60000);		//等待连接池分配连接的最大时长（毫秒），超过这个时长还没可用的连接则发生SQLException， 缺省:30秒
+		hds.setConnectionTestQuery("select 1");
+		
+		hds.setMaximumPoolSize(initialSize * 2);			//连接池中允许的最大连接数。缺省值：10；推荐的公式：((core_count * 2) + effective_spindle_count)
+		
+		hds.setMaxLifetime(1800000);			//一个连接的生命时长（毫秒），超时而且没被使用则被释放（retired），缺省:30分钟，建议设置比数据库超时时长少30秒，参考MySQL wait_timeout参数（show variables like '%timeout%';）
+
+		return hds;
+	}
+	
 	private DataSource createDbcpDataSource(String username, String password, String jdbcUrl, int initialSize,int maxActive, int maxWait) 
 	{
 		// System.out.println("createDbcpDataSource " + jdbcUrl );
@@ -121,7 +145,7 @@ public class MybatisFactoryToolsObject
 	private DataSource createDruidDataSource(String username, String password, String jdbcUrl, int initialSize,int maxActive, int maxWait) 
 	{
 		DruidDataSource dds = new DruidDataSource();
-		dds.setDriverClassName("com.mysql.cj.jdbc.Driver");
+		dds.setDriverClassName(MYSQL_DRIVER);
 		dds.setUsername(username);
 		dds.setPassword(password);
 		dds.setUrl(jdbcUrl + "?autoReconnect=true&useUnicode=true&characterEncoding=utf-8");
@@ -717,9 +741,7 @@ public class MybatisFactoryToolsObject
 	                		Class cls = Class.forName(rootMapper+"."+className);
 	                		classList.add(cls);
 	                	}
-                	
                 }  
-                
             }
             
             zipFile.close();

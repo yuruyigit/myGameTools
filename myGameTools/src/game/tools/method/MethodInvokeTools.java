@@ -37,11 +37,6 @@ public class MethodInvokeTools
 			{
 				Class<?> clzss = ClassLoader.getSystemClassLoader().loadClass(string);
 				
-				Object clzssObject = null;
-				
-				if(isCreate(clzss))			
-					clzssObject = clzss.newInstance();
-				
 				Method[] methodArray = clzss.getDeclaredMethods();
 				
 				for (Method method : methodArray) 
@@ -57,6 +52,8 @@ public class MethodInvokeTools
 							throw new Exception("LindaRpcServer : duplicate rpcNo key !! at  methodNo " + methodNo);
 						}
 						
+						Object clzssObject = null;
+
 						if(ClassUtils.isCreate(clzss))			
 							clzssObject = clzss.newInstance();
 						

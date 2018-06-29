@@ -5,6 +5,7 @@ import game.tools.log.LogUtil;
 import game.tools.net.netty4.Netty4Handler;
 import game.tools.net.netty4.ObjectInitializer;
 import game.tools.net.netty4.client.Netty4Client;
+import game.tools.utils.Util;
 import game.tools.weight.WeightObjects;
 import game.tools.weight.Weights;
 import io.netty.channel.ChannelHandlerContext;
@@ -21,7 +22,7 @@ public class LindaRpcClient
 	
 	private int totalWeight;
 	
-	private String registerRedis;
+	private String registerRedis , lindaRpcKeyName;
 	
 	/** 2017年8月24日 上午11:51:57 		检测通信权重的命中率*/
 	private boolean checkChannelHit;
@@ -53,12 +54,19 @@ Object o = lindaClient.call(array);
 </pre>
 	 * @param checkChannelHit 是否是收集命中
 	 */
-	public LindaRpcClient(String registerRedis , boolean checkChannelHit) 
+	
+	public LindaRpcClient(String registerRedis , String lindaRpcKeyName, boolean checkChannelHit) 
 	{
 		this.registerRedis = registerRedis;
+		this.lindaRpcKeyName = lindaRpcKeyName;
 		this.checkChannelHit = checkChannelHit;
 		
 		init();
+	}
+	
+	public LindaRpcClient(String registerRedis , boolean checkChannelHit) 
+	{
+		this(registerRedis , null , checkChannelHit);
 	}
 	
 	
@@ -85,7 +93,7 @@ Object o = lindaClient.call(array);
 	
 	private void initLindaServer() 
 	{
-		lindaMap = LindaRpcServer.getLindaServerHashMap();
+		lindaMap = LindaRpcServer.getLindaServerHashMap(this.lindaRpcKeyName);
 		
 		WeightObjects weightObjects = Weights.calcWeight(lindaMap , "weight");
 		
@@ -201,7 +209,15 @@ Object o = lindaClient.call(array);
 		}
 		
 		if(lindaMap.size() == 1)
-			return firstNettyClient;
+		{
+			if(firstNettyClient != null)
+				return firstNettyClient;
+			else
+			{
+				createNettyClient(this.lindaMap.values().iterator().next());
+				return firstNettyClient;
+			}
+		}
 		
 		Linda linda = Weights.getRandomWeight(this.lindaMap, this.totalWeight);
 		
@@ -371,14 +387,15 @@ Object o = lindaClient.call(array);
 		
 		for (int j = 0; j < 1; j++) 
 		{
-			LindaRpcClient lindaClient = new LindaRpcClient("127.0.0.1:6379" , true);
+			LindaRpcClient lindaClient = new LindaRpcClient("127.0.0.1:6379" , "LOGIN", true);
+			
 			
 			Thread t1 = new Thread(()->{
 				for (int i = 0; i < 30; i++) {
 					int index = getIndex(lindaClient);
 					Object result = lindaClient.call(156, index ,"参数1","参数2",array);
 					try {
-						Thread.sleep(10);
+						Thread.sleep(Util.getRandomInt(1,500));
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -391,7 +408,7 @@ Object o = lindaClient.call(array);
 					int index = getIndex(lindaClient);
 					Object result = lindaClient.call(156, index ,"参数1","参数2","参数3");
 					try {
-						Thread.sleep(10);
+						Thread.sleep(Util.getRandomInt(1,500));
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -404,7 +421,7 @@ Object o = lindaClient.call(array);
 					int index = getIndex(lindaClient);
 					Object result = lindaClient.call(156,index , "参数1","参数2","参数3");
 					try {
-						Thread.sleep(10);
+						Thread.sleep(Util.getRandomInt(1,500));
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -416,50 +433,13 @@ Object o = lindaClient.call(array);
 			t2.start();
 			t3.start();
 			
-			Thread.sleep(3000);
-			System.out.println(j +" getChannelHitSInfoString = " + lindaClient.getChannelHitSInfoString());
+			Thread.sleep(15000);
+			System.out.println("getChannelHitSInfoString = " + lindaClient.getChannelHitSInfoString());
 //			Thread.sleep(1500);
 			
 		}
-		
-//		
-//		while(true)
-//		{
-//			System.out.println("输入任意键继续：");
-//			System.in.read();
-//			
-//			Object o = null;
-//			
-//			int sumCount = 0 , maxCount = 1;
-//			
-//			for (int i = 0; i < maxCount; i++) 
-//			{
-//				long startTime = System.currentTimeMillis();
-//				int index = 0;
-//				while(true)
-//				{
-////					lindaClient.callnosync(array);
-////					o = lindaClient.call(array);
-//					o = lindaClient.callallreturn(array);
-//					index ++;
-//					
-//					long endTime = System.currentTimeMillis();
-//					
-//					if(endTime - startTime >= 1000)
-//					{
-//						System.out.println( "method " + index + " o = " + o +  " gap = " + (endTime - startTime)  + " " + lindaClient.getChannelHitSInfoString());
-//						sumCount += index;
-//						break;
-//					}
-//					
-//					Thread.sleep(300);
-//				}
-//			}
-//			
-//			System.out.println("QPS : " + sumCount / maxCount);
-//		}
-		
 	}
+	
 	private static int INDEX;
 	private static int getIndex(Object lock)
 	{

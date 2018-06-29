@@ -193,6 +193,9 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new ILindaR
 		}
 		
 		Netty4Server nettyServer = new Netty4Server(new ObjectInitializer(new LindaHandler()));
+		
+		System.out.print(getLindaServerKeyName(lindaRpcKeyName));
+		
 		nettyServer.start(this.port);
 	}
 	
@@ -209,7 +212,9 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new ILindaR
 		{
 			String jsonString = JSONObject.toJSONString(linda);
 			
-			RedisOper.execute(RedisCmd.hset, LINDA_RPC_KEY, linda.getName() , jsonString);
+			String keyName = getLindaServerKeyName(this.lindaRpcKeyName);
+			
+			RedisOper.execute(RedisCmd.hset, keyName, linda.getName() , jsonString);
 			
 			lastHandlerTimeLong = System.currentTimeMillis();
 			
@@ -247,18 +252,22 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new ILindaR
 	}
 	
 	
-	static final HashMap<String, Linda> getLindaServerHashMap()
+	static final HashMap<String, Linda> getLindaServerHashMap(String lindaRpcKeyName)
 	{
-		HashMap<String, Linda> lindaMap = RedisOper.getAllByHash(LindaRpcServer.LINDA_RPC_KEY , Linda.class);
+		String keyName = getLindaServerKeyName(lindaRpcKeyName);
+		
+		HashMap<String, Linda> lindaMap = RedisOper.getAllByHash(keyName , Linda.class);
 		
 		return lindaMap;
 	}
 	
-	static final boolean updateWeight(Map<String, String[]> paramMap)
+	static final boolean updateWeight(Map<String, String[]> paramMap , String lindaRpcKeyName)
 	{
 		HashMap<String, String> updateMap = new HashMap<>();
 		
-		HashMap<String, Linda> lindaMap = RedisOper.getAllByHash(LindaRpcServer.LINDA_RPC_KEY , Linda.class);
+		String keyName = getLindaServerKeyName(lindaRpcKeyName);
+		
+		HashMap<String, Linda> lindaMap = RedisOper.getAllByHash(keyName , Linda.class);
 		
 		Iterator<String> keyIterator = lindaMap.keySet().iterator();
 		while(keyIterator.hasNext())
@@ -279,12 +288,26 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new ILindaR
 		
 		if(updateMap.size() > 0)
 		{
-			RedisOper.execute(RedisCmd.hmset, LindaRpcServer.LINDA_RPC_KEY, updateMap);
+			RedisOper.execute(RedisCmd.hmset, keyName, updateMap);
 			return true;
 		}
 		return false;
 	}
  
+	/**
+	 * @param lindaRpcKeyName
+	 * @return 返回指定名字key的rpc服务器
+	 */
+	private static final String getLindaServerKeyName(String lindaRpcKeyName)
+	{
+		String keyName = LINDA_RPC_KEY;
+		
+		if(!StringTools.empty(lindaRpcKeyName))
+			keyName += "-" + lindaRpcKeyName;
+		
+		return keyName;
+	}
+	
 	private void registerRedis() 
 	{
 		connectionRedist(registerRedis);
@@ -309,10 +332,7 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new ILindaR
 		linda.setPort(this.port);
 		linda.setWeight(weight);
 		
-		String keyName = LINDA_RPC_KEY;
-		
-		if(!StringTools.empty(lindaRpcKeyName))
-			keyName += "-" + lindaRpcKeyName;
+		String keyName = getLindaServerKeyName(this.lindaRpcKeyName);
 			
 		RedisOper.execute(RedisCmd.hset, keyName, nameKey , JSONObject.toJSON(linda));
 	}
@@ -325,15 +345,7 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new ILindaR
 	
 	public static void main(String[] args) 
 	{
-		
-//		HashMap<String, Runnable> map =  new HashMap<>();
-//		map.put("test", LindaRpcServer::test);
-		
-//		Runnable r = map.get("test");
-//		r.run();
-		
-		final int port = 12345;
-		LindaRpcServer server = new LindaRpcServer("game.tools.rpc" , "127.0.0.1:6379",  port , 20, new ILindaRpcNo() 
+		LindaRpcServer server = new LindaRpcServer("game.tools.rpc" , "127.0.0.1:6379", "LOGIN" , 12345 , 20, new ILindaRpcNo() 
 		{
 			@Override
 			public int getNo(LindaRpcPackage rpcPackage) {
@@ -342,18 +354,12 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new ILindaR
 		});
 		
 		
-		final int port1 = 12346;
-		LindaRpcServer server1 = new LindaRpcServer("game.tools.rpc" , "127.0.0.1:6379", port1 , 20, new ILindaRpcNo() 
+		LindaRpcServer server1 = new LindaRpcServer("game.tools.rpc" , "127.0.0.1:6379", "CENTER" ,12346 , 20, new ILindaRpcNo() 
 		{
 			@Override
 			public int getNo(LindaRpcPackage rpcPackage) {
 				return rpcPackage.get(0);
 			}
 		});
-
-		
 	}
-	
-	
-	
 }
