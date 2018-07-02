@@ -1,4 +1,5 @@
 package game.tools.fork;
+import java.util.ArrayList;
 import java.util.concurrent.RecursiveTask;
 import game.tools.log.LogUtil;
 
@@ -6,14 +7,21 @@ class RootForkTask extends RecursiveTask<Object>
 {
 	private static final long serialVersionUID = 1L;
 	
-	private SubForkTask [] subForkTaskArray;
+	private ArrayList<SubForkTask> subForkTaskList;
 	
-	private Object [] resultArray;
+	private ArrayList<Object> resultList;
 	
-	void addTasks(SubForkTask ...subTasks)
+	
+	synchronized void addTasks(SubForkTask ...subTasks)
 	{
-		subForkTaskArray = subTasks;
-		resultArray = new Object[subTasks.length];
+		if(this.subForkTaskList == null)
+		{
+			subForkTaskList = new ArrayList<SubForkTask>(subTasks.length);
+			resultList = new ArrayList<Object>(subTasks.length);
+		}
+		
+		for (SubForkTask subForkTask : subTasks) 
+			this.subForkTaskList.add(subForkTask);
 	}
 	
 	@Override
@@ -21,14 +29,13 @@ class RootForkTask extends RecursiveTask<Object>
 	{
 		try
 		{
-			for (SubForkTask subTask : subForkTaskArray) 
+			for (SubForkTask subTask : subForkTaskList) 
 				subTask.fork();
 			
-			int index = 0;
-			for (SubForkTask subTask : subForkTaskArray) 
-				resultArray[index++] = subTask.get(); 
+			for (SubForkTask subTask : subForkTaskList) 
+				resultList.add(subTask.get()); 
 			
-			return resultArray;
+			return resultList.toArray();
 		}
 		catch (Exception e)
 		{
@@ -41,7 +48,7 @@ class RootForkTask extends RecursiveTask<Object>
 
 	public void clearTask()
 	{
-		this.subForkTaskArray = null;
-		this.resultArray = null;
+		this.subForkTaskList.clear();
+		this.resultList.clear();
 	}
 }
