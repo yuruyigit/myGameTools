@@ -29,7 +29,7 @@ public class HttpCmdServletMain
 		}
 		
 		String result = HttpTools.sendPost("http://localhost:1234/game/ss", 123, "工工要在地" , "asdfasdf");
-//		String result = HttpTools.sendGet("http://localhost:1234/game/HttpCmdServlet", 123, "工工要在地");
+//		String result = HttpTools.sendGet("http://localhost:1234/game/ss", 123, "工工要在地");
 		
 		System.out.println("result = " + result);
 		
