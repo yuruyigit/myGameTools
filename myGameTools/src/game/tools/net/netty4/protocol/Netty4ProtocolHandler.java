@@ -11,11 +11,14 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.alibaba.fastjson.JSONObject;
+
 import game.tools.log.LogUtil;
 import game.tools.method.IMethodNo;
 import game.tools.method.MethodInvokeTools;
 import game.tools.method.MethodObject;
 import game.tools.net.netty4.Netty4Handler;
+import game.tools.println.ProtocolPrintln;
 import game.tools.protocol.protobuffer.ProtocolBuffer;
 import game.tools.threadpool.ThreadGroupFactory;
 import game.tools.utils.ClassUtils;
@@ -58,7 +61,8 @@ public class Netty4ProtocolHandler extends Netty4Handler
 	 *	如果使用 Netty4ProtocolHandler，则进行绑定的附加属性对象
 	 */
 	private static final AttributeKey<Object> ATTRIBUTE_PLAY_CONTROL = AttributeKey.valueOf("Netty4ProtocolHandler-PlayControl") ,
-											ATTRIBUTE_NETTY4_PROTOCOL = AttributeKey.valueOf("Netty4ProtocolHandler-INetty4Protocol");
+											ATTRIBUTE_NETTY4_PROTOCOL = AttributeKey.valueOf("Netty4ProtocolHandler-INetty4Protocol"),
+											ATTRIBUTE_ATTACH_JSONOBJECT = AttributeKey.valueOf("Netty4ProtocolHandler-AttachJsonObject");
 	
 	/** 协议处理函数集合 */
 	private HashMap<Integer , MethodObject> protocolHandlerMap;
@@ -138,13 +142,17 @@ public class Netty4ProtocolHandler extends Netty4Handler
 	{
 		return channel.attr(attribute).get();
 	}
-	
+
+	public static Object getAttributeKey(Channel channel , String attribute)
+	{
+		return channel.attr(AttributeKey.valueOf(attribute)).get();
+	}
 	
 	public static void setPlayControlAttribute(Channel channel ,  Object attachObject)	{		setAttributeKey(channel, ATTRIBUTE_PLAY_CONTROL, attachObject);	}
 	public static Object getPlayControlAttribute(Channel channel )	{		return getAttributeKey(channel, ATTRIBUTE_PLAY_CONTROL);	}
 	
 	
-	public static void channelHandler(Channel channel , Object msg, String method)
+	public static void channelHandler(Channel channel , String method ,int protocolNo ,  Object msg)
 	{
 		INetty4Protocol netty4Protocol = (INetty4Protocol)getAttributeKey(channel , ATTRIBUTE_NETTY4_PROTOCOL);
 		
@@ -152,7 +160,7 @@ public class Netty4ProtocolHandler extends Netty4Handler
 			return ;
 		
 		if("channelEncode".equals(method))
-			netty4Protocol.channelEncode(channel, msg);
+			netty4Protocol.channelEncode(channel, protocolNo, msg);
 		else if("channelDecode".equals(method))
 			netty4Protocol.channelDecode(channel, msg);
 		
@@ -226,6 +234,29 @@ public class Netty4ProtocolHandler extends Netty4Handler
 			}
 		});
 	}
+	
+	/**
+	 * @return 返回该通道附加的jsonObject属性
+	 */
+	public static JSONObject getAttributeAttachJsonObject(Channel channel) 
+	{
+		JSONObject o = null;
+		
+		Object attachObject = getAttributeKey(channel, ATTRIBUTE_ATTACH_JSONOBJECT);
+		
+		if(attachObject != null)
+		{
+			o = (JSONObject)attachObject;
+		}
+		else
+		{
+			o = new JSONObject();
+			setAttributeKey(channel, ATTRIBUTE_ATTACH_JSONOBJECT, o);
+		}
+		
+		return o;
+	}
+	
 	
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception 

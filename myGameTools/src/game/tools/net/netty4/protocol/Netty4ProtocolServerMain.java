@@ -4,7 +4,9 @@ import com.alibaba.fastjson.JSONObject;
 import game.tools.net.netty4.deencode.JSONDecode;
 import game.tools.net.netty4.deencode.JSONEncode;
 import game.tools.net.netty4.deencode.ProtoBufDecode;
+import game.tools.net.netty4.deencode.ProtoBufEncode;
 import game.tools.net.netty4.server.Netty4Server;
+import game.tools.println.ProtocolPrintln;
 import game.tools.protocol.protobuffer.Protocol.Login;
 import game.tools.protocol.protobuffer.ProtocolBuffer;
 import io.netty.channel.Channel;
@@ -64,22 +66,25 @@ public class Netty4ProtocolServerMain
 			}
 			
 			@Override
-			public void channelEncode(Channel channel, Object msg) 
+			public void channelEncode(Channel channel, int protocolNo,  Object msg) 
 			{
-				System.out.println("channelEncode " + channel.id());
+				ProtocolPrintln.protocolPrintln(true , channel ,  "0" , "0" , protocolNo , msg);
+				
+//				System.out.println("channelEncode " + channel.id());
 			}
 			
 			@Override
 			public Object channelReadStart(Channel channel, int protocolNo, Object msg) 
 			{
-//				System.out.println("channelReadStart protocolNo " + protocolNo + " msg : " + msg.toString().replaceAll("\n", "|"));
-				return "1";
+				ProtocolPrintln.protocolPrintln(false , channel ,  "0" , "0" , protocolNo , msg);
+				
+				return null;
 			}
 			
-			@Override
+			@Override	
 			public void channelReadEnd(Channel channel, int protocolNo, Object msg, Object channelReadStartReturnResult) 
 			{
-				System.out.println("channelReadEnd protocolNo " + protocolNo + " msg : " + msg.toString().replaceAll("\n", "|"));
+//				System.out.println("channelReadEnd protocolNo " + protocolNo + " msg : " + msg.toString().replaceAll("\n", "|"));
 			}
 			
 		},30));
@@ -111,18 +116,9 @@ public class Netty4ProtocolServerMain
 //	{
 //		PlayControl playControl = new PlayControl(channel , msg.getUserId());
 //		Netty4ProtocolHandler.setPlayControlAttribute(channel, playControl);
-		
+//		
 //		channel.writeAndFlush(new ProtocolBuffer(110001, msg.toBuilder()));
 //	}
-	
-	@Netty4Protocol(protocolNo = 111001)		//如果是登录
-//	public void test(Channel channel,  Login msg )
-	public void test(Channel channel,  JSONObject o)
-	{
-//		System.out.println(channel.hashCode()  + " test 111001 ");
-		
-		channel.writeAndFlush(o);
-	}
 }
 
 

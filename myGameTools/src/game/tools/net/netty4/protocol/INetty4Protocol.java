@@ -57,7 +57,7 @@ public interface INetty4Protocol
 	 * 通道进行加密时
 	 * @param channel
 	 */
-	public default void channelEncode(Channel channel, Object msg){};
+	public default void channelEncode(Channel channel, int protocolNo , Object msg){};
 	
 	
 

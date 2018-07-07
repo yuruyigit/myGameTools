@@ -83,7 +83,7 @@ public class JSONDecode extends Netty4Decode
 			
 			out.add(o);
 			
-			Netty4ProtocolHandler.channelHandler(ctx.channel() , o , "channelDecode");
+			Netty4ProtocolHandler.channelHandler(ctx.channel() ,"channelDecode" ,o.getIntValue("protocolNo") , o );
 		}
 		catch (Exception e) 
 		{

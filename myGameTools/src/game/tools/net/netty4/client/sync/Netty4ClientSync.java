@@ -1,7 +1,4 @@
 package game.tools.net.netty4.client.sync;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import com.alibaba.fastjson.JSONObject;
 import game.tools.net.netty4.Netty4Decode;
 import game.tools.net.netty4.Netty4Encode;
@@ -232,24 +229,17 @@ public class Netty4ClientSync extends Netty4Client
 	
 	public static void main(String[] args) throws Exception
 	{
-//		JSONObject o = JSONObject.parseObject("{\"protocolNo\":110001,\"platfromId\":\"1\",\"userId\":\"2017062613s37ssdddds42\",\"channelId\":\"3000001\"}");
-		Runnable r = new Runnable() {
-			
+		
+		Runnable run = new Runnable() 
+		{
 			@Override
 			public void run() 
 			{
 				JSONObject o = JSONObject.parseObject("{\"protocolNo\":110001,\"platfromId\":\"1\",\"userId\":\"2017062613s37ssdddds42\",\"channelId\":\"3000001\"}");
 				
-//				ProtocolBuffer protocolBuffer = new ProtocolBuffer(110001, 
-//						Login.newBuilder()
-//						.setUserId("2017062613s37ssdddds42")
-//						.setChannl("3000001")
-//						.setPlaform("1"));
-				
-//				System.out.println(protocolBuffer.toString());
-				
-				Netty4ClientSync client = new Netty4ClientSync("127.0.0.1", 1111, new JSONDecode() , new JSONEncode() , new INettyChannelRead() {
-//				Netty4ClientSync client = new Netty4ClientSync("127.0.0.1", 1111, new ProtoBufDecode() , new ProtoBufEncode() , new INettyChannelRead() {
+				long startTime = System.currentTimeMillis();
+				Netty4ClientSync client = new Netty4ClientSync("127.0.0.1", 20012, new JSONDecode() , new JSONEncode() , new INettyChannelRead() 
+				{
 					
 					@Override
 					public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception 
@@ -258,101 +248,31 @@ public class Netty4ClientSync extends Netty4Client
 					}
 				});
 				
-				for (int j = 0; j < 1; j++) 
+				long endTime = System.currentTimeMillis();
+				System.out.println("create = " + (endTime - startTime));
+				client.send(o);
+				
+//				o = JSONObject.parseObject("{\"protocolNo\":140033}");
+				o = JSONObject.parseObject("{\"protocolNo\":130011}");
+				int index = 0;
+				startTime = System.currentTimeMillis();
+				endTime = System.currentTimeMillis();
+				
+				while((endTime - startTime) <= 1000)
 				{
 					
-					try 
-					{
-						
-//						Object result = client.send(protocolBuffer);
-//						client.send(new ProtocolBuffer(111001, 
-//								Login.newBuilder()
-//								.setUserId("2017062613s37ssdddds42")
-//								.setChannl("3000001")
-//								.setPlaform("1")));
-//						client.send(new ProtocolBuffer(120002, 
-//								Login.newBuilder()
-//								.setUserId("2017062613s37ssdddds42")
-//								.setChannl("3000001")
-//								.setPlaform("1")));
-						
-						
-						Object result = client.send(o);
-						o = JSONObject.parseObject("{\"protocolNo\":120001}");
-						client.send(o);
-						Thread.sleep(300);
-						o = JSONObject.parseObject("{\"protocolNo\":120002}");
-						client.send(o);
-					}
-					catch (InterruptedException e) 
-					{
-						e.printStackTrace();
-					}
+					o.put("index", index);
+					o.put("sendTime", System.currentTimeMillis());
+					
+					client.send(o);
+					
+					endTime = System.currentTimeMillis();
+					index ++;
 				}
+				
+				System.out.println("index = " + index);
 			}
 		};
-		ExecutorService exe = Executors.newCachedThreadPool();
-		
-		for (int i = 0; i < 1; i++) 
-		{
-			exe.execute(r);
-		}
-		
-		
-//		Object result = client.send(o);
-//		
-//		o = JSONObject.parseObject("{\"protocolNo\":120001}");
-//		client.send(o);
-//		
-//		o = JSONObject.parseObject("{\"protocolNo\":120002}");
-//		client.send(o);
-		
-		System.out.println("send ok ");
-//		
-//		Runnable run = new Runnable() {
-//			
-//			@Override
-//			public void run() {
-//				JSONObject o = JSONObject.parseObject("{\"protocolNo\":110001,\"platfromId\":\"1\",\"userId\":\"2017062613s37ssdddds42\",\"channelId\":\"3000001\"}");
-//				
-//				long startTime = System.currentTimeMillis();
-//				Netty4ClientSync client = new Netty4ClientSync("192.168.1.19", 20012, new LogicDecode() , new LogicEncode() , new INettyChannelRead() {
-//					
-//					@Override
-//					public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception 
-//					{
-//						System.out.println("revc push " + msg);
-//					}
-//				});
-//				
-//				long endTime = System.currentTimeMillis();
-//				System.out.println("create = " + (endTime - startTime));
-//				client.send(o);
-//				
-////				o = JSONObject.parseObject("{\"protocolNo\":140033}");
-//				o = JSONObject.parseObject("{\"protocolNo\":130011}");
-//				int index = 0;
-//				startTime = System.currentTimeMillis();
-//				endTime = System.currentTimeMillis();
-//				
-//				while((endTime - startTime) <= 1000)
-//				{
-//					
-//					o.put("index", index);
-//					o.put("sendTime", System.currentTimeMillis());
-//					
-//					client.send(o);
-//					
-//					endTime = System.currentTimeMillis();
-//					index ++;
-//				}
-//				
-//				System.out.println("index = " + index);
-//				
-//			}
-//		};
-//		
-//		
 //		Thread t1 = new Thread(run);
 //		Thread t2 = new Thread(run);
 //		

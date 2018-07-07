@@ -7,7 +7,6 @@ import com.alibaba.fastjson.JSONObject;
 
 class PlayControl
 {
-	
 	private String name;
 	
 	public PlayControl(String name) 

@@ -8,24 +8,75 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.JarURLConnection;  
 import java.net.URL;  
-import java.net.URLClassLoader;  
+import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Enumeration;  
-import java.util.HashSet;  
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;  
 import java.util.jar.JarEntry;  
 import java.util.jar.JarFile;  
   
 public class ClassUtils {  
-    public static void main(String[] args) throws Exception {  
-        String packageName = "org.objectweb.asm";  
-        Set<String> classNames = getClassName(packageName, false);  
-        if (classNames != null) {  
-            for (String className : classNames) {  
-                System.out.println(className);  
-            }  
-        }  
+    public static void main(String[] args) throws Exception 
+    {  
+    	String packageName = "org.objectweb.asm";  
+//        Set<String> classNames = getClassName(packageName, false);  
+        ArrayList<Object> list = getClassObjectList("game.tools.weight", false);
+        
+        System.out.println();
     }  
   
+    public static <T> ArrayList<T> getClassObjectList(String packageName, boolean isRecursion) 
+    {  
+    	Set<String> classNames = getClassName(packageName, isRecursion);
+    	
+    	ArrayList<T> classList = new ArrayList<>(classNames.size());
+    	
+    	try 
+    	{
+	    	for (String className : classNames) 
+	    	{
+				Class<?> clzss = ClassLoader.getSystemClassLoader().loadClass(className);
+				
+				if(isCreate(clzss))
+					classList.add((T)clzss.newInstance());
+			}
+    	}
+    	catch (Exception e) 
+    	{
+    		e.printStackTrace();
+    		game.tools.log.LogUtil.error(e);
+    	}
+    	
+    	return classList;
+    }
+    
+    
+    public static ArrayList<Class<?>> getClassList(String packageName, boolean isRecursion) 
+    {  
+    	Set<String> classNames = getClassName(packageName, isRecursion);
+    	
+    	ArrayList<Class<?>> classList = new ArrayList<>(classNames.size());
+    	
+    	try 
+    	{
+	    	for (String className : classNames) 
+	    	{
+				Class<?> clzss = ClassLoader.getSystemClassLoader().loadClass(className);
+				
+				classList.add(clzss);
+			}
+    	}
+    	catch (ClassNotFoundException e) 
+    	{
+    		e.printStackTrace();
+    		game.tools.log.LogUtil.error(e);
+    	}
+    	
+    	return classList;
+    }
+    
     /** 
      * 获取某包下所有类 
      * @param packageName 包名 

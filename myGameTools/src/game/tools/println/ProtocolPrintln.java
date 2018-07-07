@@ -1,10 +1,13 @@
 package game.tools.println;
 import com.alibaba.fastjson.JSONObject;
 import game.tools.log.LogUtil;
+import game.tools.net.netty4.protocol.Netty4ProtocolHandler;
+import com.google.protobuf.GeneratedMessageLite;
 import game.tools.utils.DateTools;
+import game.tools.utils.StringTools;
+import io.netty.channel.Channel;
 
 /**
- * 工具类，一般通用的工具都在这里
  * @author zzb 2014-4-9 上午11:47:35
  * 
  */
@@ -34,48 +37,111 @@ public class ProtocolPrintln
 	 * ]
 	 * </pre>
 	 */
-	public static String protocolPrintln(Object ...paramArray)
+//	public static String protocolPrintln(Object ...paramArray)
+//	{
+//		int index = 0;
+//		
+//		boolean send = (boolean) paramArray[index++];
+//		String userId = (String)paramArray[index++];
+//		long roleId = (long)paramArray[index++];
+//		int channeId = (int)paramArray[index++];
+//		JSONObject o = (JSONObject)paramArray[index++];
+//		long useTime = -1;
+//		
+//		Long revTime = (Long)o.remove(ProtocolPrintln.PROTOCOL_KEY_REV_TIME);
+//		if(revTime != null)
+//			useTime = (long)DateTools.getCurrentTimeLong() - (long)revTime;
+//		
+//		Long threadId = (Long)o.remove(ProtocolPrintln.PROTOCOL_KEY_THREAD_ID);
+//		if(threadId == null)
+//			threadId = Thread.currentThread().getId();
+//				
+//		String msgContent = (String)o.remove(ProtocolPrintln.PROTOCOL_KEY_CONTENT);
+//		if(msgContent == null)
+//			msgContent = o.toJSONString();
+//		
+//		
+//		String size = getByteSizeString(msgContent.getBytes().length);
+//		
+//		String currentTime = DateTools.getCurrentTimeMSString();
+//		
+//		String content = null;
+//		
+//		if(send)		//发送时打印
+//		{
+//			content = currentTime +" ========>>|"+channeId+"|"+userId+"|"+roleId+"|"+threadId+"|"+useTime+"|"+size+"| Send Content " + msgContent;
+//			System.err.println(content);
+//		}
+//		else		//接收时打印
+//		{
+//			content = currentTime +" <<========|"+channeId+"|"+userId+"|"+roleId+"|"+threadId+"|"+useTime+"|"+size+"| Revc Content " + msgContent;
+//			System.out.println(content);
+//			
+//			o.put(ProtocolPrintln.PROTOCOL_KEY_THREAD_ID, threadId);							//如何是接收消息的话，则记录当前执行的线程ID
+//			o.put(ProtocolPrintln.PROTOCOL_KEY_REV_TIME, System.currentTimeMillis());			//记录接收协议时间戳
+//		}
+//		
+//		LogUtil.protocol(content);
+//		
+//		return content;
+//	}
+	
+	public static String protocolPrintln(boolean isSend , Channel channel , String userId , String roleId , int protocolNo , Object msg)
 	{
-		int index = 0;
-		
-		boolean send = (boolean) paramArray[index++];
-		String userId = (String)paramArray[index++];
-		long roleId = (long)paramArray[index++];
-		int channeId = (int)paramArray[index++];
-		JSONObject o = (JSONObject)paramArray[index++];
 		long useTime = -1;
+		String channelSign = channel.id().hashCode()+""; 
+		String threadSign = Thread.currentThread().getName() + "<" + Thread.currentThread().getId()+">";
+		String msgContent = msg.toString() , msgSize = null;
 		
-		Long revTime = (Long)o.remove(ProtocolPrintln.PROTOCOL_KEY_REV_TIME);
-		if(revTime != null)
-			useTime = (long)DateTools.getCurrentTimeLong() - (long)revTime;
+		JSONObject o = Netty4ProtocolHandler.getAttributeAttachJsonObject(channel);
 		
-		Long threadId = (Long)o.remove(ProtocolPrintln.PROTOCOL_KEY_THREAD_ID);
-		if(threadId == null)
-			threadId = Thread.currentThread().getId();
-				
-		String msgContent = (String)o.remove(ProtocolPrintln.PROTOCOL_KEY_CONTENT);
-		if(msgContent == null)
-			msgContent = o.toJSONString();
+		if(isSend)			//如果是发送
+		{
+			Long revTime = (Long)o.remove(ProtocolPrintln.PROTOCOL_KEY_REV_TIME);
+			if(revTime != null)
+				useTime = (long)DateTools.getCurrentTimeLong() - (long)revTime;
+			
+			threadSign = (String)o.remove(ProtocolPrintln.PROTOCOL_KEY_THREAD_ID);
+		}
+		else				//如果是接收，则记录参数
+		{
+			o.put(ProtocolPrintln.PROTOCOL_KEY_THREAD_ID, threadSign);							//如何是接收消息的话，则记录当前执行的线程ID
+			o.put(ProtocolPrintln.PROTOCOL_KEY_REV_TIME, System.currentTimeMillis());			//记录接收协议时间戳
+		}
 		
-		
-		String size = getByteSizeString(msgContent.getBytes().length);
+		if(msg instanceof JSONObject || msg instanceof String)
+		{
+			msgSize = getByteSizeString(msgContent.getBytes().length);
+		}
+		else if(msg instanceof GeneratedMessageLite)
+		{
+			GeneratedMessageLite lite = (GeneratedMessageLite)msg;
+			
+			msgSize = getByteSizeString(lite.getSerializedSize());
+			
+			if(msgContent.indexOf("\n") >= 0)
+				msgContent = msgContent.replaceAll("\n", "|");
+			
+			if(msgContent.indexOf("@") >= 0)
+				msgContent = msgContent.substring(msgContent.indexOf("|") + 1, msgContent.length());
+			
+			msgContent = "protocolNo: " +protocolNo + "|" +msgContent; 
+		}
 		
 		String currentTime = DateTools.getCurrentTimeMSString();
 		
 		String content = null;
 		
-		if(send)		//发送时打印
+		if(isSend)		//发送时打印
 		{
-			content = currentTime +" ========>>|"+userId+"|"+roleId+"|"+channeId+"|"+threadId+"|"+useTime+"|"+size+"| Send Content " + msgContent;
-			System.err.println(content);
+			content = " ======>> "+channelSign+"|"+userId+"|"+roleId+"|"+threadSign+"|"+useTime+"|"+msgSize+"| Send Content " + msgContent;
+			System.err.println(currentTime + content);
+			content = "\t   "+content;
 		}
 		else		//接收时打印
 		{
-			content = currentTime +" <<========|"+userId+"|"+roleId+"|"+channeId+"|"+threadId+"|"+useTime+"|"+size+"| Revc Content " + msgContent;
-			System.out.println(content);
-			
-			o.put(ProtocolPrintln.PROTOCOL_KEY_THREAD_ID, threadId);							//如何是接收消息的话，则记录当前执行的线程ID
-			o.put(ProtocolPrintln.PROTOCOL_KEY_REV_TIME, System.currentTimeMillis());			//记录接收协议时间戳
+			content = " <<====== "+channelSign+"|"+userId+"|"+roleId+"|"+threadSign+"|"+useTime+"|"+msgSize+"| Revc Content " + msgContent;
+			System.out.println(currentTime + content);
 		}
 		
 		LogUtil.protocol(content);

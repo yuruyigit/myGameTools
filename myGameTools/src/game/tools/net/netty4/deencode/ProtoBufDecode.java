@@ -41,7 +41,9 @@ public class ProtoBufDecode extends Netty4Decode
 			
 			out.add(data);
 			
-			Netty4ProtocolHandler.channelHandler(ctx.channel() , data , "channelDecode");
+			int protocolNo = getInt(new byte[] {data[0] ,data[1] , data[2] , data[3]});
+			
+			Netty4ProtocolHandler.channelHandler(ctx.channel() , "channelDecode" , protocolNo ,  data);
 		}
 		catch (Exception e) 
 		{

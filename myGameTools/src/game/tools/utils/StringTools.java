@@ -11,6 +11,14 @@ public class StringTools
      */
     private static final Pattern NUMBER_PATTERN = Pattern.compile("-?[0-9]+.?[0-9]+");
     
+    /**
+     * 空格点位符
+     */
+    private static final String[] EMPTY_OWN = {" ", "  ", "   ", "    ", "     ", "      ", "       ", "        ", "         ", "          ",
+    		"          ","           ","            ","             ","              ","               ","                ",
+    		"                 ", "                  ", "                   ", "                    ",};
+    
+    
 	/**
 	 * @param params
 	 * @return 为空
@@ -61,4 +69,22 @@ public class StringTools
 		return true;
 	}
 	 
+	
+	/**
+	 * @return 返回固定点位后的字符串
+	 */
+	public static String FixedWidth(String srcString , int size) 
+	{ 
+		int gap = srcString.length() - size;
+		
+		if(gap > EMPTY_OWN.length -1)
+		{
+			System.err.println("Only "+EMPTY_OWN.length+" lengths are fixed");
+			return srcString;
+		}
+		
+		srcString += EMPTY_OWN[gap - 1];
+		
+		return srcString;
+	}
 }

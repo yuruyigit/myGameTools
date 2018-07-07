@@ -27,8 +27,6 @@ public class ProtoBufEncode extends Netty4Encode
 
 			Channel channel = ctx.channel();
 			
-			System.out.println("encode" + channel.id());
-			
 			ProtocolBuffer buffer = (ProtocolBuffer)msg;
 			
 			//数据内容体 + 数据长度
@@ -47,7 +45,7 @@ public class ProtoBufEncode extends Netty4Encode
 			
 			out.writeBytes(data);
 			
-			Netty4ProtocolHandler.channelHandler(ctx.channel() , data , "channelEncode");
+			Netty4ProtocolHandler.channelHandler(ctx.channel() , "channelEncode" , buffer.getProtocolNo() , buffer.getBuild());
 		}
 		catch(Exception e )
 		{

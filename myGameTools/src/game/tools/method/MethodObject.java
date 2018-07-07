@@ -1,6 +1,8 @@
 package game.tools.method;
 
 import java.lang.reflect.Method;
+
+import com.google.protobuf.GeneratedMessageLite;
 public class MethodObject
 {
 
@@ -34,7 +36,7 @@ public class MethodObject
 		
 		try 
 		{
-			if(paramClass.getSuperclass().getName().indexOf("com.google.protobuf") >= 0)
+			if(paramClass.getSuperclass().getName().indexOf("com.google.protobuf") >= 0)	//如果是protocolbuf的类
 				this.protobufferParseFromMethod = paramClass.getMethod(MethodObject.PROTOBUFFER_PARSE_FORM, byte[].class);
 		}
 		catch (Exception e)		{		}
