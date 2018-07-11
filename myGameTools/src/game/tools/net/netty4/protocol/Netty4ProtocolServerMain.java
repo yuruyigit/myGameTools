@@ -98,7 +98,7 @@ public class Netty4ProtocolServerMain
 	 * @param attach
 	 */
 	@Netty4Protocol(protocolNo = 110001)		//如果是登录
-	public void doLogin(Channel channel,  JSONObject msg )
+	public void doLogin(PlayControl pc , Channel channel,  JSONObject msg )
 	{
 		JSONObject o = (JSONObject)msg;
 		

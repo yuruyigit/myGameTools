@@ -52,7 +52,15 @@ import io.netty.util.AttributeKey;
 		System.out.println("protocol 110001 msg : " + msg);
 		channel.writeAndFlush(msg);
 	}
+	
+	<b>
+		不同对象函数参数列表
+		对象函数：playControlAttribute, channel, msg
+		playControl对象函数： msg
+		静态函数：channel, msg
+	</b>
 	</pre>
+	
  */
 public class Netty4ProtocolHandler extends Netty4Handler
 {
@@ -200,14 +208,16 @@ public class Netty4ProtocolHandler extends Netty4Handler
 					{
 						Object handlerStartReturnResult = netty4Protocol.channelReadStart(channel, protocolNo, msg);
 						
+						Object playControlAttribute = getPlayControlAttribute(channel);
+						
 						if(methodObject.getObject() != null)
-							method.invoke(methodObject.getObject(), channel, msg);
+						{
+							method.invoke(methodObject.getObject(), playControlAttribute, channel, msg );
+						}
 						else
 						{
-							Object attach = getPlayControlAttribute(channel);
-							
-							if(attach != null)
-								method.invoke(attach , msg);
+							if(playControlAttribute != null)
+								method.invoke(playControlAttribute , msg);
 							else
 								method.invoke(null, channel, msg);
 						}
