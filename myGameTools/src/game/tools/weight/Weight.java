@@ -5,7 +5,7 @@ package game.tools.weight;
  * <pre> <b>
  * 使用说明：
  * 	在实体类中必须继承Weight父类，如：market extend Weight。
- * 	在子类中，则要删除对应父类的weight字段，让其使用父类中的weight参与计算。
+ * 	在子类中，则要删除对应子类的weight字段，让其使用父类中的weight参与计算。
  *	该父类，添加了三个关于权重计算的属性 : weight,minWeight,maxWeight。
  * </b></pre>
  */

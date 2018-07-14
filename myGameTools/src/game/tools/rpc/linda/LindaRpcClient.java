@@ -8,6 +8,7 @@ import game.tools.net.netty4.client.Netty4Client;
 import game.tools.utils.Util;
 import game.tools.weight.WeightObjects;
 import game.tools.weight.Weights;
+import game.tools.weight.Weights.GetWeight;
 import io.netty.channel.ChannelHandlerContext;
 
 public class LindaRpcClient 
@@ -220,6 +221,15 @@ Object o = lindaClient.call(array);
 		}
 		
 		Linda linda = Weights.getRandomWeight(this.lindaMap, this.totalWeight);
+		
+//		Linda linda = Weights.getRandomWeight(this.lindaMap, new GetWeight<Linda>() 
+//		{
+//			@Override
+//			public int getWeight(Linda linda) 
+//			{
+//				return linda.getWeight();
+//			}
+//		});
 		
 		Netty4Client nettyClient = this.nettyClientMap.get(linda.getName());
 		if(nettyClient == null)

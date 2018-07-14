@@ -117,6 +117,32 @@ public class Weights
 		return new WeightObjects(totalWeight, weightObjectList);
 	}
 	
+	public static <T> T getRandomWeight(Map weightMap , GetWeight<T> getWeight)
+	{
+		return getRandomWeight(map2List(weightMap),getWeight);
+	}
+	
+	public static <T> T getRandomWeight(List weightList , GetWeight<T> getWeight)
+	{
+		int sum = 0 , w = 0;
+		
+		for (Object object : weightList) 
+			sum += getWeight.getWeight((T)object);
+		
+		int randomNo = Util.getRandomInt(0, sum);
+		
+		sum = 0;
+		
+		for (Object object : weightList) 
+		{
+			w = getWeight.getWeight((T)object);
+			if(sum < randomNo && sum + w >= randomNo)
+				return (T)object;
+			sum += w;
+		}
+		return null;
+	}
+	
 	/**
 	 * @param weightObjects 权重操作对象
 	 * @param isDebar 是否过滤随机的对象，避免重复随机。
@@ -213,5 +239,10 @@ public class Weights
 	private static ArrayList<Weight> map2List(Map weightMap)
 	{
 		return new ArrayList<>(weightMap.values());
+	}
+	
+	public static interface GetWeight<T>
+	{
+		public int getWeight(T paramT);
 	}
 }

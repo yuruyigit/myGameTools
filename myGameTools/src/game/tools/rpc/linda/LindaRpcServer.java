@@ -354,7 +354,7 @@ LindaServer lindaServer = new LindaServer("127.0.0.1:6379",12345, 1, new ILindaR
 		});
 		
 		
-		LindaRpcServer server1 = new LindaRpcServer("game.tools.rpc" , "127.0.0.1:6379", "CENTER" ,12346 , 20, new ILindaRpcNo() 
+		LindaRpcServer server1 = new LindaRpcServer("game.tools.rpc" , "127.0.0.1:6379", "LOGIN" ,12346 , 20, new ILindaRpcNo() 
 		{
 			@Override
 			public int getNo(LindaRpcPackage rpcPackage) {
