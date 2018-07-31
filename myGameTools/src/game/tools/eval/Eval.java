@@ -11,7 +11,6 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
-import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 
 import game.tools.utils.DateTools;
@@ -146,18 +145,9 @@ public class Eval
         		+ "		public static String main(String string)"
         		+ "		{"
         		+ "			System.out.println( \"Hello, \"+ string + \" \" + DateTools.getCurrentTimeMSString());"
-        		+ "			A.test();"
         		+ "			return null;"
         		+ "		}"
         		+ "}"
-        		
-				+ "class A"
-				+ "{"
-				+ "		public static void test()"
-				+ "		{"
-				+ "			System.out.println(\"A.test\");"
-				+ "		}"
-				+ "}"
 				+ "";
         
         System.out.println(DateTools.getCurrentTimeMSString());
