@@ -7,7 +7,7 @@ import java.util.Enumeration;
 
 public class IP 
 {
-	private static String getLocalIp() 
+	public static String getLocalIp() 
 	{
         String sip = null;
         InetAddress ip = null;

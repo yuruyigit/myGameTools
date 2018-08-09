@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import com.sun.xml.internal.ws.api.pipe.ThrowableContainerPropertySet;
+
 import game.tools.log.LogUtil;
 import game.tools.utils.Util;
 import javapns.devices.Device;
@@ -16,11 +18,12 @@ import javapns.notification.PushedNotification;
 
 public class IOSPush {
 
-	private static int badge = 1;													// 图标小红圈的数值
-	private static String sound = "default";										// 铃音
-	private static String certificatePath = "conf/push_development_cn.gamechef.skyfall.p12";				//证书路径
-	private static String certificatePassword = "123456";							// 此处注意导出的证书密码不能为空因为空密码会报错
-	private static boolean isProd = true;											// true：表示的是产品发布推送服务 false：表示的是产品测试推送服务
+	private static int badge 					= 1;								// 图标小红圈的数值
+	private static String sound 				= "default";						// 铃音
+	private static String certificatePath 		= "conf/cert_dev.p12";				// 证书路径
+	private static String certificatePassword 	= "a1234";							// 此处注意导出的证书密码不能为空因为空密码会报错
+	private static boolean isProd 				= false;							// true：表示的是产品发布推送服务 false：表示的是产品测试推送服务
+	private static String deviceToken 			= "94d1a2774a773c8134b8a401742edd2accf5d3bbf7156e5fc2aef63acf963581";			//设备token
 	
 	
 	private static PushNotificationManager pushManager = new PushNotificationManager();
@@ -38,10 +41,16 @@ public class IOSPush {
 //			certificatePath = propertie.getProperty("certificatePath","conf/push_development.p12");
 //			certificatePassword = propertie.getProperty("certificatePassword", "false");
 //			isProd = Boolean.valueOf(propertie.getProperty("isProd", "false"));
-			 
+			
+			System.out.println("sound:\t\t\t" + sound );
+			System.out.println("certificatePath:\t" + certificatePath );
+			System.out.println("certificatePassword:\t" + certificatePassword );
+			System.out.println("isProd:\t\t\t" + isProd );
+			System.out.println("deviceToken:\t\t" + deviceToken );
+			System.out.println();
 			
 			// true：表示的是产品发布推送服务 false：表示的是产品测试推送服务
-//			pushManager.initializeConnection(new AppleNotificationServerBasicImpl(certificatePath, certificatePassword, isProd));
+			pushManager.initializeConnection(new AppleNotificationServerBasicImpl(certificatePath, certificatePassword, isProd));
 		}
 		catch (Exception e) 
 		{
@@ -121,13 +130,18 @@ public class IOSPush {
 			if(failed >= 1)
 			{
 				PushedNotification pnf = failedNotifications.get(0);
-				System.out.println("failed " + pnf.getPayload().getExpiry());
+//				System.err.println("failed " + pnf.getException());
+				
 				result = false;
+				
+				Exception e = pnf.getException();
+				if(e != null)
+					throw e;
 			}
 			if(successful >= 1)
 			{
 				PushedNotification pnf = successfulNotifications.get(0);
-				System.out.println("successful " + pnf.getPayload().getExpiry());
+				System.err.println("successful " + pnf.getException());
 				result = true; 
 			}
 		} 
@@ -151,10 +165,9 @@ public class IOSPush {
 
 	public static void main(String[] args) throws Exception 
 	{
-		String deviceToken = "a5a9a648fd8a1053effa74ed8e4a231c6d1163b2991b34d809fb78c219099d17";
 		String alert = "中央人民广播电视台: 您已被中南海锁定, 请及时配合调查。";// push的内容
 
-		for (int i = 0; i < 10; i++) 
+		for (int i = 0; i < 1; i++) 
 		{
 			long startTime = System.currentTimeMillis();
 			
@@ -164,7 +177,7 @@ public class IOSPush {
 			
 			long endTime = System.currentTimeMillis();
 			
-			System.out.println((endTime - startTime) + "  result = " );
+//			System.out.println((endTime - startTime) + "  result = " + result);
 		}
 		
 	}

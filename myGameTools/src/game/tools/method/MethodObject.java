@@ -32,6 +32,10 @@ public class MethodObject
 	private void initProtobuffParseMethod()
 	{
 		Class<?> clzssParams [] = this.method.getParameterTypes();
+		
+		if(clzssParams.length <= 0)
+			return;
+		
 		Class<?> paramClass = clzssParams[clzssParams.length - 1];
 		
 		try 

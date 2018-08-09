@@ -280,6 +280,12 @@ public class Util
 		return false;
 	}
 	
+	public static String getLocalPath() 
+	{
+	    String path = System.getProperty("user.dir");
+	    return path.replace("\\\\", "\\");
+	}
+	 
 	public static void main(String[] args) 
 	{
 		String crc = getCrc("2".getBytes());

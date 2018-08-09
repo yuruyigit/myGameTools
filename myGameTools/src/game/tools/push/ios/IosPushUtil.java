@@ -22,42 +22,22 @@ public class IosPushUtil
 {
 	private static final int badge = 100;												// 图标小红圈的数值
 	
-	public static String keystore = null;
-    public static String password = null;
-    public static String host = null;
+	public static String keystore = "conf/cert_dev.p12";
+    public static String password = "a1234";
+    public static String host = "gateway.push.apple.com";
     public static Boolean production = true;											//true：production false: sandbox
     public static final int numberOfThreads = 8;
-    static
+    
+    
+    public static void main(String[] args) throws Exception 
     {
-        Properties propertie = new Properties();
-        InputStream inputStream;
-         
-        try 
-        {
-//            inputStream = IosPushUtil.class.getClassLoader().getResourceAsStream("push.properties");
-//            propertie.load(inputStream);
-//            keystore = propertie.getProperty("certificatePath", "conf/aps_developer_identity.p12");
-//            password = propertie.getProperty("certificatePassword","chukong123");
-//            host = propertie.getProperty("host","gateway.push.apple.com");
-//            production = Boolean.valueOf(propertie.getProperty("production", "false"));
-//            inputStream.close();
-        	
-        	keystore = "conf/push_development_cn.gamechef.skyfall.p12";
-        	password = "123456";
-        	production = false;
-        	
-        }
-        catch (Exception ex) 
-        {
-            ex.printStackTrace();
-        }
-    }
-    
-    
-    
-    public static void main(String[] args) throws Exception {
+    	
+
+        
+        String deviceToken = "94d1a2774a773c8134b8a401742edd2accf5d3bbf7156e5fc2aef63acf963581";
+        
         //pushMsgNotification("hello!!!2", true, "iostoken");
-    //  pushBadgeNotification(1,  "iostoken");
+//      pushBadgeNotification(1,  "iostoken");
 //        String[] devs= new String[10000];
 //        for (int i = 0; i < devs.length; i++) {
 //        	devs[i] = "iostoken";
@@ -65,13 +45,10 @@ public class IosPushUtil
 //        List<Device> devices=Devices.asDevices(devs);
 //        System.out.println(devices.size());
         //pushPayLoadByThread(devices, "Hello 2222222", 1, null, null);
-        //pushPayloadDevicePairs(devices, "Hello 111111111", 1, null, null);
+//        pushPayloadDevicePairs(devices, "Hello 111111111", 1, null, null);
         //pushPayloadDevicePairs(devices, "Hello +++", 1, null, null);
         
         
-        
-        String deviceToken = "97ef4b5f6f2ad4bea3bbc83cd9523d5bd80994873dcd411bd222d266265536ab";
-		String alert = "中央人民广播电视台: 您已被中南海锁定, 请及时配合调查。";// push的内容
 
 		
         queue(new String []{deviceToken},"Hello 2222222", 1, null, null);

@@ -30,6 +30,7 @@ public class HttpClient
 	private static final int timeout = 30 * 1000;
 	
 	private static final ExpireCacheDataMap<String,URL> EXPIRE_URL_MAP = new ExpireCacheDataMap<String,URL>();
+	private static final ExpireCacheDataMap<String,HttpURLConnection> EXPIRE_CONNECTION_MAP = new ExpireCacheDataMap<String,HttpURLConnection>();
 	
 	
 	/**
@@ -49,6 +50,33 @@ public class HttpClient
 		
 		return url;
 	}
+	
+	
+	private HttpURLConnection getConnection(String urlString , String method) throws Exception
+	{
+		HttpURLConnection urlConnection = EXPIRE_CONNECTION_MAP.get(urlString);
+		
+		if(urlConnection == null)
+		{
+			urlConnection = (HttpURLConnection)new URL(urlString).openConnection();
+			urlConnection.setDoOutput(true);
+			urlConnection.setDoInput(true);
+			urlConnection.setRequestMethod(method);
+			urlConnection.setUseCaches(false);
+			urlConnection.setInstanceFollowRedirects(true);
+			urlConnection.setConnectTimeout(timeout);  
+			urlConnection.setReadTimeout(timeout);
+			// urlConnection.setRequestProperty("Host","$domain");
+//			urlConnection.setRequestProperty("Content-Type", "application/x-java-serialized-object");
+			urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+			urlConnection.setRequestProperty("Connection", "Keep-Alive");
+			
+			EXPIRE_CONNECTION_MAP.put(urlString, urlConnection);
+		}
+		
+		return urlConnection;
+	}
+	
 	
 	/**
 	 * @param params
@@ -128,6 +156,11 @@ public class HttpClient
 		 
 //		System.out.println("urlConnection = " + urlConnection.hashCode());
 		return urlConnection;
+		
+		
+		
+//		HttpURLConnection urlConnection = getConnection(httpUrl , method);
+//		return urlConnection;
 	}
 	
 	/**
@@ -295,22 +328,25 @@ public class HttpClient
 //		
 //		String msg = JSON.toJSONString(params);
 //		
-//		HttpClient hc = new HttpClient();
-//		Object o = hc.sendGet("http://www.baidu.com/s", "wd" , "zzb");
-//		Object o1 = hc.sendGet("http://www.baidu.com/s", "wd" , "zzb");
-//		System.out.println();
-		
-		HashMap<String, String> stringMap = new HashMap<>();
-		
-		for (int i = 0; i < 10111110; i++) 
+		HttpClient hc = new HttpClient();
+		for (int i = 0; i < 100; i++) 
 		{
-			String string = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 11);
-			if(stringMap.containsKey(string))
-				System.out.println("string  = " + string + " exist ");
-//			System.out.println(UUID.randomUUID().toString().replaceAll("-", "").substring(0, 11));
-			stringMap.put(string, string);
+			Object o = hc.sendGet("http://192.168.56.31:8091/server/list.do");
+			System.out.println("o = " + o);
 		}
+//		Object o1 = hc.sendGet("http://www.baidu.com/s", "wd" , "zzb");
 		
-		System.out.println("OK" + stringMap.size());
+//		HashMap<String, String> stringMap = new HashMap<>();
+//		
+//		for (int i = 0; i < 10111110; i++) 
+//		{
+//			String string = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 11);
+//			if(stringMap.containsKey(string))
+//				System.out.println("string  = " + string + " exist ");
+////			System.out.println(UUID.randomUUID().toString().replaceAll("-", "").substring(0, 11));
+//			stringMap.put(string, string);
+//		}
+//		
+//		System.out.println("OK" + stringMap.size());
 	}
 }

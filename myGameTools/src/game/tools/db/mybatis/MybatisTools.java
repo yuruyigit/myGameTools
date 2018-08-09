@@ -9,21 +9,24 @@ public class MybatisTools
 	 */
 	public static String getMysqlKey(String url)
 	{
-		String [] dbUlrArr = url.split(":");
+//		String [] dbUlrArr = url.split(":");
+//		
+//		String [] dbPortNameArr = null;
+//		if(dbUlrArr[3].indexOf("?") > 0)
+//			dbPortNameArr = dbUlrArr[3].substring(0, dbUlrArr[3].indexOf("?")).split("/");
+//		else
+//			dbPortNameArr = dbUlrArr[3].split("/");
+//		
+//		String dbIp = dbUlrArr[2].substring(2);
+//		String dbPort = dbPortNameArr[0];
+//		String dbName = dbPortNameArr[1];
+//		
+//		String key = dbIp+":"+dbPort+"->"+dbName;
+//		
+//		return key;
 		
-		String [] dbPortNameArr = null;
-		if(dbUlrArr[3].indexOf("?") > 0)
-			dbPortNameArr = dbUlrArr[3].substring(0, dbUlrArr[3].indexOf("?")).split("/");
-		else
-			dbPortNameArr = dbUlrArr[3].split("/");
+		return url.split("\\?")[0];
 		
-		String dbIp = dbUlrArr[2].substring(2);
-		String dbPort = dbPortNameArr[0];
-		String dbName = dbPortNameArr[1];
-		
-		String key = dbIp+":"+dbPort+"->"+dbName;
-		
-		return key;
 	}
 	
 }

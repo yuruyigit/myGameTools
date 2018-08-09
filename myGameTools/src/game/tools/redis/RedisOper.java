@@ -411,6 +411,14 @@ public class RedisOper
 		return RedisPool.getConneciontCount();
 	}
 	
+	public static boolean isConneciont() 
+	{
+		if(RedisPool.getConneciontCount() > 0)
+			return true;
+		return false;
+	}
+	
+	
 	//////////////////////////////////////////redis锁/////////////////////////////////////////////////
 	public static String lock(String lockName)
 	{
