@@ -28,15 +28,21 @@ public class MybatisTransactionMainServer
 	}
 	
 	@HttpCmd(cmdNo = 1111)
-	private static void testTran(HttpPackage pkg)
+	private static boolean testTran(HttpPackage pkg)
 	{
-		MybatisTransaction.start(pkg.get(1));	//继续执行对应id的事务
+		String transctionId = pkg.get(1);
+		
+		MybatisTransaction.start(transctionId);	//继续执行对应id的事务
 		
 		String sessionKey = MybatisFactoryTools.registerMyBatisFactory("game.data.conf.mapper", "jdbc:mysql://127.0.0.1:3306/static_dev" ,"root", "root" , new MybatisTransactionInterceptor("127.0.0.1" , 6379 , null));
 		
 		Achievements achievement = MybatisFactoryTools.getMapper(sessionKey, AchievementsMapper.class).selectByPrimaryKey(10101);
 		achievement.setDescription("dsafasdfasdfasdfasdfsfasf事务");
 		MybatisFactoryTools.getMapper(sessionKey, AchievementsMapper.class).updateByPrimaryKey(achievement);
+		
+		MybatisTransaction.rollback(transctionId);
+		
+		return false;
 	}
 
 }

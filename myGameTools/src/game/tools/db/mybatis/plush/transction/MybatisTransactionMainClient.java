@@ -32,8 +32,13 @@ public class MybatisTransactionMainClient
 		MybatisFactoryTools.getMapper(sessionKey, CardStarUpsMapper.class).updateByPrimaryKey(cardStarUps);
 		
 		
-		String result = HttpTools.sendPost("http://localhost:8888/transaction/HttpCmdServlet", 1111, transactionId);			//另个服务器继续执行该事务
+		boolean result = HttpTools.sendPost("http://localhost:8888/transaction/HttpCmdServlet", 1111, transactionId);			//另个服务器继续执行该事务
 		
+		if(!result)		//返回false说出，执行出错。事务已被回滚。 
+		{
+			System.out.println("err ");
+			return;
+		}
 		cardStarUps = new CardStarUps();
 		cardStarUps.setId(Util.getRandomInt(99999, 9999999));
 		cardStarUps.setDescription("炒在，央工基夺七我五上主主人工土加盟协fjlafj;af");
