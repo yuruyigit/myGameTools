@@ -1,25 +1,49 @@
 package game.tools.db.mybatis.plush.transction;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import game.data.conf.entity.Achievements;
-import game.data.conf.entity.CardStarUps;
 import game.data.conf.mapper.AchievementsMapper;
-import game.data.conf.mapper.CardStarUpsMapper;
 import game.tools.db.mybatis.MybatisFactoryTools;
 import game.tools.db.mybatis.plush.MybatisTransactionInterceptor;
 import game.tools.http.HttpServer;
-import game.tools.http.HttpTools;
 import game.tools.http.protocol.HttpCmd;
 import game.tools.http.protocol.HttpCmdServlet;
 import game.tools.http.protocol.HttpPackage;
-import game.tools.utils.Util;
+import game.tools.redis.RedisCmd;
+import game.tools.redis.RedisOper;
 
 public class MybatisTransactionMainServer 
 {
 	public static void main(String[] args)
 	{
-		test();
+//		test();
+		testRedis();
 	}
 	
+	private static void testRedis() 
+	{
+		RedisOper.connection("127.0.0.1" , 6379 , null);
+		
+		int segment = 100;  
+        Map<String, String> kvMap = new HashMap<String, String>();  
+        for (int i = 1; i <= 100000; i++) 
+        {  
+            String key = "f:" + String.valueOf(i % segment);  
+            String value = "v:" + i;  
+            kvMap.put(key, value);  
+            if (i % segment == 0) 
+            {  
+                System.out.println(i);  
+                int hash = (i - 1) / segment;  
+                String tkey = "u:" + String.valueOf(hash);
+                RedisOper.execute(RedisCmd.hmset, tkey, kvMap);
+                kvMap = new HashMap<String, String>();  
+            }  
+        }  
+	}
+
 	private static void test()
 	{
 		HttpServer httpServer = new HttpServer("transaction", 8888);

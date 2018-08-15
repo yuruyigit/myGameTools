@@ -27,6 +27,7 @@ import game.tools.db.mybatis.MybatisTools;
 import game.tools.redis.RedisCmd;
 import game.tools.redis.RedisOper;
 import game.tools.threadpool.ThreadLocal;
+import game.tools.utils.DateTools;
 import game.tools.utils.IP;
 import game.tools.utils.UUIDTools;
 import game.tools.utils.Util;
@@ -331,6 +332,7 @@ public class MybatisTransactionHandler
 			return;
 		
 		JSONObject o = new JSONObject();
+		o.put("time", DateTools.getCurrentTimeMSString());
 		o.put("serverSign", SERVER_SIGN);
 		o.put("mysqlUrl", getMysqlUrl(invocation));
 		o.put("rollbackSql", rollbackSql);
