@@ -8,7 +8,7 @@ import game.tools.db.mybatis.MybatisFactoryTools;
 import game.tools.redis.RedisCmd;
 import game.tools.redis.RedisOper;
 
-public class MybatisTransactionRollback 
+class MybatisTransactionRollback 
 {
 	private static Object LOCK = new Object();
 	private static boolean START = false;
