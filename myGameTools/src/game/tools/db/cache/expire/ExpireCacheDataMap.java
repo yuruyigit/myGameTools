@@ -1,6 +1,7 @@
 package game.tools.db.cache.expire;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+
 import game.tools.utils.DateTools;
 
 class KeyValue<K,V>
@@ -38,6 +39,8 @@ public class ExpireCacheDataMap<K,V>
 	/** 2016年9月20日下午9:50:37 key连接的映射 */
 	private final ConcurrentHashMap<K, KeyValue<K,V>> keyIndexMap = new ConcurrentHashMap<K, KeyValue<K,V>>();
 	
+	/** 过期处理 */
+	private IExpire<V> expireHandler;
 	
 	/**
 	 *  过期时间，单位小时 （默认一个小时）
@@ -50,9 +53,20 @@ public class ExpireCacheDataMap<K,V>
 	 * @param keyCheckSize	大于这个数的话，去检查过期（默认10000）。
 	 */
 	public ExpireCacheDataMap(int keyExpireTime , int keyCheckSize) 
+	{	
+		this(keyExpireTime , keyCheckSize , null);
+	}
+	
+	public ExpireCacheDataMap(int keyExpireTime , int keyCheckSize , IExpire<V> expireHandler) 
 	{
 		this.keyExpireTime = keyExpireTime * 60 *  1000;
 		this.keyCheckSize = keyCheckSize;
+		this.expireHandler = expireHandler;
+	}
+	
+	public ExpireCacheDataMap(IExpire<V> expireHandler) 
+	{
+		this.expireHandler = expireHandler;
 	}
 	
 	/**
@@ -68,7 +82,12 @@ public class ExpireCacheDataMap<K,V>
 			long gapTime = System.currentTimeMillis() - idKey.getUpdateTime();
 			
 			if(gapTime >= keyExpireTime)
-				keyIndexMap.remove(idKey.getKey());
+			{
+				KeyValue v = (KeyValue)keyIndexMap.remove(idKey.getKey());
+				
+				if(expireHandler != null)
+					expireHandler.expire((V)v.getValue());
+			}
 		}
 	}
 	
