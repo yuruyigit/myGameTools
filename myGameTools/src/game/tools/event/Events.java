@@ -7,12 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import game.tools.log.LogUtil;
-import game.tools.threadpool.ThreadGroupFactory;
-import game.tools.utils.DateTools;
 
 public class Events 
 {
@@ -180,34 +179,38 @@ public class Events
 	
 	private static void execute()
 	{
-		EVENT_THREAD = new Thread(()-> 
-		{
-			try 
+		EVENT_THREAD = new Thread(new Runnable() {
+			
+			@Override
+			public void run() 
 			{
-				while(START)
+				try 
 				{
-					int [] dateArr = getDate();
-					
-					synchronized (EVENT_LIST) 
+					while(START)
 					{
-						for (Event event : EVENT_LIST) 
+						int [] dateArr = getDate();
+						
+						synchronized (EVENT_LIST) 
 						{
-							if(event.isExecute(dateArr))
+							for (Event event : EVENT_LIST) 
 							{
-								THREAD_POOL.execute(event.getRunable());
+								if(event.isExecute(dateArr))
+								{
+									THREAD_POOL.execute(event.getRunable());
+								}
 							}
 						}
+						
+						Thread.sleep(1000L);
 					}
-					
-					Thread.sleep(1000L);
+				}
+				catch (InterruptedException e) 
+				{
+					e.printStackTrace();
+					LogUtil.error(e);
 				}
 			}
-			catch (InterruptedException e) 
-			{
-				e.printStackTrace();
-				LogUtil.error(e);
-			}
-		} , EVENT_THREAD_NAME);
+		} , EVENT_THREAD_NAME); 
 		
 		EVENT_THREAD.start();
 	}
@@ -221,7 +224,15 @@ public class Events
 				if(THREAD_POOL == null)
 				{
 					int cpuCount = Runtime.getRuntime().availableProcessors();
-					THREAD_POOL = new ThreadPoolExecutor(cpuCount, cpuCount * 3, 60L, TimeUnit.SECONDS,new SynchronousQueue<Runnable>() , new ThreadGroupFactory(EVENT_THREAD_NAME));
+					
+					THREAD_POOL = new ThreadPoolExecutor(cpuCount, cpuCount * 3, 60L, TimeUnit.SECONDS,new SynchronousQueue<Runnable>() , new ThreadFactory() 
+					{
+						@Override
+						public Thread newThread(Runnable r) 
+						{
+							return new Thread(r , EVENT_THREAD_NAME);
+						}
+					}, new ThreadPoolExecutor.CallerRunsPolicy());
 				}
 			}
 		}
@@ -255,43 +266,5 @@ public class Events
 			eventName += " [" + event.getEventName() + "] , ";
 		}
 		return eventName;
-	}
-	
-	public static void main(String[] args) 
-	{
-		Events.addEvents(
-				new Event((event)->
-				{
-					System.out.println("测试事件1 " + DateTools.getCurrentTimeMSString() );
-				} , 
-				"* * * * -2 0 *", 
-				"* * * * -5 10 *"),
-				new Event((event)->
-				{
-					System.out.println("测试事件2 " + DateTools.getCurrentTimeMSString() );
-					
-					Events.removeEvent(event);
-				} , 
-				"* * * * * -0/-10 *"));
-		
-//		Events.addEvent(new Event("* * -2 0 0 0 *", ()->{
-//			System.out.println("每隔2天0点0分0分，执行开启赛季时间。" + DateTools.getCurrentTimeMSString());
-//		}));
-		
-//		Events.addEvent(new Event("* * * * -3 5 *", new Runnable() {
-//			public void run() {
-//				System.out.println("Event 每3分钟隔到时间5秒执行 " + DateTools.getCurrentTimeMSString());
-//			}
-//		}));
-		
-//		Events.addEvent(new Event("* * * * * 2 *", new Runnable() {
-//			public void run() {
-//				System.out.println("Event 时间秒到2执行 " + DateTools.getCurrentTimeMSString());
-//			}
-//		}));
-		
-//		Events.start();
-//		String sb = Threads.getAllThreadInfo();
-//		System.out.println(sb);
 	}
 }

@@ -1,8 +1,6 @@
 package game.tools.event;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
-
 import com.alibaba.fastjson.JSONObject;
 
 public class Event 
@@ -47,7 +45,6 @@ public class Event
 	public Event(EventWork work , String ...triggerArray) 
 	{
 		this.eventName = getName(triggerArray);
-		
 		this.triggerResultArray = new boolean [DATE_TIME_LEGNTH];
 		
 		if(triggerArray.length == 1)
@@ -77,9 +74,9 @@ public class Event
 		return eventName = triggerString.toString();
 	}
 	
-	private void initJob(EventWork work)
+	private void initJob(final EventWork work)
 	{
-		Event thisObject = this;
+		final Event thisObject = this;
 		this.job = new Runnable() 
 		{
 			@Override
@@ -100,6 +97,8 @@ public class Event
 		{
 			trigger = triggerArray[i];
 			
+			trigger = correctTrigger(trigger);
+			
 			String [] triggerStrArr = trigger.split(" ");
 			
 			for (int j = 0; j < triggerStrArr.length; j++) 
@@ -116,6 +115,8 @@ public class Event
 	
 	private void parseTriggers(String trigger)
 	{
+		trigger = correctTrigger(trigger);
+		
 		String [] triggerStrArr = trigger.split(" ");
 		
 		ArrayList<int[]> triggerList = new ArrayList<int[]>(10);
@@ -160,6 +161,45 @@ public class Event
 	
 		for (int i = 0; i < triggerList.size(); i++) 
 			this.triggerArray[i] = triggerList.get(i); 
+	}
+	
+	/**
+	 * @return 返回修正后的trigger
+	 */
+	private String correctTrigger(String trigger)
+	{
+		String [] triggerStrArr = trigger.split(" ");
+		
+		boolean start = false;
+		
+		StringBuffer sb = new StringBuffer();
+		
+		for (int i = 0; i < triggerStrArr.length; i++) 
+		{
+			String triggerString = triggerStrArr[i];
+			
+			if(!triggerString.equals("*"))
+				start = true;
+			else
+			{
+				if(start)
+				{
+					if(i == 1)		//月
+						triggerString = "1";
+					else if(i == 2)	//日
+						triggerString = "1";
+					else if(i == 3)	//时
+						triggerString = "0";
+					else if(i == 4)	//分
+						triggerString = "0";
+					else if(i == 5)	//秒
+						triggerString = "0";
+				}
+			}
+			sb.append(triggerString + " ");
+		}
+		
+		return sb.toString().trim();
 	}
 	
 	private void printTrigger()
