@@ -338,7 +338,9 @@ public class MybatisTransactionHandler
 		o.put("rollbackSql", rollbackSql);
 		o.put("originalSql", originalSql);
 		
-		RedisOper.execute(RedisCmd.lpush, getTransctionKey(transctionId), o.toJSONString());
+		String transctionKey = getTransctionKey(transctionId);
+		
+		RedisOper.execute(RedisCmd.lpush, transctionKey, o.toJSONString());
 	}
 	
 

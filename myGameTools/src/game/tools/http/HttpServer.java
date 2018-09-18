@@ -1,6 +1,8 @@
 package game.tools.http;
 
 
+import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.Executors;
 
 import javax.servlet.http.HttpServlet;
@@ -14,6 +16,7 @@ import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.eclipse.jetty.util.thread.ThreadPool;
 
 import game.tools.threadpool.ThreadGroupFactory;
+import game.tools.utils.ClassUtils;
 import game.tools.utils.StringTools;
 
 public class HttpServer {
@@ -112,6 +115,32 @@ public class HttpServer {
         return connector;
     }
 	
+	/**
+	 * @param packageName 要注册包的路径
+	 */
+	private void registerPackage(String packageName)
+	{
+		Set<String> setString = ClassUtils.getClassName(packageName, true);
+		
+		Iterator<String> iter = setString.iterator();
+		
+		Class[] clzssArray = new Class[setString.size()];
+		
+		try 
+		{
+			for (int i = 0; i < clzssArray.length; i++) 
+			{
+				Class<?> clzss = ClassLoader.getSystemClassLoader().loadClass(iter.next());
+				clzssArray[i] = clzss;
+			}
+		}
+		catch (ClassNotFoundException e) 
+		{
+			e.printStackTrace();
+		}
+		
+		registerServlet(clzssArray);
+	}
 	
 	/**
 	 * 在此注册添加servlet业务 http://xxxx.xxx.xxx:9001/servlet/test?adsdsd

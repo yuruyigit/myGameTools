@@ -117,28 +117,28 @@ public class ForkJoinTools
 	
 	public static void main(String[] args) throws Exception
 	{
-		System.out.println("main 1 2 3 ");
-		for (int i = 0; i < 1; i++) 
-		{
-			Thread t = new Thread(()->{
-				t1();
-			});
-			
-			Thread t1 = new Thread(()->{
-				t2();
-			});
-			
-			t.start();
-			t1.start();
-		}
+//		System.out.println("main 1 2 3 ");
+//		for (int i = 0; i < 1; i++) 
+//		{
+//			Thread t = new Thread(()->{
+//				t1();
+//			});
+//			
+//			Thread t1 = new Thread(()->{
+//				t2();
+//			});
+//			
+//			t.start();
+//			t1.start();
+//		}
 //		t2.start();
 		
 //		jlt.terminated();
 		
-//		t1();
+		t1();
 //		t2();
 		
-		Thread.sleep(5000L);
+		Thread.sleep(51000L);
 	}
 	
 	private static void t2()
@@ -150,9 +150,9 @@ public class ForkJoinTools
 			{
 				try
 				{
-					Thread.sleep(1000L);
-					
 					System.out.println("t2 compute " + Thread.currentThread().getName());
+					
+					Thread.sleep(1000L);
 				}
 				catch (Exception e)
 				{
@@ -186,9 +186,9 @@ public class ForkJoinTools
 			{
 				try
 				{
-					Thread.sleep(1000L);
-					
 					System.out.println("t1 compute " + Thread.currentThread().getName());
+					
+					Thread.sleep(1000L);
 				}
 				catch (Exception e)
 				{
@@ -205,9 +205,9 @@ public class ForkJoinTools
 			{
 				try
 				{
-					Thread.sleep(1500L);
-					
 					System.out.println("t1 compute " + Thread.currentThread().getName());
+					
+					Thread.sleep(1500L);
 				}
 				catch (Exception e)
 				{
@@ -219,7 +219,92 @@ public class ForkJoinTools
 		
 		long startTime = System.currentTimeMillis();
 		
-		jlt.addTasks(sft , sft1, sft, sft, sft);
+		jlt.addTasks(new SubForkTask()
+		{
+			@Override
+			protected String compute()
+			{
+				try
+				{
+					System.out.println("1 t1 compute " + Thread.currentThread().getName());
+					
+					Thread.sleep(1000L);
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+				return "t1-sft";
+			}
+		} , new SubForkTask()
+		{
+			@Override
+			protected String compute()
+			{
+				try
+				{
+					System.out.println("2 t1 compute " + Thread.currentThread().getName());
+					
+					Thread.sleep(1000L);
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+				return "t1-sft";
+			}
+		}, new SubForkTask()
+		{
+			@Override
+			protected String compute()
+			{
+				try
+				{
+					System.out.println("3 t1 compute " + Thread.currentThread().getName());
+					
+					Thread.sleep(1000L);
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+				return "t1-sft";
+			}
+		}, new SubForkTask()
+		{
+			@Override
+			protected String compute()
+			{
+				try
+				{
+					System.out.println("4 t1 compute " + Thread.currentThread().getName());
+					
+					Thread.sleep(1000L);
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+				return "t1-sft";
+			}
+		}, new SubForkTask()
+		{
+			@Override
+			protected String compute()
+			{
+				try
+				{
+					System.out.println("5 t1 compute " + Thread.currentThread().getName());
+					
+					Thread.sleep(1000L);
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+				return "t1-sft";
+			}
+		});
 		
 		Object o = jlt.submit();
 		
