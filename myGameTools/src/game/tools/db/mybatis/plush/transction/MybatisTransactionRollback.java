@@ -5,6 +5,7 @@ import java.util.List;
 import org.mybatis.spring.SqlSessionTemplate;
 import com.alibaba.fastjson.JSONObject;
 import game.tools.db.mybatis.MybatisFactoryTools;
+import game.tools.log.LogUtil;
 import game.tools.redis.RedisCmd;
 import game.tools.redis.RedisOper;
 
@@ -74,8 +75,10 @@ class MybatisTransactionRollback
 			}
 			catch (Exception e) 
 			{
-				System.out.println("exception sql : " + sql );
+				System.err.println("exception sql : " + sql );
 				e.printStackTrace();
+				
+				LogUtil.error(e , "exception sql : " + sql);
 			}
 		}, "MybatisTransactionRollback").start();
 		

@@ -1,6 +1,8 @@
 package game.tools.db.mybatis.plush.transction;
 import java.util.List;
 import com.alibaba.fastjson.JSONObject;
+
+import game.tools.log.LogUtil;
 import game.tools.redis.RedisCmd;
 import game.tools.redis.RedisOper;
 import game.tools.utils.UUIDTools;
@@ -65,6 +67,7 @@ public class MybatisTransaction
 		catch (Exception e) 
 		{
 			e.printStackTrace();
+			LogUtil.error(e);
 			return false;
 		}
 		finally 

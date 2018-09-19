@@ -24,6 +24,7 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 import com.alibaba.fastjson.JSONObject;
 
 import game.tools.db.mybatis.MybatisTools;
+import game.tools.log.LogUtil;
 import game.tools.redis.RedisCmd;
 import game.tools.redis.RedisOper;
 import game.tools.threadpool.ThreadLocal;
@@ -355,6 +356,7 @@ public class MybatisTransactionHandler
 		}
 		catch (Exception e) 
 		{
+			LogUtil.error(e);
 			e.printStackTrace();
 		}
 		return null;
