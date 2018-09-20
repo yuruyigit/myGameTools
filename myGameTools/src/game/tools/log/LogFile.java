@@ -398,10 +398,13 @@ class LogFile
 			if(o != null )
 				stringBuffer.append(o).append(WRAP);
 			
-			stringBuffer.append(TAB).append(e.toString()).append(WRAP);
-			StackTraceElement[] ste = e.getStackTrace();
-			for (int i = 0; i < ste.length; i++)
-				stringBuffer.append(TAB).append(TAB).append(ste[i].toString()).append(WRAP);
+			if(e != null)
+			{
+				stringBuffer.append(TAB).append(e.toString()).append(WRAP);
+				StackTraceElement[] ste = e.getStackTrace();
+				for (int i = 0; i < ste.length; i++)
+					stringBuffer.append(TAB).append(TAB).append(ste[i].toString()).append(WRAP);
+			}
 			
 			bufferWriter.append(stringBuffer);
 			bufferWriter.flush();

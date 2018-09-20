@@ -1,5 +1,4 @@
 package game.tools.db.cache;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.lang.reflect.Method;
@@ -10,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import com.alibaba.fastjson.JSONObject;
 import game.tools.log.LogUtil;
@@ -53,20 +53,28 @@ public class CacheFromData
 		
 //		cfd.initCacheFromData();
 		
-		cfd1.setAttributeTable("cmd_code_s");
-		cfd1.initCacheFromTableData("cmd_code_s" , "constant_s");
+		cfd1.setAttributeTable("constant_s" , "cmd_code_s");
+		cfd1.initCacheFromTableData("cmd_code_s" , "constant_s" , "bloody_box_s");
 //		cfd2.initCacheFromTableData("sys_channel");
 //		cfd1.initCacheFromTableData("cmd_code_s" , "constant_s");
 //		cmd_code_s s = cfd1.getObjectById(TableName.cmd_code_s, -1);
 //		System.out.println(s.getS2c_desc());
 //		System.out.println(cmd_code_s.ABBBBB[1][2]);
-//		prf_card_new obj = cfd.getObjectById("prf_card_new", 2000001);
+		Object obj = cfd1.getObjectById("prf_card_new", 2000001);
 //		prf_arena_reward obj1 = cfd.getObjectById("prf_arena_reward", 2);
 //		System.out.println(obj + " " + obj1);
-		Object map = cfd1.getMapByTable("PlanPayGift");
 		
-		Object obj1 = cfd1.getObjectById("PlanPayGift", 1002);
-		System.out.println(obj1);
+//		ConcurrentHashMap<Long, bloody_box_s> map = cfd1.getMapByFilter("bloody_box_s", new CacheFilter<bloody_box_s>() {
+//
+//			@Override
+//			public boolean filter(bloody_box_s t) {
+//				if(t.getId() == 2)
+//					return true;
+//				return false;
+//			}
+//
+//		});
+//		System.out.println(map);
 		
 		
 		Thread.sleep(50000);
@@ -360,7 +368,16 @@ public class CacheFromData
 						sb.append("\t public static final float [] ").append(attributeName.toUpperCase()).append(" = ").append(valueJsonString);
 					}
 					else
-						sb.append("\t public static final ").append(attributeType).append(" ").append(attributeName).append(" = \"").append(attributeValue).append("\"; \n");
+					{
+						if(Util.isNumeric(attributeValue))			//如果值为单个数字，则转为int类型
+						{
+							attributeType = "int";
+							sb.append("\t public static final ").append(attributeType).append(" ").append(attributeName).append(" = ").append(attributeValue).append("; \n");
+						}
+						else
+							sb.append("\t public static final ").append(attributeType).append(" ").append(attributeName).append(" = \"").append(attributeValue).append("\"; \n");
+					}
+						
 				}
 			}
 				
@@ -692,6 +709,38 @@ public class CacheFromData
 		return (ConcurrentHashMap<Long, T>)CACHE_TABLE_DATA.get(tableName);
 	}
 	
+	public <T> ConcurrentHashMap<Long, T> getMapByFilter(String tableName , CacheFilter<T> filter)
+	{
+		ConcurrentHashMap<Long, T> map = getMapByTable(tableName);
+		
+		ConcurrentHashMap<Long, T> retMap = new ConcurrentHashMap<Long, T>(); 
+				
+		Iterator<Long> iter = map.keySet().iterator();
+	
+		while(iter.hasNext())
+		{
+			Long key = iter.next();
+			T t = map.get(key);
+			
+			if(filter.filter(t))
+				retMap.put(key, t);
+		}
+		return retMap;
+	}
+	
+	public <T> ArrayList<T> getListByFilter(String tableName , CacheFilter<T> filter)
+	{
+		ConcurrentHashMap<Long, T> map = getMapByTable(tableName);
+		
+		ArrayList<T> retList = new ArrayList<>();
+		
+		for (T t : map.values()) 
+		{
+			if(filter.filter(t))
+				retList.add(t);
+		}
+		return retList;
+	}
 	
 	
 	/**
@@ -799,7 +848,6 @@ public class CacheFromData
 			stmt = connection.createStatement();
 			tableResult = stmt.executeQuery("select * from " + tableName);
 			
-			
 			className = tableOrColumnToClassName(tableName);
 			classObj =  classNameToClass(tableName , className , tableResult);
 			
@@ -827,7 +875,7 @@ public class CacheFromData
 						if(Util.isNumeric(oneColumnString))
 							id = Long.valueOf(oneColumnString);
 					}
-					else if(i == 1)				//如果不存在ID字段，则使用第一列为主键，且第一列必须为数字字段
+					if(id == -1 && i == 1)				//如果不存在ID字段，则使用第一列为主键，且第一列必须为数字字段
 					{
 						String oneColumnString = value.toString();
 						if(Util.isNumeric(oneColumnString))
@@ -852,8 +900,10 @@ public class CacheFromData
 				
 				if(id <= 0)
 				{
-					Exception e = new Exception("Warning : Table "+ tableName+" at did not find the \"ID\"  field at primary key !");
-					LogUtil.error(e);
+//					Exception e = new Exception("Warning : Table "+ tableName+" at did not find the \"ID\"  field at primary key !");
+					String warningString = "Warning : Table "+ tableName+" at did not find the \"ID\"  field at primary key !"; 
+					System.err.println(warningString);
+					LogUtil.error(null , warningString);
 				}
 				
 				javaMap.put((long)id, obj);
@@ -987,13 +1037,14 @@ public class CacheFromData
 		
 		try 
 		{
+			boolean isCreateAttributeJavaFile = isCreateAttributeJavaFile(tableName);
+			
 			if(isCreateFile)				//是否对创建实体类
 			{
 				File file = new File(this.srcEntityPath + className+".java");
 				
 				if(!file.exists())				//如果不存这个实体类
 				{
-					boolean isCreateAttributeJavaFile = isCreateAttributeJavaFile(tableName);
 					boolean isCreate = false;
 					
 					if(isCreateAttributeJavaFile)			//如果是创建的静态属性类的java文件
@@ -1003,8 +1054,10 @@ public class CacheFromData
 					
 					if(isCreate)				//创建成功
 					{
-						compilerJava(file.getAbsolutePath());			//动态编译java源文件至class文件 
+						compilerJava(file.getAbsolutePath());			//动态编译java源文件至class文件
 						
+						if(isCreateAttributeJavaFile)			//如果以属性类文件的方式，则不返回该类对象
+							return null;
 						return Class.forName(allClassName);
 					}
 					else
@@ -1017,6 +1070,8 @@ public class CacheFromData
 			}
 			else
 			{
+				if(isCreateAttributeJavaFile)			//如果以属性类文件的方式，则不返回该类对象
+					return null;
 				return Class.forName(allClassName);
 			}
 		}
@@ -1057,7 +1112,7 @@ public class CacheFromData
 			Runtime runtime = Runtime.getRuntime();
 			runtime.exec("javac -d "+ this.binClassPath + " " +fileName);
 			
-			Thread.sleep(600L);
+			Thread.sleep(650L);
 			
 		}
 		catch (Exception e) 
