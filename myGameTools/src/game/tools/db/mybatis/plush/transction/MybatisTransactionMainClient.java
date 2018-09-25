@@ -45,7 +45,7 @@ public class MybatisTransactionMainClient
 		
 		MybatisFactoryTools.getMapper(sessionKey, CardStarUpsMapper.class).insert(cardStarUps);
 		
-		MybatisTransaction.end();
-//		MybatisTransaction.rollback();
+//		MybatisTransaction.end();
+		MybatisTransaction.rollback();
 	}
 }

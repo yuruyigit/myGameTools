@@ -49,14 +49,14 @@ public class MybatisFactoryUpdateTools
 			CardStarUps cardStarUps = MybatisFactoryTools.getMapper(sessionKey, CardStarUpsMapper.class).selectByPrimaryKey(104);
 			cardStarUps.setDescription(cardStarUps.getDescription() + "_test");
 			
-			MybatisTransaction.start();
+//			MybatisTransaction.start();
 //			cardStarUps.setId(Util.getRandomInt(99999, 9999999));
 //			MybatisFactoryTools.getMapper(sessionKey, CardStarUpsMapper.class).insert(cardStarUps);
 //			MybatisFactoryTools.getMapper(sessionKey, CardStarUpsMapper.class).deleteByPrimaryKey(106);
-			cardStarUps.setDescription("；离开家阿萨德管理会计地方克拉斯地方了看到发生离开");
-			MybatisFactoryTools.getMapper(sessionKey, CardStarUpsMapper.class).updateByPrimaryKey(cardStarUps);
+//			cardStarUps.setDescription("；离开家阿萨德管理会计地方克拉斯地方了看到发生离开");
+//			MybatisFactoryTools.getMapper(sessionKey, CardStarUpsMapper.class).updateByPrimaryKey(cardStarUps);
 //			MybatisTransaction.end();
-			MybatisTransaction.rollback();
+//			MybatisTransaction.rollback();
 			
 			Achievements achievement = MybatisFactoryTools.getMapper(sessionKey, AchievementsMapper.class).selectByPrimaryKey(10101);
 			achievement.setDescription(achievement.getDescription() + "_test");
@@ -79,18 +79,20 @@ public class MybatisFactoryUpdateTools
 			
 			new Thread(()->
 			{
-				MybatisFactoryUpdateTools.registerUpdate(1, sessionKey , cardStarUps);
+				for (int i = 0; i < 50; i++)
+					MybatisFactoryUpdateTools.registerUpdate(i, sessionKey , cardStarUps);
 			},"t1").start();
 			
 			new Thread(()->
 			{
-				MybatisFactoryUpdateTools.registerUpdate(1, sessionKey , list);
+				for (int i = 0; i < 50; i++)
+					MybatisFactoryUpdateTools.registerUpdate(i, sessionKey , list);
 			},"t2").start();
 			
-			new Thread(()->
-			{
-				MybatisFactoryUpdateTools.registerUpdate(1, sessionKey , achMap);
-			},"t3").start();
+//			new Thread(()->
+//			{
+//				MybatisFactoryUpdateTools.registerUpdate(1, sessionKey , achMap);
+//			},"t3").start();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

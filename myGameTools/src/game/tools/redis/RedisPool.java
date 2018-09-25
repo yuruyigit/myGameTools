@@ -2,11 +2,14 @@ package game.tools.redis;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+
 import game.tools.db.cache.expire.ExpireCacheDataMap;
 import game.tools.utils.StringTools;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.ScanResult;
 
 class MyJedisPool
 {
@@ -56,47 +59,29 @@ class RedisPool
 	// 访问密码
 	private static String AUTH = "";
 
-	private static String passWord = "";
-
-	// 可用连接实例的最大数目，默认值为8；
-	// 如果赋值为-1，则表示不限制；如果pool已经分配了maxActive个jedis实例，则此时pool的状态为exhausted(耗尽)。
+	/** 可用连接实例的最大数目，默认值为8, 如果赋值为-1，则表示不限制；如果pool已经分配了maxActive个jedis实例，则此时pool的状态为exhausted(耗尽)。*/
 	private static int MAX_ACTIVE = 1024;
-	// 控制一个pool最多有多少个状态为idle(空闲的)的jedis实例，默认值也是8。
+	/** 控制一个pool最多有多少个状态为idle(空闲的)的jedis实例，默认值也是8。*/
 	private static int MAX_IDLE = 50 , MAX_TOTAL = 9999;
-	// 等待可用连接的最大时间，单位毫秒，默认值为-1，表示永不超时。如果超过等待时间，则直接抛出JedisConnectionException；
+	/** 等待可用连接的最大时间，单位毫秒，默认值为-1，表示永不超时。如果超过等待时间，则直接抛出JedisConnectionException */
 	private static int MAX_WAIT = 10000;
-
+	/**  */
 	private static int TIMEOUT = 10000;
-	// 在borrow一个jedis实例时，是否提前进行validate操作；如果为true，则得到的jedis实例均是可用的；
+	/** 在borrow一个jedis实例时，是否提前进行validate操作；如果为true，则得到的jedis实例均是可用的；*/
 	private static boolean TEST_ON_BORROW = true;
-	
-	
-	/** 2016年9月21日下午4:19:12 redis的key过期时间，单位毫秒间隔 , 这里是1个小时*/
-	private static final long REDIS_KEY_EXPIRE_TIME = 1 * 60 * 60 * 1000;
-	/** 2016年9月21日下午4:21:19 redis的key缓存大小，大于这个数的话，去检查过期 */
-	private static final long REDIS_KEY_CHECK_SIZE = 10000 ;
-	
-	/** 2016年9月20日下午8:43:21 连接池配置 */
-	private static JedisPoolConfig JEDIS_POOL_CONFIG;
-	
 	/** 2016年9月20日下午8:46:34  注册的多个redis连接池列表*/
 	private static final ArrayList<MyJedisPool> JEDIS_POOL_LIST = new ArrayList<>();
+
+	/** 2016年9月20日下午8:43:21 连接池配置 */
+	private static final JedisPoolConfig JEDIS_POOL_CONFIG;
 	
-	/** 2016年9月20日下午9:50:37 key与redis连接的映射 */
-	private static final ExpireCacheDataMap EXPIRE_CACHE_MAP = new ExpireCacheDataMap();
-	
-	private static JedisPoolConfig createJedisPoolConfig()
+	static
 	{
-		if(JEDIS_POOL_CONFIG != null)
-			return JEDIS_POOL_CONFIG;
-		
 		JEDIS_POOL_CONFIG = new JedisPoolConfig();
 		JEDIS_POOL_CONFIG.setMaxIdle(MAX_IDLE);
 		JEDIS_POOL_CONFIG.setMaxTotal(MAX_TOTAL);
 		JEDIS_POOL_CONFIG.setMaxWaitMillis(MAX_WAIT);
 		JEDIS_POOL_CONFIG.setTestOnBorrow(TEST_ON_BORROW);
-		
-		return JEDIS_POOL_CONFIG;
 	}
 	
 	static MyJedisPool getJedisPoolByIndex(int index)
@@ -107,72 +92,30 @@ class RedisPool
 	static MyJedisPool getJedisPool(String key)
 	{
 		if(JEDIS_POOL_LIST.size() == 1)
-			return JEDIS_POOL_LIST.get(0);
-		
-//		Integer redisIndex  = EXPIRE_CACHE_MAP.get(key);			//缓存key对应哪个redis
-//		
-//		if(redisIndex != null)
-//			return JEDIS_POOL_LIST.get(redisIndex);
-//		else
-//			redisIndex = getRedisIndex(key);
-//		
-//		if(redisIndex != -1)			//确定的数据连接源
-//		{
-//			EXPIRE_CACHE_MAP.put(key, redisIndex);
-//			return JEDIS_POOL_LIST.get(redisIndex);
-//		}
-		
+			return getJedisPoolByIndex(0);
 		
 		return getMyJedisPool(key);
-		
-//		return null;
 	}
 	
-	private static  MyJedisPool getMyJedisPool(String key)
+	private static MyJedisPool getMyJedisPool(String key)
 	{
 		for (MyJedisPool myJedisPool : JEDIS_POOL_LIST) 
 		{
 			Jedis jedis = myJedisPool.getResource();
-			if(jedis.exists(key))
-				return myJedisPool;
-		}
-		return null;
-	}
-	
-	private static int getRedisIndex(String key)
-	{
-		int redisIndex = -1;
-		
-		int size = JEDIS_POOL_LIST.size();
-		
-		for (int i = 0; i < size; i++) 
-		{
-			MyJedisPool myJedisPool = JEDIS_POOL_LIST.get(i);
-			Jedis jedis = myJedisPool.getResource();
-			
 			try 
 			{
-				boolean exist = jedis.exists(key);
-				if(exist)
-				{
-					redisIndex = i;
-					break;
-				}
+				if(jedis.exists(key))
+					return myJedisPool;
 			}
-			catch (Exception e) 
-			{
-				e.printStackTrace();
-			}
-			finally 
+			finally
 			{
 				myJedisPool.returnResource(jedis);
 			}
 		}
 		
-		if(redisIndex == -1)					///不存这个key，则返回最小数量的连接池
-			redisIndex = getMinJedisPool();
+		int minJedisPool = getMinJedisPool();
 		
-		return redisIndex;
+		return getJedisPoolByIndex(minJedisPool);
 	}
 	
 	private static int getMinJedisPool()
@@ -222,7 +165,7 @@ class RedisPool
 		if(infoArr.length == 0)
 			return false;
 		
-		JedisPoolConfig config = createJedisPoolConfig();
+		JedisPoolConfig config = JEDIS_POOL_CONFIG;
 		
 		try 
 		{
@@ -277,42 +220,6 @@ class RedisPool
 		
 	}
 	
-	
-	
-	public static void main(String[] args) 
-	{
-		
-//		REDIS_KEY_INDEX_MAP.put("zz", new MyRedisKey("zz",1));
-//		REDIS_KEY_INDEX_MAP.put("zz1", new MyRedisKey("zz1",1));
-//		REDIS_KEY_INDEX_MAP.put("zz2", new MyRedisKey("zz2",0));
-//		REDIS_KEY_INDEX_MAP.put("zz3", new MyRedisKey("zz3",1));
-//		REDIS_KEY_INDEX_MAP.put("zz4", new MyRedisKey("zz4",1));
-//		
-//		checkExpireKey();
-		
-		
-		System.out.println((10010000000014L % 10010000000000L + 10000));
-//		RedisOper.connection
-//		(
-//			new JedisConnnection("127.0.0.1" , 7001),
-//			new JedisConnnection("127.0.0.1" , 6379)
-//		);
-		
-//		for (int i = 0; i < 17; i++)
-//		{
-//			RedisOper.execute(RedisCmd.set, "set_test"+i , "value-a+ "+i);
-//			RedisOper.execute(RedisCmd.hset, "hset_test"+i , "key-a" , "value-b");
-//		}
-//		
-//		RedisOper.execute(RedisCmd.set, "set_zzb" , "value-zzb");
-		
-//		Object o = RedisOper.execute(RedisCmd.get, "set_test"+3 );
-//		Object o1 = RedisOper.execute(RedisCmd.get, "set_zzb");
-//		
-//		System.out.println("o = " + o + " o1 = " + o1 );
-		
-	}
-
 	public static int getConneciontCount() {
 		return JEDIS_POOL_LIST.size();
 	}
@@ -320,7 +227,6 @@ class RedisPool
 	public static ArrayList<MyJedisPool> getJedisPoolList()
 	{
 		return JEDIS_POOL_LIST;
+//		return (ArrayList<MyJedisPool>)Collections.unmodifiableList(JEDIS_POOL_LIST);
 	}
-	
-	
 }

@@ -1,8 +1,4 @@
 package game.tools.db.mybatis.plush.transction;
-import java.util.List;
-import com.alibaba.fastjson.JSONObject;
-
-import game.tools.log.LogUtil;
 import game.tools.redis.RedisCmd;
 import game.tools.redis.RedisOper;
 import game.tools.utils.UUIDTools;
@@ -28,7 +24,7 @@ public class MybatisTransaction
 		String transctionId = MybatisTransactionHandler.getTransctionId();											//获取当前线程事务ID
 		
 		if(transctionId != null)
-			RedisOper.execute(RedisCmd.del, MybatisTransactionHandler.getTransctionKey(transctionId));
+			RedisOper.execute(RedisCmd.del, MybatisTransactionHandler.getTransctioningKey(transctionId));
 	}
 	
 	public static boolean rollback()
@@ -41,41 +37,7 @@ public class MybatisTransaction
 	/**  事务回滚	 */
 	public static boolean rollback(String transctionId) 
 	{
-		try 
-		{
-			List<String> jsonList = RedisOper.execute(RedisCmd.lget, MybatisTransactionHandler.getTransctionKey(transctionId));
-			
-			String rollbackKey = null;
-			
-			JSONObject o = null;
-			
-			for (String jsonString : jsonList) 
-			{
-				o = JSONObject.parseObject(jsonString);
-				
-				rollbackKey = MybatisTransactionHandler.getTransactionRollBackKey(o.getString("serverSign"));
-				
-				JSONObject json = new JSONObject();
-				json.put("mysqlUrl",o.getString("mysqlUrl"));
-				json.put("rollbackSql",o.getString("rollbackSql"));
-				
-				RedisOper.execute(RedisCmd.lpush, rollbackKey, json.toJSONString());
-			}
-			
-			RedisOper.execute(RedisCmd.del, MybatisTransactionHandler.getTransctionKey(transctionId));
-		}
-		catch (Exception e) 
-		{
-			e.printStackTrace();
-			LogUtil.error(e);
-			return false;
-		}
-		finally 
-		{
-			MybatisTransactionRollback.start();
-		}
-		
-		return true;
+		return MybatisTransactionHandler.rollback(transctionId);
 	}
 	
 

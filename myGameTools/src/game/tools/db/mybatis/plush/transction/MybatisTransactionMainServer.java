@@ -18,8 +18,8 @@ public class MybatisTransactionMainServer
 {
 	public static void main(String[] args)
 	{
-//		test();
-		testRedis();
+		test();
+//		testRedis();
 	}
 	
 	private static void testRedis() 
@@ -64,9 +64,10 @@ public class MybatisTransactionMainServer
 		achievement.setDescription("dsafasdfasdfasdfasdfsfasf事务");
 		MybatisFactoryTools.getMapper(sessionKey, AchievementsMapper.class).updateByPrimaryKey(achievement);
 		
-		MybatisTransaction.rollback(transctionId);
+//		MybatisTransaction.rollback(transctionId);
 		
-		return false;
+//		return false;
+		return true;
 	}
 
 }

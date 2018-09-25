@@ -12,6 +12,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import game.tools.log.LogUtil;
+import game.tools.threadpool.ThreadGroupFactory;
 
 public class Events 
 {
@@ -225,14 +226,16 @@ public class Events
 				{
 					int cpuCount = Runtime.getRuntime().availableProcessors();
 					
-					THREAD_POOL = new ThreadPoolExecutor(cpuCount, cpuCount * 3, 60L, TimeUnit.SECONDS,new SynchronousQueue<Runnable>() , new ThreadFactory() 
-					{
-						@Override
-						public Thread newThread(Runnable r) 
-						{
-							return new Thread(r , EVENT_THREAD_NAME);
-						}
-					}, new ThreadPoolExecutor.CallerRunsPolicy());
+//					THREAD_POOL = new ThreadPoolExecutor(cpuCount, cpuCount * 3, 60L, TimeUnit.SECONDS,new SynchronousQueue<Runnable>() , new ThreadFactory() 
+//					{
+//						@Override
+//						public Thread newThread(Runnable r) 
+//						{
+//							return new Thread(r , EVENT_THREAD_NAME);
+//						}
+//					}, new ThreadPoolExecutor.CallerRunsPolicy());
+					
+					THREAD_POOL = new ThreadPoolExecutor(cpuCount, cpuCount * 3, 60L, TimeUnit.SECONDS,new SynchronousQueue<Runnable>() , new ThreadGroupFactory(EVENT_THREAD_NAME) ,new ThreadPoolExecutor.CallerRunsPolicy());
 				}
 			}
 		}

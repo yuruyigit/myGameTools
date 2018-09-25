@@ -51,7 +51,7 @@ public class MybatisFactoryUpdateObject
 
 	private void init() 
 	{
-		this.threadPool =  new ThreadPoolExecutor(threadCount , threadCount * 3, 60, TimeUnit.SECONDS, new SynchronousQueue<Runnable>() ,new ThreadGroupFactory("MybatisFactoryUpdateObject-UpdateThread"));
+		this.threadPool =  new ThreadPoolExecutor(threadCount , threadCount * 3, 60, TimeUnit.SECONDS, new SynchronousQueue<Runnable>() ,new ThreadGroupFactory("MybatisFactoryUpdateObject-UpdateThread"), new ThreadPoolExecutor.CallerRunsPolicy());
 	}
 
 	/**

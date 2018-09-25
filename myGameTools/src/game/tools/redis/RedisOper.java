@@ -1,21 +1,18 @@
 package game.tools.redis;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
-
 import com.alibaba.fastjson.JSONObject;
+import game.tools.threadpool.ThreadLocal;
 import game.tools.utils.StringTools;
 import game.tools.utils.Util;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.ShardedJedis;
-import redis.clients.jedis.Transaction;
 import redis.clients.jedis.Tuple;
-import redis.clients.jedis.exceptions.JedisException;
 
 /**
  * Redis 操作类 
@@ -24,73 +21,8 @@ import redis.clients.jedis.exceptions.JedisException;
 public class RedisOper
 {
 	
-	/**
-	 * redis分布锁对象
-	 */
+	/** redis分布锁对象 */
 	private static final RedidLock REDIS_LOCK = new RedidLock();
-	
-	private static boolean PRINT_INFO = true;
-	
-	public static void main(String[] args)
-	{
-		RedisPool.connection("127.0.0.1", 6379,"");
-//		User u = new User();
-//		u.setId(11123123);
-//		u.setName("zzb");
-//		u.setAge(12312);
-//		
-////	RedisUtil.getJedis().
-//		System.out.println(RedisUtil.getJedis().select(10));
-//		RedisUtil.getJedis().select(10);
-//		setJSONArray("test", JSONObject.toJSON(u));
-//		RedisOper.setObjectByHash("objMap", u.getId()+1, u);
-//		User u1 = RedisOper.getObjectByHash("objMap", u.getId(), User.class);
-		
-//		RedisUtil.getResource().hset("testMap", "name", "zzb");
-//		String val = RedisUtil.getResource().hget("testMap", "name");
-//		System.out.println("val = " + u1.getId());
-		
-//		long roleId = 10010000019010L;
-//		
-//		for (int i = 0; i < 555; i++) 
-//		{
-//			String key = "warZone-" + i;
-//			for (int j = 0; j < 5000; j++) 
-//			{
-//				double score = Util.getRandomInt(1, 10000);
-//				RedisOper.execute(RedisCmd.zadd, key, score , String.valueOf(roleId ++));
-//			}
-//		}
-		
-//		String key = "warZone-2";
-//		for (int j = 0; j < 20; j++) 
-//		{
-//			double score = Util.getRandomInt(100, 1000);
-//			RedisOper.execute(RedisCmd.zadd, key, score , String.valueOf(roleId ++));
-//		}
-		
-//		
-//		System.out.println("添加测试数据OK");
-		
-//		TreeMap<String, Integer> treeMap = new TreeMap<String, Integer>();
-//		treeMap.put("a", 1);
-//		treeMap.put("c", 3);
-//		treeMap.put("d", 4);
-//		treeMap.put("b", 2);
-//		
-//		
-//		Iterator<String> iterator = treeMap.keySet().iterator();
-//		while(iterator.hasNext())
-//		{
-//			String key = iterator.next();
-//			
-//			int val = treeMap.get(key);
-//			
-//			System.out.println("key=" + key + " val=" + val);
-//		}
-		
-		REDIS_LOCK.testLockUnlock();
-	}
 	
 	public static boolean connection(String addr , int port , String passWord)
 	{
@@ -370,7 +302,75 @@ public class RedisOper
 		}
 		return keySet;
 	}
+	
+	public static ArrayList<String> scan()
+	{
+		return scan("*");
+	}
+	
+	public static ArrayList<String> scan(int count)
+	{
+		return scan(count , "*");
+	}
+	
+	public static ArrayList<String> scan(String match)
+	{
+		return scan(10 , match);
+	}
+	
+	public static ArrayList<String> scan(int count , String match)
+	{
+		int [][] scanCursor = ThreadLocal.remove("scan");
+		
+		Jedis jedis = null;
+		
+		int cursor = 0 , size = RedisPool.getJedisPoolList().size();
+		
+		boolean isCreate = false;
+		
+		if(scanCursor == null)
+		{
+			scanCursor = new int[size][2];
+			isCreate = true;
+		}
+		
+		ScanParams s = new ScanParams();
+		s.count(count);
+		s.match(match);
+		
+		ArrayList<String> list = new ArrayList<>(count * size);
+		
+		for (int i = 0 ; i < size; i++) 
+		{
+			if(!isCreate)
+			{
+				if(scanCursor[i][1] <= 0)
+					continue;
+			}
+			
+			cursor = scanCursor[i][1];
+			
+			MyJedisPool myJedisPool = RedisPool.getJedisPoolByIndex(i);
+			try 
+			{
+				jedis = myJedisPool.getResource();
+				ScanResult<String> scanResult = jedis.scan(cursor, s);
+				
+				scanCursor[i][0] = i;
+				scanCursor[i][1] = scanResult.getCursor();
+				
+				list.addAll(scanResult.getResult());
+			}
+			finally
+			{
+				myJedisPool.returnResource(jedis);
+			}
 
+			ThreadLocal.setLocal("scan", scanCursor);
+		}
+		
+		return list;
+	}
 
 
 	private static Object zrangeWithScores(Jedis jedis , String key, String sort, Object... params ) 
@@ -411,7 +411,7 @@ public class RedisOper
 		return RedisPool.getConneciontCount();
 	}
 	
-	public static boolean isConneciont() 
+	public static boolean isConnecion() 
 	{
 		if(RedisPool.getConneciontCount() > 0)
 			return true;

@@ -46,7 +46,7 @@ public class ThreadLocal
 	}
 	
 	
-	public static <T> T removeLocal(String key)	
+	public static <T> T remove(String key)	
 	{
 		long tId = Thread.currentThread().getId();
 		

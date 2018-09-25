@@ -1,5 +1,4 @@
 package game.tools.db.mybatis.plush.transction;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.DateFormat;
@@ -7,7 +6,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 import org.apache.ibatis.executor.CachingExecutor;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
@@ -20,9 +18,7 @@ import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.type.TypeHandlerRegistry;
-
 import com.alibaba.fastjson.JSONObject;
-
 import game.tools.db.mybatis.MybatisTools;
 import game.tools.log.LogUtil;
 import game.tools.redis.RedisCmd;
@@ -30,12 +26,13 @@ import game.tools.redis.RedisOper;
 import game.tools.threadpool.ThreadLocal;
 import game.tools.utils.DateTools;
 import game.tools.utils.IP;
-import game.tools.utils.UUIDTools;
 import game.tools.utils.Util;
 
 public class MybatisTransactionHandler 
 {
 	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+	private static final String TRANSCTIONING = "TRANSCTIONING";
 	
 	private static final String TRANSCTION = "TRANSCTION";
 	private static final String TRANSACTION_ROLLBACK = TRANSCTION + "-ROLLBACK";
@@ -241,7 +238,7 @@ public class MybatisTransactionHandler
 							udpateSql += "`" + column + "` = " + value;
 					}
 					
-					udpateSql += " " + whereSql + " ; \n";
+					udpateSql += " " + whereSql + " ; ";
 				}
 				
 				rollbackSql = udpateSql;
@@ -334,12 +331,13 @@ public class MybatisTransactionHandler
 		
 		JSONObject o = new JSONObject();
 		o.put("time", DateTools.getCurrentTimeMSString());
+		o.put("timelong", DateTools.getCurrentTimeLong());
 		o.put("serverSign", SERVER_SIGN);
 		o.put("mysqlUrl", getMysqlUrl(invocation));
 		o.put("rollbackSql", rollbackSql);
 		o.put("originalSql", originalSql);
 		
-		String transctionKey = getTransctionKey(transctionId);
+		String transctionKey = getTransctioningKey(transctionId);
 		
 		RedisOper.execute(RedisCmd.lpush, transctionKey, o.toJSONString());
 	}
@@ -362,20 +360,59 @@ public class MybatisTransactionHandler
 		return null;
 	}	
 	
-	public static String transction(String transctionId)
+	static String transction(String transctionId)
 	{
 		ThreadLocal.setLocal(TRANSCTION, transctionId);
 		
 		return transctionId;
 	}
 	
-
-	public static String getTransctionId()	{		return ThreadLocal.getLocal(TRANSCTION);	}
-	public static String getTransctionKey(String tranId)	{		return TRANSCTION + "-" + tranId ;	}
-	public static String getTransactionRollBackKey(String serverSign)	{		return TRANSACTION_ROLLBACK + "-" + serverSign;	}
-	public static String getTransactionRollBackKey()	{		return getTransactionRollBackKey(SERVER_SIGN);	}
+	/**  事务回滚	 */
+	static boolean rollback(String transctionId) 
+	{
+		try 
+		{
+			List<String> jsonList = RedisOper.execute(RedisCmd.lget, MybatisTransactionHandler.getTransctioningKey(transctionId));
+			
+			String rollbackKey = null;
+			
+			JSONObject o = null;
+			
+			for (String jsonString : jsonList) 
+			{
+				o = JSONObject.parseObject(jsonString);
+				
+				rollbackKey = MybatisTransactionHandler.getTransactionRollBackKey(o.getString("serverSign"));
+				
+				JSONObject json = new JSONObject();
+				json.put("mysqlUrl",o.getString("mysqlUrl"));
+				json.put("rollbackSql",o.getString("rollbackSql"));
+				
+				RedisOper.execute(RedisCmd.lpush, rollbackKey, json.toJSONString());
+			}
+			
+			RedisOper.execute(RedisCmd.del, MybatisTransactionHandler.getTransctioningKey(transctionId));
+		}
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+			LogUtil.error(e);
+			return false;
+		}
+		finally 
+		{
+			MybatisTransactionRollback.start();
+		}
+		
+		return true;
+	}
 	
+	static String getTransctioningKey(String tranId)	{		return TRANSCTIONING + "-" + tranId ;	}
 	
+	static String getTransctionId()	{		return ThreadLocal.getLocal(TRANSCTION);	}
+	static String getTransactionRollBackKey(String serverSign)	{		return TRANSACTION_ROLLBACK + "-" + serverSign;	}
+	static String getTransactionRollBackKey()	{		return getTransactionRollBackKey(SERVER_SIGN);	}
 	
-	
+	static String getTransctioningValue() {		return TRANSCTIONING;	}
+	static String getTransactionRollbackValue() {		return TRANSACTION_ROLLBACK;	}	
 }
