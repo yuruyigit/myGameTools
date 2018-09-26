@@ -122,7 +122,7 @@ class Updates
 			
 			long endTime = System.currentTimeMillis();
 			
-			System.out.println("Update by " + this.id + " " + DateTools.getCurrentTimeString(lastUpdateTime) + " " + (endTime - startTime));
+			System.out.println(Thread.currentThread().getName() + " Update by " + this.id + " " + DateTools.getCurrentTimeString(lastUpdateTime) + " " + (endTime - startTime));
 		}
 	}
 	

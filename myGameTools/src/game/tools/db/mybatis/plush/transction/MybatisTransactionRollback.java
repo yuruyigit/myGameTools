@@ -18,12 +18,11 @@ class MybatisTransactionRollback
 	private static Object LOCK = new Object();
 	private static boolean START = false;
 	
-//	private static final long ROLLBACK_SLEEP = 3000 , TIMEOUT_SLEEP = 60 * 1000;
-	private static final long ROLLBACK_SLEEP = 3000 , TIMEOUT_SLEEP =  1000;
+	/** 5秒去检查回滚事务， 1分钟检查超时事务*/
+	private static final long ROLLBACK_SLEEP = 5000 , TIMEOUT_SLEEP = 60 * 1000;
 	
-	/** 事务超时时间*/
-//	private static final long TRANSACTION_TIMEOUT = 1 * 60 * 60 * 1000;
-	private static final long TRANSACTION_TIMEOUT = 1000;
+	/** 事务超时时间  这里为30分钟*/
+	private static final long TRANSACTION_TIMEOUT = 30 * 60 * 1000;
 	
 	/** 缓存数组库连接列表*/
 	private static final ExpireCacheDataMap<String, Connection> CONNECTION_MAP = new ExpireCacheDataMap<>(new IExpire<Connection>() 
@@ -54,6 +53,9 @@ class MybatisTransactionRollback
 		}
 	}
 
+	/**
+	 * @return 返回缓存的数据连接
+	 */
 	private static Connection getConnection(String mysqlKey)
 	{
 		Connection conn = CONNECTION_MAP.get(mysqlKey);
@@ -107,8 +109,10 @@ class MybatisTransactionRollback
 					if(rollbackList == null || rollbackList.isEmpty())
 						continue;
 					
-					for (String jsonString : rollbackList) 
+					for(int i = rollbackList.size() - 1 ; i >= 0 ; i --)			//按倒序，先执行列表最先开始的sql。
 					{
+						String jsonString = rollbackList.get(i);
+						
 						JSONObject o = JSONObject.parseObject(jsonString);
 						
 						mysqlKey = o.getString("mysqlUrl");
@@ -155,7 +159,7 @@ class MybatisTransactionRollback
 			{
 				try
 				{
-					ArrayList<String> list = RedisOper.scan(match);
+					ArrayList<String> list = RedisOper.scan(match);		//获取当前处理的事务列表
 					
 					while(!list.isEmpty())
 					{
@@ -191,8 +195,6 @@ class MybatisTransactionRollback
 					LogUtil.error(e);
 				}
 			}
-			
-			
 		}, "MybatisTransaction-TimeoutRollback").start();
 		
 	}

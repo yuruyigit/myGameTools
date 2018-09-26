@@ -1,6 +1,11 @@
 package game.tools.db.mybatis.update;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
+
 import game.data.conf.entity.Achievements;
 import game.data.conf.entity.BookworldCommons;
 import game.data.conf.entity.CardStarUps;
@@ -77,16 +82,25 @@ public class MybatisFactoryUpdateTools
 			
 			Thread.sleep(3000);
 			
+			String s = JSONObject.toJSONString(cardStarUps);
 			new Thread(()->
 			{
 				for (int i = 0; i < 50; i++)
-					MybatisFactoryUpdateTools.registerUpdate(i, sessionKey , cardStarUps);
+				{
+					CardStarUps c = JSONObject.parseObject(s, CardStarUps.class);
+					MybatisFactoryUpdateTools.registerUpdate(i, sessionKey , c);
+				}
 			},"t1").start();
+			
+			String l = JSONObject.toJSONString(list);
 			
 			new Thread(()->
 			{
 				for (int i = 0; i < 50; i++)
-					MybatisFactoryUpdateTools.registerUpdate(i, sessionKey , list);
+				{
+					ArrayList<Achievements> ls = JSON.parseObject(l, new TypeReference<ArrayList<Achievements>>(){});
+					MybatisFactoryUpdateTools.registerUpdate(i, sessionKey , ls);
+				}
 			},"t2").start();
 			
 //			new Thread(()->
