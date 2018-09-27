@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import game.tools.log.LogUtil;
 import game.tools.threadpool.ThreadGroupFactory;
+import game.tools.utils.DateTools;
 
 public class Events 
 {
@@ -269,5 +270,16 @@ public class Events
 			eventName += " [" + event.getEventName() + "] , ";
 		}
 		return eventName;
+	}
+	
+	public static void main(String[] args) 
+	{
+		Events.addEvent(new Event(new EventWork() {
+			@Override
+			public void work(Event event) 
+			{
+				System.out.println(DateTools.getCurrentTimeMSString());
+			}
+		}, "* * * * 1 * *"));
 	}
 }

@@ -180,7 +180,7 @@ public class Event
 			
 			if(!triggerString.equals("*"))
 				start = true;
-			else
+			else			//如果后面*号
 			{
 				if(start)
 				{
