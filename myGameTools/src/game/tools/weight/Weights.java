@@ -124,6 +124,9 @@ public class Weights
 	
 	public static <T> T getRandomWeight(List weightList , GetWeight<T> getWeight)
 	{
+		if(weightList == null || weightList.isEmpty())
+			return null;
+		
 		int sum = 0 , w = 0;
 		
 		for (Object object : weightList) 

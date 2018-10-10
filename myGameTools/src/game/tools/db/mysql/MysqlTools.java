@@ -127,15 +127,17 @@ public class MysqlTools
 	
 	public static void main(String[] args)
 	{
-		String db_url = "jdbc:mysql://192.168.1.131:3306/jjdtk_login";
-		String db_user = "root";
-		String db_pwd = "root";
-		
-		MysqlTools mysqlTools = new MysqlTools(db_url, db_user, db_pwd);
-		long startTime = System.currentTimeMillis();
+//		String db_url = "jdbc:mysql://192.168.1.131:3306/jjdtk_login";
+//		String db_user = "root";
+//		String db_pwd = "root";
+//		
+//		MysqlTools mysqlTools = new MysqlTools(db_url, db_user, db_pwd);
+//		long startTime = System.currentTimeMillis();
 //		ArrayList<SysUser> list = mysqlTools.query("select {field} from sys_user where id = 1", SysUser.class);
-		long endTime = System.currentTimeMillis();
+//		long endTime = System.currentTimeMillis();
 //		System.out.println(list.size() + " gap =  " + (endTime - startTime));
+		
+//		System.out.println(Integer.parseInt("2582180926"));
 	}
 	
 	private <T> ArrayList<T> getArryLitByResultSet(ResultSet result ,Class<T> clzss ) throws Exception
