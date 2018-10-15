@@ -179,6 +179,9 @@ public class Netty4ProtocolHandler extends Netty4Handler
 	{
 		Channel channel = ctx.channel();
 		
+		if(!netty4Protocol.channelReadPreStart(channel))
+			return;
+		
 		threadPool.execute(new Runnable() 
 		{
 			@Override

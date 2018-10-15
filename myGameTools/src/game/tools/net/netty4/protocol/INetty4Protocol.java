@@ -29,6 +29,12 @@ public interface INetty4Protocol
 	public default Object channelReadStart(Channel channel , int protocolNo ,  Object msg){	return null;	};
 	
 	/**
+	 *  消息入口接收，读取接收数据前处理。 
+	 * @return true可以接收消息处理，false不可以接收处理，抛弃该数据，不进行继续向下执行。 
+	 */
+	public default boolean channelReadPreStart(Channel channel){	return true;	};
+	
+	/**
 	 * 消息入口接收处理函数结束接口。主要用于特殊接收处理。
 	 * @param channel
 	 * @param msg
